@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from metpy.cbook import get_test_data
 
-ds = xr.open_dataset("src/nc-file/cru_ts4.08.2021.2023.tmp.dat.nc")
+ds = xr.open_dataset("src/dataset-nc/cru_ts4.08.2021.2023.tmp.dat.nc")
 data_var = ds.metpy.parse_cf('tmp')
 x = data_var.lon
 y = data_var.lat
