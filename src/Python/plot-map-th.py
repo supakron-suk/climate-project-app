@@ -55,8 +55,8 @@ for i, year in enumerate(range(2000, 2006)):
     gl.right_labels = False
 
 # เพิ่มแถบสี (สีเดียวกันสำหรับทุกปี)
-cbar = fig.colorbar(mp, ax=axs, orientation='horizontal', fraction=0.05, pad=0.1)
-cbar.set_label('Temperature (°C)')
+#cbar = fig.colorbar(mp, ax=axs, orientation='horizontal', fraction=0.05, pad=0.1)
+#cbar.set_label('Temperature (°C)')
 
 # จัดการ layout ให้อ่านง่าย
 plt.tight_layout()
