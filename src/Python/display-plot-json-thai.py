@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from shapely.affinity import translate
 
 # โหลด GeoJSON
-geojson_file = "src/Geo-data/test_temperature_thailand_2000.json"
+geojson_file = "src/Geo-data/mean_tmp_thai_2000_2005.json"
 gdf = gpd.read_file(geojson_file)
 
 # ตรวจสอบข้อมูล
@@ -32,7 +32,7 @@ ax.grid(color='gray', linestyle='--', linewidth=0.5)
 # กำหนดขอบเขตแผนที่ให้แสดงเฉพาะประเทศไทย
 ax.set_xlim([97.5, 106.5])
 ax.set_ylim([5.5, 21.5])
-ax.set_title(' Thailand Temp Heatmap (2000)', fontsize=14)
+ax.set_title(' Thailand Temp Mean 2000-2005 ', fontsize=14)
 
 # แสดงผล
 plt.tight_layout()
