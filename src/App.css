@@ -42,3 +42,11 @@
 .right-map {
   flex: 1;
 }
+
+.thai-map {
+  position: relative; /* Positioning relative for child elements */
+  width: 800px;
+  height: 700px;
+  /* อาจจะมีการปรับขนาดหรือการจัดเรียงอื่น ๆ ตามต้องการ */
+}
+

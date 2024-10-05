@@ -15,10 +15,13 @@ print(gdf.head())
 # print("----------------attribute ที่เก็บใน .dbf----------------")
 # print(gdf.columns)
 
-# พล็อตแผนที่
-gdf.plot()
-plt.title("Thailand Shapefile")
-plt.show()
+output_geojson_path = "src/Geo-data/shapefile-thailand.json"
+gdf.to_file(output_geojson_path, driver="GeoJSON")
+
+# # พล็อตแผนที่
+# gdf.plot()
+# plt.title("Thailand Shapefile")
+# plt.show()
 
 #เปิดไฟล์ .prj
 # with open('src/shapefile/gadm41_THA_0.prj', 'r') as prj_file:

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { LayersControl } from 'react-leaflet';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 //import Plotly from 'plotly.js-dist-min';
 import 'leaflet/dist/leaflet.css';
 
 //------------------- JSON, JAVA SCRIPT FILE ------------------------------------------------
+import Thailandmap from "./Geo-data/thailand-Geo.json" ;
 import Timeseriesdata from './Geo-data/temp_time_series.json'; // JSON time series
 import  { plotTimeSeries }  from './JS/Time-Series.js';
 import HeatmapThailand from './Geo-data/mean_tmp_thai_2000_2005.json'; // Heatmap GeoJSON
-import { style , filterThailandFeatures, styleWithOpacity } from './JS/Heatmap.js';
+import { style  } from './JS/Heatmap.js';
 import './App.css'; 
 //-------------------------------------------------------------------------------------------
 
@@ -50,11 +52,21 @@ function App() {
           </div>
           <div className="right-map">
             <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "700px", width: "800px" }}>
-              <TileLayer
+              {/* <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-              />
-              <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
+              /> */}
+              <LayersControl position="topright">
+              <LayersControl.Overlay checked name="Thailand Map">
+                <div className='thai-map'>
+                  <GeoJSON data={Thailandmap} style={style} onEachFeature={onEachFeature} />
+                </div>
+                {/* <GeoJSON data={Thailandmap} style={style} onEachFeature={onEachFeature} /> */}
+              </LayersControl.Overlay>
+              <LayersControl.Overlay checked name="Heatmap">
+                <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
+              </LayersControl.Overlay>
+            </LayersControl>
             </MapContainer>
           </div>
         </div>

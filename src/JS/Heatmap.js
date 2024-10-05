@@ -32,27 +32,4 @@ export const filterThailandFeatures = (geoJson) => {
     };
 };
 
-// ฟังก์ชันสไตล์ GeoJSON ที่จะทำให้พื้นที่นอกประเทศไทยจางลง
-export const styleWithOpacity = (feature) => {
-  if (feature.properties && feature.properties.country === "Thailand") {
-    // สไตล์สำหรับประเทศไทย
-    return {
-      fillColor: getColor(feature.properties.temperature),
-      weight: 1,
-      opacity: 1,
-      color: 'black',
-      dashArray: '3',
-      fillOpacity: 0.8, // ความชัดเจนสำหรับประเทศไทย
-    };
-  } else {
-    // สไตล์สำหรับประเทศอื่น (จาง)
-    return {
-      fillColor: '#cccccc', // สีเทา
-      weight: 1,
-      opacity: 0.3, // ลดความชัดเจน
-      color: 'black',
-      dashArray: '3',
-      fillOpacity: 0.2, // จางมาก
-    };
-  }
-};
+
