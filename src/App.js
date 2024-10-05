@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import Plotly from 'plotly.js-dist-min';
+//import Plotly from 'plotly.js-dist-min';
 import 'leaflet/dist/leaflet.css';
-import thailandGeoJson from './Geo-data/thailand-Geo.json'; // GeoJSON lealef map
+
+//------------------- JSON, JAVA SCRIPT FILE ------------------------------------------------
 import Timeseriesdata from './Geo-data/temp_time_series.json'; // JSON time series
+import  { plotTimeSeries }  from './JS/Time-Series.js';
 import HeatmapThailand from './Geo-data/mean_tmp_thai_2000_2005.json'; // Heatmap GeoJSON
+import { style , filterThailandFeatures, styleWithOpacity } from './JS/Heatmap.js';
 import './App.css'; 
+//-------------------------------------------------------------------------------------------
 
 function App() {
   const [timeSeriesData, setTimeSeriesData] = useState(null);
@@ -20,47 +24,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (timeSeriesData) {
-      // แสดงผลกราฟด้วย Plotly
-      Plotly.newPlot('timeSeriesPlot', [{
-        x: timeSeriesData.time,
-        y: timeSeriesData.temperature,
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Temperature over Time'
-      }], {
-        title: 'Temperature Time Series',
-        xaxis: { title: 'Time' },
-        yaxis: { title: 'Temperature (°C)' }
-      });
-    }
+    plotTimeSeries(timeSeriesData);  // ใช้ฟังก์ชัน plotTimeSeries
   }, [timeSeriesData]);
 
-  // Function to map temperature to color scale
- const getColor = (temp) => {
-    return temp > 35 ? '#a50026' :   // Dark Red for hot temperatures
-           temp > 29 ? '#d73027' :   // Red
-           temp > 28 ? '#f46d43' :   // Light Red
-           temp > 27 ? '#fc8d59' :   // Coral
-           temp > 26 ? '#fee08b' :   // Yellow
-           temp > 25 ? '#d9ef8b' :   // Light Yellow
-           temp > 24 ? '#91cf60' :    // Light Green
-           temp > 23 ? '#1cc3ff' :    // Light Blue
-           '#313695';                 // Dark Blue for cooler temperatures
-};
-
-
-  // Function to style each GeoJSON feature
-  const style = (feature) => {
-    return {
-      fillColor: getColor(feature.properties.temperature),
-      weight: 1,
-      opacity: 1,
-      color: 'black',
-      dashArray: '3',
-      fillOpacity: 0.8
-    };
-  };
 
   const onEachFeature = (feature, layer) => {
     if (feature.properties && feature.properties.temperature) {
