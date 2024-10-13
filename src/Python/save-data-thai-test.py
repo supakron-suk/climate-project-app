@@ -30,7 +30,7 @@ gdf = gpd.read_file("src/shapefile/gadm41_THA_0.shp")
 
 # สร้าง mask จาก shapefile
 # ขยายพื้นที่ของ mask โดยใช้ buffer() เพื่อรวมพื้นที่ขอบของประเทศไทย
-buffer_distance = 0.1  # ระยะห่างในการขยายขอบประเทศ (ปรับได้ตามต้องการ)
+buffer_distance = 0.2  # ระยะห่างในการขยายขอบประเทศ (ปรับได้ตามต้องการ)
 thailand_mask = gdf.geometry.unary_union.buffer(buffer_distance)
 
 # ใช้ GeoPandas เพื่อตัดข้อมูลที่อยู่นอกประเทศไทย
@@ -46,7 +46,7 @@ data_avg = xr.where(mask, data_avg, np.nan)
 
 # สร้างรายการพิกัดและค่าอุณหภูมิ
 geojson_polygons = []
-grid_size = 0.45  # กำหนดขนาดกริด (ปรับขนาดที่นี่)
+grid_size = 0.5  # กำหนดขนาดกริด (ปรับขนาดที่นี่)
 
 for i in range(len(x)):
     for j in range(len(y)):

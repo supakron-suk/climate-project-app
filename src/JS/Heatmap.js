@@ -18,18 +18,8 @@ export const style = (feature) => {
       opacity: 1,
       color: 'black',
       dashArray: '3',
-      fillOpacity: 0.8
+      fillOpacity: 0.9
     };
   };
-
-// ฟังก์ชันกรองข้อมูล GeoJSON เพื่อให้เหลือเฉพาะประเทศไทย
-export const filterThailandFeatures = (geoJson) => {
-    return {
-      ...geoJson,
-      features: geoJson.features.filter(feature => {
-        return feature.properties && feature.properties.country === "Thailand"; // ปรับตามโครงสร้าง GeoJSON ของคุณ
-      }),
-    };
-};
 
 

@@ -37,23 +37,23 @@ for i, year in enumerate(range(2000, 2006)):
     # พล็อตแผนที่ใน subplot
     ax = axs[i]
     
-    mp = ax.imshow(data_avg, extent=(x.min(), x.max(), y.min(), y.max()), cmap='jet', origin='lower')
-    #mp = ax.pcolormesh(x, y, data_avg, cmap='jet', shading='auto')
+    #mp = ax.imshow(data_avg, extent=(x.min(), x.max(), y.min(), y.max()), cmap='jet', origin='lower')
+    mp = ax.pcolormesh(x, y, data_avg, cmap='jet', shading='auto')
 
     # กำหนดขอบเขตแผนที่ให้แสดงเฉพาะประเทศไทย
     ax.set_extent([97.5, 105.5, 5.5, 20.5], crs=ccrs.PlateCarree())
 
     # เพิ่มชื่อแผนที่
-    ax.set_title(f'Average Temperature ({year})', fontsize=14)
+    ax.set_title(f'Average Temperature ({year})', fontsize=10)
 
     # เพิ่ม feature ต่างๆ บนแผนที่ เช่น ขอบเขตประเทศไทย
-    states_provinces = cfeature.NaturalEarthFeature(
-        category='cultural',
-        name='admin_1_states_provinces_lines',
-        scale='10m',
-        facecolor='none'
-    )
-    ax.add_feature(states_provinces, edgecolor='gray')
+    #states_provinces = cfeature.NaturalEarthFeature(
+    #    category='cultural',
+    #    name='admin_1_states_provinces_lines',
+    #    scale='10m',
+    #    facecolor='none'
+    #)
+    #ax.add_feature(states_provinces, edgecolor='gray')
     
     # วาดเส้นกรอบประเทศไทยโดยใช้ GeoPandas
     gdf.boundary.plot(ax=ax, edgecolor='black', linewidth=2)  # เพิ่มเส้นขอบสีดำ
@@ -64,8 +64,8 @@ for i, year in enumerate(range(2000, 2006)):
     gl.right_labels = False
 
 # เพิ่มแถบสี (สีเดียวกันสำหรับทุกปี)
-#cbar = fig.colorbar(mp, ax=axs, orientation='vertical', fraction=0.05, pad=0.1)
-#cbar.set_label('Temperature (°C)')
+cbar = fig.colorbar(mp, ax=axs, orientation='horizontal', fraction=0.05, pad=0.1)
+cbar.set_label('Temp (°C)')
 
 # จัดการ layout ให้อ่านง่าย
 plt.tight_layout()

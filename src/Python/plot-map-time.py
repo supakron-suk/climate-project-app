@@ -11,6 +11,7 @@ data_var = ds.metpy.parse_cf('tmp')
 
 ds['time'] = pd.to_datetime(ds['time'].values)
 
+#print(ds['time'])
 
 data_filtered = ds.sel(time=slice('2000-01-01', '2005-12-31'))
 
@@ -41,7 +42,7 @@ for i, year in enumerate(range(2000, 2006)):
     ax.set_title(f'Temperature heatmap ({year})', fontsize=14)
 
    
-    ax.text(0.05, 0.1, f'Global Avg Temp: {global_avg_temp:.2f}°C',
+    ax.text(0.05, 0.1, f'Avg Temp: {global_avg_temp:.2f}°C',
             transform=ax.transAxes, fontsize=12, color='white', bbox=dict(facecolor='black', alpha=0.7))
 
    
@@ -54,3 +55,6 @@ plt.tight_layout()
 
 
 plt.show()
+
+
+

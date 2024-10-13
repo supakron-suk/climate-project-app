@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 
 //------------------- JSON, JAVA SCRIPT FILE ------------------------------------------------
 import Thailandmap from "./Geo-data/thailand-Geo.json" ;
+import ShapefileThai from "./Geo-data/shapefile-thailand.json" ;
 import Timeseriesdata from './Geo-data/temp_time_series.json'; // JSON time series
 import  { plotTimeSeries }  from './JS/Time-Series.js';
 import HeatmapThailand from './Geo-data/mean_tmp_thai_2000_2005.json'; // Heatmap GeoJSON
@@ -59,7 +60,7 @@ function App() {
               <LayersControl position="topright">
               <LayersControl.Overlay checked name="Thailand Map">
                 <div className='thai-map'>
-                  <GeoJSON data={Thailandmap} style={style} onEachFeature={onEachFeature} />
+                  <GeoJSON data={ShapefileThai} style={style} onEachFeature={onEachFeature} />
                 </div>
                 {/* <GeoJSON data={Thailandmap} style={style} onEachFeature={onEachFeature} /> */}
               </LayersControl.Overlay>

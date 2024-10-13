@@ -38,20 +38,20 @@ lon2d, lat2d = np.meshgrid(x, y)
 coords = np.vstack([lon2d.ravel(), lat2d.ravel()]).T
 points = gpd.GeoDataFrame(geometry=gpd.points_from_xy(coords[:, 0], coords[:, 1]))
 
-# ตรวจสอบว่าแต่ละพิกัดอยู่ในประเทศไทยหรือขอบพื้นที่ที่ขยาย
+
 mask = points.within(thailand_mask).values.reshape(lon2d.shape)
 
-# ทำการกรองข้อมูลที่อยู่นอกพื้นที่ (แต่ไม่ตัดขอบพื้นที่ออก)
+
 data_avg = xr.where(mask, data_avg, np.nan)
 
 geojson_polygons = []
-grid_size = 0.5  # กำหนดขนาดกริด (ปรับขนาดที่นี่)
+grid_size = 0.5  
 
 for i in range(len(x)):
     for j in range(len(y)):
-        temp_value = data_avg[j, i].item()  # ใช้ .item() เพื่อแปลงเป็น float
+        temp_value = data_avg[j, i].item()  # use .item() to float
         if not np.isnan(temp_value):  # ตรวจสอบว่าไม่ใช่ NaN
-            # คำนวณมุมทั้งสี่ของสี่เหลี่ยม
+            # cal corner of square
             lon = x[i].item()
             lat = y[j].item()
             geojson_polygons.append({
@@ -67,7 +67,7 @@ for i in range(len(x)):
                     ]]
                 },
                 'properties': {
-                    'temperature': float(temp_value)  # แปลงเป็น float
+                    'temperature': float(temp_value)  # convert to  float
                 }
             })
 
