@@ -1,18 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { LayersControl } from 'react-leaflet';
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-//import Plotly from 'plotly.js-dist-min';
+import { LayersControl, MapContainer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 //------------------- JSON, JAVA SCRIPT FILE ------------------------------------------------
-import Thailandmap from "./Geo-data/thailand-Geo.json" ;
-import ShapefileThai from "./Geo-data/shapefile-thailand.json" ;
+import Thailandmap from "./Geo-data/thailand-Geo.json";
+import ShapefileThai from "./Geo-data/shapefile-thailand.json";
 import Timeseriesdata from './Geo-data/temp_time_series.json'; // JSON time series
-import  { plotTimeSeries }  from './JS/Time-Series.js';
+import { plotTimeSeries } from './JS/Time-Series.js';
 import HeatmapThailand from './Geo-data/mean_tmp_thai_2000_2005.json'; // Heatmap GeoJSON
-import { style  } from './JS/Heatmap.js';
+import { style } from './JS/Heatmap.js';
 import './App.css'; 
 //-------------------------------------------------------------------------------------------
+
+const ColorBar = () => {
+    return (
+        <div className="color-bar-horizontal">
+            <div className="gradient-bar" />
+            <div className="temperature-labels">
+                <span>22°C</span>
+                <span>23°C</span>
+                <span>24°C</span>
+                <span>25°C</span>
+                <span>26°C</span>
+                <span>27°C</span>
+                <span>28°C</span>
+                <span>29°C</span>
+                <span>30°C</span>
+            </div>
+        </div>
+    );
+};
+
 
 function App() {
   const [timeSeriesData, setTimeSeriesData] = useState(null);
@@ -29,7 +47,6 @@ function App() {
   useEffect(() => {
     plotTimeSeries(timeSeriesData);  // ใช้ฟังก์ชัน plotTimeSeries
   }, [timeSeriesData]);
-
 
   const onEachFeature = (feature, layer) => {
     if (feature.properties && feature.properties.temperature) {
@@ -53,22 +70,18 @@ function App() {
           </div>
           <div className="right-map">
             <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "700px", width: "800px" }}>
-              {/* <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-              /> */}
               <LayersControl position="topright">
-              <LayersControl.Overlay checked name="Thailand Map">
-                <div className='thai-map'>
-                  <GeoJSON data={ShapefileThai} style={style} onEachFeature={onEachFeature} />
-                </div>
-                {/* <GeoJSON data={Thailandmap} style={style} onEachFeature={onEachFeature} /> */}
-              </LayersControl.Overlay>
-              <LayersControl.Overlay checked name="Heatmap">
-                <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
-              </LayersControl.Overlay>
-            </LayersControl>
+                <LayersControl.Overlay checked name="Thailand Map">
+                  <div className='thai-map'>
+                    <GeoJSON data={ShapefileThai} style={style} onEachFeature={onEachFeature} />
+                  </div>
+                </LayersControl.Overlay>
+                <LayersControl.Overlay checked name="Heatmap">
+                  <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
+                </LayersControl.Overlay>
+              </LayersControl>
             </MapContainer>
+            <ColorBar /> {/* แสดง ColorBar */}
           </div>
         </div>
       </div>
@@ -77,4 +90,5 @@ function App() {
 }
 
 export default App;
+
 

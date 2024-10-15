@@ -50,3 +50,45 @@
   /* อาจจะมีการปรับขนาดหรือการจัดเรียงอื่น ๆ ตามต้องการ */
 }
 
+.color-bar-horizontal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    bottom: -270px;
+    left: 1200px;
+    transform: translateX(-50%);
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.gradient-bar {
+    width: 700px;
+    height: 30px;
+    background: linear-gradient(to right, 
+        #313695, 
+        #1cc3ff, 
+        #91cf60, 
+        #d9ef8b, 
+        #fee08b, 
+        #fc8d59, 
+        #f46d43, 
+        #d73027, 
+        #a50026);
+    border: 1px solid #000;
+    margin-bottom: 8px;
+}
+
+.temperature-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.temperature-labels span {
+    font-size: 14px;
+}
+
