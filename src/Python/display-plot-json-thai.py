@@ -1,21 +1,26 @@
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from shapely.affinity import translate
 
 # โหลด GeoJSON
-geojson_file = "src/Geo-data/test_temperature_thailand_2000.json"
+geojson_file = "src/Geo-data/province_mean_temp_test1.json"
 gdf = gpd.read_file(geojson_file)
 
-# ตรวจสอบข้อมูล
+# ตรวจสอบและแสดงข้อมูล CRS
+print("GeoJSON CRS:", gdf.crs)
 print(gdf.head())
-print(gdf.geometry.is_empty.sum())  # ตรวจสอบว่ามีพอยต์ว่างอยู่หรือไม่
+print(gdf.geometry.is_empty.sum())
 
 # โหลด shapefile
-shapefile_path = "src/shapefile/gadm41_THA_0.shp"  # เปลี่ยนเส้นทางให้ตรงกับไฟล์ shapefile ของคุณ
+shapefile_path = "src/Geo-data/province_mean_temp_all_provinces.json"
 shapefile = gpd.read_file(shapefile_path)
 
-# ย้าย shapefile ตามที่ต้องการ (ตัวอย่างการย้าย 0.5 องศาในทิศตะวันออกและ 0.5 องศาในทิศเหนือ)
-shapefile = shapefile.translate(xoff=0.2, yoff=0.2)
+# ตรวจสอบและแสดงข้อมูล CRS ของ shapefile
+print("Shapefile CRS:", shapefile.crs)
+
+# ตรวจสอบว่า CRS ของทั้งสองไฟล์ตรงกันหรือไม่ หากไม่ตรงให้แปลง CRS ของ shapefile ให้ตรงกับ GeoJSON
+#if shapefile.crs != gdf.crs:
+#    shapefile = shapefile.to_crs(gdf.crs)
+#    print("Shapefile CRS converted to:", shapefile.crs)
 
 # สร้างแผนที่
 fig, ax = plt.subplots(figsize=(13, 11))
@@ -37,3 +42,4 @@ ax.set_title(' Thailand Temp 2000 ', fontsize=14)
 # แสดงผล
 plt.tight_layout()
 plt.show()
+

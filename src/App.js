@@ -4,10 +4,11 @@ import 'leaflet/dist/leaflet.css';
 
 //------------------- JSON, JAVA SCRIPT FILE ------------------------------------------------
 import Thailandmap from "./Geo-data/thailand-Geo.json";
-import ShapefileThai from "./Geo-data/shapefile-thailand.json";
+import ShapefileThai from "./Geo-data/shapefile-lv1-thailand.json";
 import Timeseriesdata from './Geo-data/temp_time_series.json'; // JSON time series
 import { plotTimeSeries } from './JS/Time-Series.js';
-import HeatmapThailand from './Geo-data/mean_tmp_thai_2000_2005.json'; // Heatmap GeoJSON
+import HeatmapThailand from './Geo-data/test_temperature_thailand_2000.json'; // Heatmap GeoJSON
+import ConvinceTest from './Geo-data/province_mean_temp_2000.json' ;
 import { style } from './JS/Heatmap.js';
 import './App.css'; 
 //-------------------------------------------------------------------------------------------
@@ -56,12 +57,12 @@ function App() {
 
   return (
     <div className="main-container">
-      <h1>Climate Project</h1> {/* name webapp (testing) */}
+      <h1>Multidimensional climate data visualization</h1> {/* name webapp (testing) */}
       <div className='timeseries-text'>
         <h1>Time series (testing)</h1>
       </div>
       <div className='map-text'>
-        <h1>Map (testing)</h1>
+        <h1>HeatMap (testing)</h1>
       </div>
       <div className="container">
         <div className="content">
@@ -76,8 +77,13 @@ function App() {
                     <GeoJSON data={ShapefileThai} style={style} onEachFeature={onEachFeature} />
                   </div>
                 </LayersControl.Overlay>
+                 <LayersControl.Overlay checked name="Thailand Map">
+                  <div className='thai-map'>
+                    <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
+                  </div>
+                </LayersControl.Overlay>
                 <LayersControl.Overlay checked name="Heatmap">
-                  <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
+                  <GeoJSON data={ConvinceTest} style={style} onEachFeature={onEachFeature} />
                 </LayersControl.Overlay>
               </LayersControl>
             </MapContainer>

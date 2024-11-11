@@ -7,6 +7,12 @@ from dbfread import DBF
 shapefile_path = "src/shapefile/gadm41_THA_1.shp"
 gdf = gpd.read_file(shapefile_path)
 
+print(gdf)
+# # พล็อตแผนที่
+gdf.geometry.boundary.plot( color=None,edgecolor='k',linewidth = 0.5, figsize=(20,20))
+plt.title("Thailand Shapefile")
+plt.show()
+
 
 
 # # แสดงข้อมูลใน shapefile
@@ -40,13 +46,10 @@ gdf = gpd.read_file(shapefile_path)
 # print("----------------attribute ที่เก็บใน .dbf----------------")
 # print(gdf.columns)
 
-output_geojson_path = "src/Geo-data/shapefile-lv1-thailand.json"
-gdf.to_file(output_geojson_path, driver="GeoJSON")
+#output_geojson_path = "src/shapefile/ThaiGrid.shp"
+#gdf.to_file(output_geojson_path, driver="GeoJSON")
 
 # # พล็อตแผนที่
-gdf.plot()
-plt.title("Thailand Shapefile")
-plt.show()
 
 #เปิดไฟล์ .prj
 # with open('src/shapefile/gadm41_THA_0.prj', 'r') as prj_file:

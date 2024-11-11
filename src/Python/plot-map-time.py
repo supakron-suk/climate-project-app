@@ -8,10 +8,12 @@ import pandas as pd
 ds = xr.open_dataset("src/dataset-nc/cru_ts4.08.1901.2023.tmp.dat.nc")
 data_var = ds.metpy.parse_cf('tmp')
 
+print(ds['time'])
+
 
 ds['time'] = pd.to_datetime(ds['time'].values)
-
-#print(ds['time'])
+print("-----------------------")
+print(pd.to_datetime(ds['time'].values))
 
 data_filtered = ds.sel(time=slice('2000-01-01', '2005-12-31'))
 
