@@ -1,37 +1,37 @@
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
-# อ่านไฟล์ GeoJSON (ข้อมูล tmp)
-gdf_tmp = gpd.read_file('src/Geo-data/output_tmp_2000.json')
+# # อ่านไฟล์ GeoJSON (ข้อมูล tmp)
+# gdf_tmp = gpd.read_file('src/Geo-data/output_tmp_2000.json')
 
-# อ่านไฟล์ Shapefile (ข้อมูลขอบเขตของประเทศไทย)
-gdf_shapefile = gpd.read_file('src/Geo-data/shapefile-lv1-thailand.json')  # ปรับ path ให้ตรงกับไฟล์ Shapefile ของคุณ
+# # อ่านไฟล์ Shapefile (ข้อมูลขอบเขตของประเทศไทย)
+# gdf_shapefile = gpd.read_file('src/Geo-data/shapefile-lv1-thailand.json')  # ปรับ path ให้ตรงกับไฟล์ Shapefile ของคุณ
 
-# กรองข้อมูล GeoDataFrame สำหรับประเทศไทย (ใช้พิกัดที่เหมาะสม)
-# พิกัดของประเทศไทย (longitude: 97.5 - 105.5, latitude: 5 - 21)
-gdf_tmp_thailand = gdf_tmp.cx[97.5:105.5, 5:21]
-gdf_shapefile_thailand = gdf_shapefile.cx[97.5:105.5, 5:21]
+# # กรองข้อมูล GeoDataFrame สำหรับประเทศไทย (ใช้พิกัดที่เหมาะสม)
+# # พิกัดของประเทศไทย (longitude: 97.5 - 105.5, latitude: 5 - 21)
+# gdf_tmp_thailand = gdf_tmp.cx[97.5:105.5, 5:21]
+# gdf_shapefile_thailand = gdf_shapefile.cx[97.5:105.5, 5:21]
 
-# ใช้ฟังก์ชัน clip เพื่อคลิปข้อมูลใน gdf_tmp ให้อยู่ภายในขอบเขตของประเทศไทย
-gdf_tmp_clipped = gdf_tmp_thailand.clip(gdf_shapefile_thailand)
+# # ใช้ฟังก์ชัน clip เพื่อคลิปข้อมูลใน gdf_tmp ให้อยู่ภายในขอบเขตของประเทศไทย
+# #gdf_tmp_clipped = gdf_tmp_thailand.clip(gdf_shapefile_thailand)
 
-# ตั้งค่ารูปแบบการแสดงผลสี
-sns.set(style="whitegrid")
+# # ตั้งค่ารูปแบบการแสดงผลสี
+# sns.set(style="whitegrid")
 
-# สร้าง plot โดยใช้ geopandas
-fig, ax = plt.subplots(figsize=(10, 10))
+# # สร้าง plot โดยใช้ geopandas
+# fig, ax = plt.subplots(figsize=(10, 10))
 
-# Plot Shapefile (ขอบเขตของประเทศไทย)
-gdf_shapefile_thailand.boundary.plot(ax=ax, edgecolor='black', linewidth=0.3)
+# # Plot Shapefile (ขอบเขตของประเทศไทย)
+# gdf_shapefile_thailand.boundary.plot(ax=ax, edgecolor='black', linewidth=0.3)
 
-# Plot GeoJSON (ข้อมูล tmp) โดยใช้สีตามค่า 'tmp'
-gdf_tmp_clipped.plot(column='tmp', ax=ax, legend=True, cmap='jet', 
-                     legend_kwds={'label': "Temperature (°C)", 'orientation': "horizontal"})
+# # Plot GeoJSON (ข้อมูล tmp) โดยใช้สีตามค่า 'tmp'
+# gdf_tmp_thailand.plot(column='tmp', ax=ax, legend=True, cmap='jet', 
+#                      legend_kwds={'label': "Temperature (°C)", 'orientation': "horizontal"})
 
-# แสดง plot
-plt.title('Tmp Value year 2000 ')
-plt.show()
+# # แสดง plot
+# plt.title('Tmp Value year 2000 ')
+# plt.show()
 
 
 # import cartopy.feature as cfeature
