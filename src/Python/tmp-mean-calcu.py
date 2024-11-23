@@ -8,7 +8,7 @@ from province import province_coord
 region_coords = province_coord()
 
 # โหลดข้อมูล GeoJSON
-data = gpd.read_file('src/Geo-data/nc_to_json_2000_1.json')
+data = gpd.read_file('src/Geo-data/nc_to_json_2001.json')
 shapefile = gpd.read_file('src/Geo-data/shapefile-lv1-thailand.json')
 
 def calculate_weighted_temperature(province_name):

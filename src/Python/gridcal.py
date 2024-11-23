@@ -36,5 +36,5 @@ def calculate_weighted_temperature(province_name, shapefile, data):
         total_percentage += intersection_percentage_of_province
     
     # คำนวณค่าอุณหภูมิเฉลี่ยถ่วงน้ำหนักสำหรับจังหวัด
-    average_temperature = total_weighted_temp / total_percentage if total_percentage != 0 else None
+    average_temperature = total_weighted_temp / total_percentage #if total_percentage != 0 else None
     return average_temperature, province_coord.geometry

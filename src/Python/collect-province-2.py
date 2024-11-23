@@ -6,7 +6,7 @@ from province import province_coord  # ดึงข้อมูลพิกั�
 from gridcal import calculate_weighted_temperature
 
 # โหลดข้อมูล GeoJSON
-data = gpd.read_file('src/Geo-data/nc_to_json_2000_1.json')
+data = gpd.read_file('src/Geo-data/nc_to_json_2001.json')
 shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
 # สร้าง GeoJSON ในรูปแบบ FeatureCollection
@@ -19,6 +19,7 @@ count = 0
 # เรียกใช้ฟังก์ชัน calculate_weighted_temperature สำหรับทุกจังหวัด
 for region in province_coord():  # เรียกใช้ข้อมูลจังหวัดจาก province_coord
     for province in region:
+        #print(province)
         name, geometry, region_name = province
         avg_temp, province_shape = calculate_weighted_temperature(name, shapefile, data)
         
@@ -41,7 +42,7 @@ for region in province_coord():  # เรียกใช้ข้อมูลจ
         print(f"{count}: province name: {name}, average temp: {avg_temp:.3f}")
 
 # บันทึกข้อมูล GeoJSON ลงไฟล์
-output_geojson_path = "src/Geo-data/province_mean_temp_2000.json"
+output_geojson_path = "src/Geo-data/province_mean_temp_2001.json"
 with open(output_geojson_path, 'w', encoding='utf-8') as geojson_file:
     json.dump(geojson_data, geojson_file, indent=2, ensure_ascii=False)
 

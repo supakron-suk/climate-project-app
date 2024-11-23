@@ -35,15 +35,37 @@ export const getColor = (temp) => {
 
 
 
-export const style = (feature) => {
+export const style = (feature, selectedRegion) => {
+  if (selectedRegion === 'All' || feature.properties.region === selectedRegion) {
     return {
       fillColor: getColor(feature.properties.temperature),
       weight: 0.5,
       opacity: 1,
       color: 'black',
       dashArray: '3',
-      fillOpacity: 0.9
+      fillOpacity: 0.9,
     };
-  };
+  } else {
+    return {
+      color: 'transparent',
+      weight: 0,
+      fillOpacity: 0,
+    };
+  }
+};
 
 
+export const onEachFeature = (feature, layer) => {
+  if (feature.properties) {
+    const { name, temperature, region } = feature.properties;
+
+    const popupContent = `
+      <b>Province Name:</b> ${name}<br />
+      <b>Region:</b> ${region}<br />
+      <b>Temperature:</b> ${temperature} °C<br />
+    `;
+    
+    // ผูกข้อมูลใน popup กับ layer ของแต่ละ feature
+    layer.bindPopup(popupContent);
+  }
+};
