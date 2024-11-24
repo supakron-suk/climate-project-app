@@ -62,6 +62,7 @@ const onEachFeature = (feature, layer) => {
 
 const MapComponent = ({ data, filteredData, selectedRegion }) => {
   const [additionalData, setAdditionalData] = useState(null);
+  const [anotherData, setAnotherData] = useState(null);  // สำหรับข้อมูลใหม่ที่คุณต้องการเพิ่ม
 
   // โหลดข้อมูล candex_to_geo.json
   useEffect(() => {
@@ -69,6 +70,12 @@ const MapComponent = ({ data, filteredData, selectedRegion }) => {
       .then((response) => response.json())
       .then((data) => setAdditionalData(data))
       .catch((error) => console.error('Error fetching additional data', error));
+
+    // โหลดข้อมูลใหม่จากไฟล์ anotherGeoData.json
+    fetch('./Geo-data/thailand-Geo.json')  // เพิ่มไฟล์ใหม่ที่ต้องการ
+      .then((response) => response.json())
+      .then((data) => setAnotherData(data))
+      .catch((error) => console.error('Error fetching another data', error));
   }, []);
 
   return (
@@ -82,7 +89,7 @@ const MapComponent = ({ data, filteredData, selectedRegion }) => {
           />
         </LayersControl.Overlay>
 
-        {/* เพิ่มเลเยอร์ใหม่ */}
+        {/* เพิ่มเลเยอร์ใหม่สำหรับข้อมูล candex_to_geo.json */}
         {additionalData && (
           <LayersControl.Overlay name="Candex Geo Data">
             <GeoJSON
@@ -94,6 +101,23 @@ const MapComponent = ({ data, filteredData, selectedRegion }) => {
               })}
               onEachFeature={(feature, layer) =>
                 layer.bindPopup(`<b>Data Info:</b> ${feature.properties.info}`)
+              }
+            />
+          </LayersControl.Overlay>
+        )}
+
+        {/* เพิ่มเลเยอร์ใหม่สำหรับข้อมูล anotherGeoData.json */}
+        {anotherData && (
+          <LayersControl.Overlay name="Another Geo Data">
+            <GeoJSON
+              data={anotherData}
+              style={() => ({
+                color: 'green',
+                weight: 1,
+                fillOpacity: 0.4,
+              })}
+              onEachFeature={(feature, layer) =>
+                layer.bindPopup(`<b>Additional Info:</b> ${feature.properties.additionalInfo}`)
               }
             />
           </LayersControl.Overlay>

@@ -92,3 +92,10 @@
     font-size: 14px;
 }
 
+.region-selector select {
+  width: 250px;
+  padding: 12px;
+  font-size: 18px;
+  margin: -500px 0;
+  margin-bottom: 10px;
+}

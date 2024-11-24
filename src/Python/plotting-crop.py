@@ -254,49 +254,49 @@
 #         name, geometry, region_name = province
 #         calculate_weighted_temperature(name)
 #หา grid ที่อยู่ในพิกัดของจังหวัดนี้
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import numpy as np
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# import numpy as np
 
-# โหลดข้อมูล GeoJSON
-data = gpd.read_file('src/Geo-data/nc_to_json_2001.json')
-shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
+# # โหลดข้อมูล GeoJSON
+# data = gpd.read_file('src/Geo-data/nc_to_json_2001.json')
+# shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
 
-# เลือกจังหวัดที่ต้องการ (เช่น จังหวัด "Nakhon Ratchasima")
-korat_coord = shapefile[shapefile['NAME_1'] == 'Nakhon Ratchasima']
+# # เลือกจังหวัดที่ต้องการ (เช่น จังหวัด "Nakhon Ratchasima")
+# korat_coord = shapefile[shapefile['NAME_1'] == 'Nakhon Ratchasima']
 
-# ตรวจสอบการตัดกันระหว่างกริดใน data กับเขตจังหวัดนครราชสีมา
-# ทำการกรองเฉพาะกริดที่ตัดกับจังหวัดนครราชสีมา
-grid_in_korat = data[data.geometry.intersects(korat_coord.geometry.union_all())]
+# # ตรวจสอบการตัดกันระหว่างกริดใน data กับเขตจังหวัดนครราชสีมา
+# # ทำการกรองเฉพาะกริดที่ตัดกับจังหวัดนครราชสีมา
+# grid_in_korat = data[data.geometry.intersects(korat_coord.geometry.union_all())]
 
-# พื้นที่ของจังหวัดนครราชสีมา
-korat_area = korat_coord.geometry.union_all().area
-print("korea area", korat_area)
+# # พื้นที่ของจังหวัดนครราชสีมา
+# korat_area = korat_coord.geometry.union_all().area
+# print("korea area", korat_area)
 
-# สร้างแผนที่
-fig, ax = plt.subplots(figsize=(10, 10))
+# # สร้างแผนที่
+# fig, ax = plt.subplots(figsize=(10, 10))
 
-# Plot เส้นเขตจังหวัดนครราชสีมา
-korat_coord.plot(ax=ax, color='white', edgecolor='black', alpha=1, label='Nakhon Ratchasima')
+# # Plot เส้นเขตจังหวัดนครราชสีมา
+# korat_coord.plot(ax=ax, color='white', edgecolor='black', alpha=1, label='Nakhon Ratchasima')
 
-# Plot กริดที่ตัดกับจังหวัดนครราชสีมา
-grid_in_korat.plot(ax=ax, color='red', edgecolor='black', alpha=0.5, label='Grid in Korat')
-total = 0
-#tmp_mean = 
-# คำนวณสัดส่วนของพื้นที่กริดที่ตัดกับจังหวัดนครราชสีมา
-for idx, grid in grid_in_korat.iterrows():
-    # พื้นที่ที่ตัดกันกับจังหวัดนครราชสีมา
-    intersection_area = grid.geometry.intersection(korat_coord.geometry.union_all()).area
-    #print("--", grid.geometry)
-    #print("-----------------")
-    #print(intersection_area,"---")
+# # Plot กริดที่ตัดกับจังหวัดนครราชสีมา
+# grid_in_korat.plot(ax=ax, color='red', edgecolor='black', alpha=0.5, label='Grid in Korat')
+# total = 0
+# #tmp_mean = 
+# # คำนวณสัดส่วนของพื้นที่กริดที่ตัดกับจังหวัดนครราชสีมา
+# for idx, grid in grid_in_korat.iterrows():
+#     # พื้นที่ที่ตัดกันกับจังหวัดนครราชสีมา
+#     intersection_area = grid.geometry.intersection(korat_coord.geometry.union_all()).area
+#     #print("--", grid.geometry)
+#     #print("-----------------")
+#     #print(intersection_area,"---")
     
-    # คำนวณสัดส่วนการตัดกันของกริดที่เทียบกับพื้นที่จังหวัด
-    intersection_percentage_of_korat = (intersection_area / korat_area) * 100
+#     # คำนวณสัดส่วนการตัดกันของกริดที่เทียบกับพื้นที่จังหวัด
+#     intersection_percentage_of_korat = (intersection_area / korat_area) * 100
     
-    # ค่า temperature ในกริด
-    temperature_value = grid['temperature']
+#     # ค่า temperature ในกริด
+#     temperature_value = grid['temperature']
     
     # ค่า tmp เฉลี่ย
     
