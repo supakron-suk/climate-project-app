@@ -5,12 +5,18 @@ import Thailandmap from "./Geo-data/thailand-Geo.json";
 import ShapefileThai_lv0 from "./Geo-data/shapefile-thailand.json";
 import ShapefileThai_lv1 from "./Geo-data/shapefile-lv1-thailand.json";
 import Timeseriesdata from './Geo-data/temp_time_series.json'; 
-import { plotTimeSeries } from './JS/Time-Series.js';
+//import { plotTimeSeries } from './JS/Time-Series.js';
 import HeatmapThailand from './Geo-data/candex_to_geo.json';
 import ConvinceTest from './Geo-data/province_mean_temp_2001.json';
+import data2001 from './Geo-data/Year-Dataset/province_all_2001.json'; 
 import { style, ColorBar } from './JS/Heatmap.js';
 import './App.css';
 import MapComponent from './MapComponent'; // นำเข้า MapComponent
+
+
+//------------------------IMPORT FUCTION-------------------------------------//
+import { plotTimeSeries } from './JS/Time-Series.js';
+//---------------------------------------------------------------------------//
 
 function App() {
   const [timeSeriesData, setTimeSeriesData] = useState(null);
@@ -18,6 +24,8 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
   const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
+  const [selectedProvinceData, setSelectedProvinceData] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
 
   // ใช้ useEffect เพื่อโหลดข้อมูล time series
   useEffect(() => {
@@ -42,15 +50,25 @@ function App() {
     }
   };
 
-  // อัปเดต filteredData และรายชื่อจังหวัดเมื่อภูมิภาคเปลี่ยน
-  useEffect(() => {
-    if (ConvinceTest) {
-      const filtered = filterByRegion(ConvinceTest, selectedRegion);
-      setFilteredData(filtered); // อัพเดต filteredData
-      setProvinces(filtered.map(feature => feature.properties.name)); // ดึงรายชื่อจังหวัด
+  const filterByMonth = (data, month) => {
+  if (!month) {
+    return data; 
+  }
+  return data.filter(feature => feature.properties.month === parseInt(month));
+};
+
+
+ useEffect(() => {
+    if (data2001) {
+      let filtered = filterByRegion(data2001, selectedRegion); // กรองตามภูมิภาค
+      filtered = filterByMonth(filtered, selectedMonth); // กรองตามเดือน
+      setFilteredData(filtered); // อัปเดตข้อมูลที่กรองแล้ว
+      setProvinces(filtered.map(feature => feature.properties.name)); // อัปเดตรายชื่อจังหวัด
       setSelectedProvince(''); // รีเซ็ตจังหวัดที่เลือก
     }
-  }, [selectedRegion]);
+  }, [selectedRegion, selectedMonth]);
+
+  
 
   return (
     <div className="main-container">
@@ -73,25 +91,62 @@ function App() {
           <option value="West_region">West</option>
         </select>
 
-        {/* Dropdown สำหรับเลือกจังหวัด */}
-        {selectedRegion !== 'All' && (
-          <div className="province-selector">
-            <label>Select Province:</label>
-            <select 
-              onChange={(e) => setSelectedProvince(e.target.value)} 
-              value={selectedProvince} 
-              style={{ width: '200px', padding: '10px', fontSize: '16px' }}
-            >
-              <option value="">All Provinces</option>
-              {provinces.map((province, index) => (
-                <option key={index} value={province}>
-                  {province}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+{/* Dropdown สำหรับเลือกจังหวัด */}
+{selectedRegion !== 'All' && (
+  <div className="province-selector">
+    <label>Select Province:</label>
+    <select 
+      onChange={(e) => {
+        const provinceName = e.target.value;
+        setSelectedProvince(provinceName);
 
+        // กรองข้อมูล GeoJSON ตามจังหวัดที่เลือก
+        if (provinceName) {
+          const provinceData = data2001.features.find(
+            (feature) => feature.properties.name === provinceName
+          );
+
+          console.log('GeoJSON Data for Selected Province:', provinceData); // แสดงข้อมูลจังหวัดใน Console
+          
+          // ส่งข้อมูล provinceData ไปยัง mapComponent.js ผ่าน props หรือ context
+          setSelectedProvinceData(provinceData);  // สมมติว่า setSelectedProvinceData เป็นฟังก์ชันที่ส่งข้อมูลไปยัง mapComponent
+        } else {
+          console.log('All Provinces selected');
+          // ส่งข้อมูลทั้งหมดไปยัง mapComponent.js (ถ้าต้องการให้แสดงทั้งหมด)
+          setSelectedProvinceData(null);  // ถ้าเลือก "All Provinces"
+        }
+      }} 
+      value={selectedProvince} 
+      style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+    >
+      <option value="">All Provinces</option>
+      {provinces.map((province, index) => (
+        <option key={index} value={province}>
+          {province}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+  {/* Dropdown สำหรับเลือกเดือน */}
+        <div className="month-selector">
+          <label>Select Month:</label>
+          <select 
+            onChange={(e) => {
+              const selectedMonth = parseInt(e.target.value, 10);
+              setSelectedMonth(selectedMonth);  // กำหนดเดือนที่เลือก
+            }}
+            value={selectedMonth}
+            style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+          >
+            <option value="">All Months</option>
+            {[...Array(12).keys()].map((month) => (
+              <option key={month} value={month + 1}>
+                {`Month ${month + 1}`}
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <p>Selected Region: {selectedRegion}</p>
           <p>Selected Province: {selectedProvince || 'All'}</p>
@@ -111,6 +166,10 @@ function App() {
                 data={ShapefileThai_lv0} // หรือสามารถเลือกเป็น data อื่น ๆ
                 filteredData={filteredData} 
                 selectedRegion={selectedRegion}
+                selectedProvinceData={selectedProvinceData}  // ส่งข้อมูล provinceData ไปที่ MapComponent
+                setSelectedProvinceData={setSelectedProvinceData}
+                selectedProvince={selectedProvince} 
+                selectedMonth={selectedMonth}
               />
             )}
           </div>

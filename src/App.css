@@ -55,8 +55,8 @@
     flex-direction: column;
     align-items: center;
     position: absolute;
-    bottom: -50px;
-    left: 1200px;
+    bottom: -100px;
+    left: 410px;
     transform: translateX(-50%);
     background-color: white;
     padding: 10px;
