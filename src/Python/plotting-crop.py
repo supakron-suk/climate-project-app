@@ -302,16 +302,39 @@
     
     # แสดงสัดส่วนของกริดที่ตัดกันบนแผนที่
     # กำหนดตำแหน่งของข้อความบนกริด
-import geopandas as gpd
+import xarray as xr
+import pandas as pd
 import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
-thailand = gpd.read_file("src/Geo-data/province_mean_temp_2001.json")
-fig, ax = plt.subplots(figsize=(10, 10))
+# โหลดข้อมูล NetCDF
+ds = xr.open_dataset('src/dataset-nc/cru_ts4.08.1901.2023.tmp.dat.nc')
 
-# thai_source.plot(column='temperature', cmap='jet', linewidth=0.5, ax=ax, edgecolor='black', legend=True)
+# เลือกข้อมูลอุณหภูมิและช่วงเวลาในปี 2001
+year = 2001
+temp = ds.sel(lon=slice(96, 106), lat=slice(4, 21), time=str(year))
 
-thailand.plot(column='temperature', ax=ax, legend=True, cmap='jet', legend_kwds={'label': "Temperature (°C)", 'orientation': "horizontal"})
+# แปลงข้อมูลเวลา
+time_values = temp['time'].values
+time_dates = pd.to_datetime(time_values)
 
-plt.xlabel('Lon')
-plt.ylabel('Lat')
+# ตั้งค่าพื้นที่พล็อต
+fig, axes = plt.subplots(3, 4, figsize=(20, 15), subplot_kw={'projection': ccrs.PlateCarree()})
+axes = axes.flatten()
+
+# Loop สำหรับแต่ละเดือน
+for i, time in enumerate(time_dates):
+    ax = axes[i]
+    month_data = temp.sel(time=time)['tmp']  # เลือกข้อมูลอุณหภูมิของเดือนนั้น
+    
+    # Plot แผนที่
+    month_data.plot(ax=ax, cmap='turbo', transform=ccrs.PlateCarree(), cbar_kwargs={'label': '°C'})
+    ax.set_title(f"Month: {time.strftime('%B %Y')}", fontsize=12)
+    
+    # เพิ่มรายละเอียดแผนที่
+    ax.set_extent([96, 106, 4, 21], crs=ccrs.PlateCarree())  # กำหนดขอบเขตพิกัด
+
+# จัด Layout
+plt.tight_layout()
 plt.show()
