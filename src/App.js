@@ -34,6 +34,7 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedData, setSelectedData] = useState([]);
+  const [chartData, setChartData] = useState(dummyTimeSeriesData);
 
   const [dataByYear, setDataByYear] = useState({
   "1901": data1901,
@@ -109,13 +110,28 @@ useEffect(() => {
 // };
 
 // ฟังก์ชันที่ใช้ใน dropdown เพื่อเลือกปี
-const handleYearChange = (event) => {
-  const selectedYear = event.target.value;
-  if (selectedYear) {
-    // เรียกใช้งาน calculatemean เมื่อเลือกปี
-    calculatemean(dataByYear, selectedYear);
-  }
-};
+ const handleYearChange = (event) => {
+    const year = event.target.value;
+    setSelectedYear(year);
+
+    // คำนวณค่าเฉลี่ยและอัปเดตข้อมูลในกราฟ
+    if (year) {
+      const result = calculatemean(dataByYear, year); // เรียกฟังก์ชันในการคำนวณค่าเฉลี่ย
+      if (result) {
+        setChartData({ ...dummyTimeSeriesData, datasets: [{ ...dummyTimeSeriesData.datasets[0], data: result }] });
+      }
+    }
+  };
+
+  useEffect(() => {
+    // ถ้ามีการเลือกปีแล้ว อัปเดตกราฟ
+    if (selectedYear) {
+      const result = calculatemean(dataByYear, selectedYear);
+      if (result) {
+        setChartData({ ...dummyTimeSeriesData, datasets: [{ ...dummyTimeSeriesData.datasets[0], data: result }] });
+      }
+    }
+  }, [selectedYear]);
 
 // const handleYearChange = (setYear, setData, dataByYear) => (event) => {
 //   const year = event.target.value;
@@ -250,7 +266,7 @@ const handleYearChange = (event) => {
       <div className="left-content">
         <h3>Time Series Data</h3>
         <Line
-  data={dummyTimeSeriesData} // ใช้ข้อมูลที่จัดรูปแบบแล้ว
+  data={chartData} // ใช้ข้อมูลที่จัดรูปแบบแล้ว
   options={{
     responsive: true,
     plugins: {
