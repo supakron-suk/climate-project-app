@@ -1,23 +1,17 @@
-// TimeSeriesPlot.js
-
-// import Plotly from 'plotly.js-dist-min';
-
-// // ฟังก์ชันสำหรับ plot กราฟ time series
-// export const plotTimeSeries = (timeSeriesData) => {
-//   if (timeSeriesData) {
-//     Plotly.newPlot('timeSeriesPlot', [{
-//       x: timeSeriesData.time,
-//       y: timeSeriesData.temperature,
-//       type: 'scatter',
-//       mode: 'lines+markers',
-//       name: 'Temperature over Time'
-//     }], {
-//       title: 'Temperature Time Series',
-//       xaxis: { title: 'Time' },
-//       yaxis: { title: 'Temperature (°C)' }
-//     });
-//   }
-// };
+// ข้อมูล dummyTimeSeriesData สำหรับแสดงในกราฟ
+export const dummyTimeSeriesData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [
+    {
+      label: 'Average Temperature (°C)',
+      data: [], // เริ่มต้นเป็นอาร์เรย์ว่าง
+      borderColor: 'rgba(75,192,192,1)',
+      backgroundColor: 'rgba(75,192,192,0.2)',
+      fill: true,
+      tension: 0.4,
+    },
+  ],
+};
 
 export const calculatemean = (dataByYear, year) => {
   const geojson = dataByYear[year];
@@ -51,28 +45,18 @@ export const calculatemean = (dataByYear, year) => {
     return null; // ไม่มีข้อมูลในเดือนนี้
   });
 
-  // แสดงผลการคำนวณก่อนอัปเดต dummyTimeSeriesData
   console.log(`Monthly Average Temperatures for the Year ${year}:`, result);
 
-  // อัปเดตข้อมูลใน dummyTimeSeriesData
+  // อัปเดตค่าใน dummyTimeSeriesData
   dummyTimeSeriesData.datasets[0].data = result;
+
+  console.log('Updated dummyTimeSeriesData:', dummyTimeSeriesData);
 
   return result;
 };
 
-export const dummyTimeSeriesData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  datasets: [
-    {
-      label: 'Average Temperature (°C)',
-      data: [],
-      borderColor: 'rgba(75,192,192,1)',
-      backgroundColor: 'rgba(75,192,192,0.2)',
-      fill: true,
-      tension: 0.4,
-    },
-  ],
-};
+
+
 
 
 // Function to filter data by region
@@ -100,29 +84,22 @@ export const processTimeSeriesData = (data) => {
 };
 
 
+// export const handleYearChange = (setYear, setData, dataByYear) => (event) => {
+//   const year = event.target.value;
+//   setYear(year);
 
-const handleYearChange = (setYear, setData, dataByYear) => (event) => {
-  // ตรวจสอบว่า event และ event.target ไม่เป็น undefined
-  if (!event || !event.target) {
-    console.error('Invalid event or target:', event);
-    return;
-  }
+//   const geojson = dataByYear[year];
 
-  const year = event.target.value;
+//   if (!geojson || !geojson.features) {
+//     console.error(`No valid GeoJSON data for the selected year: ${year}`);
+//     setData([]);
+//     return;
+//   }
 
-  if (!year || !dataByYear[year]) {
-    console.error(`No data found for the year: ${year}`);
-    setYear('');
-    setData([]);
-    return;
-  }
+//   setData(geojson.features);
 
-  setYear(year);
+//   // เรียกใช้ calculatemean เพื่ออัปเดตข้อมูลกราฟ
+//   calculatemean(dataByYear, year);
 
-  const geojson = dataByYear[year];
-  setData(geojson.features || []);
-
-  // เรียกใช้ฟังก์ชันคำนวณค่าเฉลี่ย
-  calculatemean(dataByYear, year);
-  console.log('Selected Year:', year);
-};
+//   console.log('Selected Year:', year);
+// };

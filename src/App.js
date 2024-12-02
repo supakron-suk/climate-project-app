@@ -11,7 +11,7 @@ import data2001 from './Geo-data/Year-Dataset/province_all_2001.json';
 import { style, ColorBar } from './JS/Heatmap.js';
 import './App.css';
 import MapComponent from './MapComponent'; // นำเข้า MapComponent
-import { dummyTimeSeriesData, filterByRegion, filterByMonth,  handleYearChange } from './JS/TimeSeries';
+import { dummyTimeSeriesData, filterByRegion, filterByMonth,  handleYearChange, calculatemean } from './JS/TimeSeries';
 
 
 //-------------------------IMPORT DATA YEAR-----------------------------------//
@@ -33,21 +33,24 @@ function App() {
   const [selectedProvinceData, setSelectedProvinceData] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
   const [selectedYear, setSelectedYear] = useState('');
-  const [selectedData, setSelectedData] = useState(null);
+  const [selectedData, setSelectedData] = useState([]);
 
-  // // ใช้ useEffect เพื่อโหลดข้อมูล time series
-  // useEffect(() => {
-  //   const time = Timeseriesdata.data.map(item => new Date(item[0])); // แปลงเวลาเป็น Date
-  //   const temperature = Timeseriesdata.data.map(item => item[1]);
-  //   setTimeSeriesData({ time, temperature });
-  // }, []);
+  const [dataByYear, setDataByYear] = useState({
+  "1901": data1901,
+  "1902": data1902,
+  // เพิ่มปีอื่น ๆ ถ้ามี
+});
 
-  // // ใช้ฟังก์ชัน plotTimeSeries เมื่อข้อมูลถูกโหลด
-  // useEffect(() => {
-  //   if (timeSeriesData) {
-  //     plotTimeSeries(timeSeriesData);  // ใช้ฟังก์ชัน plotTimeSeries
-  //   }
-  // }, [timeSeriesData]);
+useEffect(() => {
+  if (selectedYear && dataByYear[selectedYear]) {
+    const geojson = dataByYear[selectedYear];
+    setSelectedData(geojson.features || []); // ตั้งค่า selectedData ด้วย features จาก geojson
+    calculatemean(dataByYear, selectedYear);
+  } else {
+    setSelectedData([]); // รีเซ็ตข้อมูลถ้าไม่มีการเลือกปี
+  }
+}, [selectedYear, dataByYear]);
+
 //-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
   const filterByRegion = (data, region) => {
@@ -65,21 +68,72 @@ function App() {
   return data.filter(feature => feature.properties.month === parseInt(month));
 };
 
+// const calculatemean = (dataByYear, year) => {
+//   const geojson = dataByYear[year];
 
-const dataByYear = {
-  1901: data1901,
-  1902: data1902,
+//   // ตรวจสอบว่า geojson มีโครงสร้างที่ถูกต้อง
+//   if (!geojson || !geojson.features || !Array.isArray(geojson.features)) {
+//     console.error(`Invalid GeoJSON data for year ${year}:`, geojson);
+//     return null;
+//   }
+
+//   // สร้างอาร์เรย์เก็บผลรวมและจำนวนข้อมูลของแต่ละเดือน
+//   const monthlyAverages = Array(12).fill(0);
+//   const monthlyCounts = Array(12).fill(0);
+
+//   // วนลูปผ่าน features เพื่อรวบรวมข้อมูล
+//   geojson.features.forEach((feature) => {
+//     const { temperature, month } = feature.properties;
+
+//     // ตรวจสอบว่า month และ temperature มีค่า
+//     if (month >= 1 && month <= 12 && typeof temperature === 'number') {
+//       monthlyAverages[month - 1] += temperature;
+//       monthlyCounts[month - 1] += 1;
+//     }
+//   });
+
+//   // คำนวณค่าเฉลี่ย
+//   const result = monthlyAverages.map((sum, index) => {
+//     if (monthlyCounts[index] > 0) {
+//       return sum / monthlyCounts[index];
+//     }
+//     return null; // ไม่มีข้อมูลในเดือนนี้
+//   });
+
+//   console.log(`Monthly Average Temperatures for the Year ${year}:`, result);
+
+//   // อัปเดตค่าใน dummyTimeSeriesData
+//   dummyTimeSeriesData.datasets[0].data = result;
+
+//   return result;
+// };
+
+// ฟังก์ชันที่ใช้ใน dropdown เพื่อเลือกปี
+const handleYearChange = (event) => {
+  const selectedYear = event.target.value;
+  if (selectedYear) {
+    // เรียกใช้งาน calculatemean เมื่อเลือกปี
+    calculatemean(dataByYear, selectedYear);
+  }
 };
 
-  const handleYearChange = (event) => {
-    const year = event.target.value;
-    setSelectedYear(year);
-    setSelectedData(dataByYear[year]);
-  };
+// const handleYearChange = (setYear, setData, dataByYear) => (event) => {
+//   const year = event.target.value;
+//   if (!year || !dataByYear[year]) {
+//     console.error(`No data found for the year: ${year}`);
+//     setYear('');
+//     setData([]);
+//     return;
+//   }
 
-const TimeSeriesChart = () => {
-  return <Line data={dummyTimeSeriesData} />;
-};
+//   setYear(year);
+//   const geojson = dataByYear[year];
+//   setData(geojson.features || []); // Set data for selected year
+
+//   // คำนวณค่าอุณหภูมิเฉลี่ยสำหรับปีที่เลือก
+//   calculatemean(dataByYear, year);
+//   console.log('Selected Year:', year);
+// };
 
 //-----------------------------------------------------------------------------//
  useEffect(() => {
@@ -92,7 +146,19 @@ const TimeSeriesChart = () => {
     }
   }, [selectedRegion, selectedMonth]);
 
-  
+//   useEffect(() => {
+//   // ตรวจสอบว่ามีปีที่เลือกและข้อมูลใน dataByYear สำหรับปีนั้น
+//   if (selectedYear && dataByYear[selectedYear]) {
+//     const geojson = dataByYear[selectedYear];
+//     setSelectedData(geojson.features || []); // ตั้งค่า selectedData ด้วย features จาก geojson
+
+//     // คำนวณค่าอุณหภูมิเฉลี่ยสำหรับปีที่เลือก
+//     calculatemean(dataByYear, selectedYear);
+//   } else {
+//     setSelectedData([]); // รีเซ็ตข้อมูลถ้าไม่มีการเลือกปี
+//   }
+// }, [selectedYear, dataByYear]); // useEffect นี้จะทำงานเมื่อ selectedYear หรือ dataByYear เปลี่ยนแปลง
+
 
   return (
   <div className="main-container">
@@ -153,23 +219,23 @@ const TimeSeriesChart = () => {
         </select>
       </div>
     )}
- {/* Dropdown for year selection */}
-      <div className="year-selector">
-  <h2>Select Year</h2>
+    {/* Dropdown สำหรับเลือกปี */}
+  <div className="year-selector">
+  <h2>เลือกปี</h2>
   <select
-  onChange={(event) => handleYearChange(setSelectedYear, setSelectedData, dataByYear)(event)}
-  value={selectedYear}
-  style={{ width: '200px', padding: '10px', fontSize: '16px' }}
->
-  <option value="">-- Select Year --</option>
-  {Object.keys(dataByYear).map((year) => (
-    <option key={year} value={year}>
-      {year}
-    </option>
-  ))}
-</select>
-
+    onChange={handleYearChange}
+    value={selectedYear}
+    style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+  >
+    <option value="">-- เลือกปี --</option>
+    {Object.keys(dataByYear).map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
 </div>
+
 
 
     {/* แสดงข้อมูลสรุป */}
@@ -184,17 +250,25 @@ const TimeSeriesChart = () => {
       <div className="left-content">
         <h3>Time Series Data</h3>
         <Line
-          data={dummyTimeSeriesData}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'top',
-              },
-            },
-          }}
-        />
+  data={dummyTimeSeriesData} // ใช้ข้อมูลที่จัดรูปแบบแล้ว
+  options={{
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+      },
+      y: {
+        beginAtZero: true,
+      },
+    },
+  }}
+/>
       </div>
     
 
