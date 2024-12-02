@@ -4,18 +4,24 @@ import 'leaflet/dist/leaflet.css';
 import Thailandmap from "./Geo-data/thailand-Geo.json";
 import ShapefileThai_lv0 from "./Geo-data/shapefile-thailand.json";
 import ShapefileThai_lv1 from "./Geo-data/shapefile-lv1-thailand.json";
-import Timeseriesdata from './Geo-data/temp_time_series.json'; 
-//import { plotTimeSeries } from './JS/Time-Series.js';
+import { Line } from 'react-chartjs-2';
 import HeatmapThailand from './Geo-data/candex_to_geo.json';
 import ConvinceTest from './Geo-data/province_mean_temp_2001.json';
 import data2001 from './Geo-data/Year-Dataset/province_all_2001.json'; 
 import { style, ColorBar } from './JS/Heatmap.js';
 import './App.css';
 import MapComponent from './MapComponent'; // นำเข้า MapComponent
+import { dummyTimeSeriesData, filterByRegion, filterByMonth,  handleYearChange } from './JS/TimeSeries';
 
 
+//-------------------------IMPORT DATA YEAR-----------------------------------//
+import data1901 from './Geo-data/Year-Dataset/data_polygon_1901.json';
+import data1902 from './Geo-data/Year-Dataset/data_polygon_1902.json';
+//----------------------------------------------------------------------------//
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 //------------------------IMPORT FUCTION-------------------------------------//
-import { plotTimeSeries } from './JS/Time-Series.js';
+
 //---------------------------------------------------------------------------//
 
 function App() {
@@ -26,21 +32,23 @@ function App() {
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
   const [selectedProvinceData, setSelectedProvinceData] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedData, setSelectedData] = useState(null);
 
-  // ใช้ useEffect เพื่อโหลดข้อมูล time series
-  useEffect(() => {
-    const time = Timeseriesdata.data.map(item => new Date(item[0])); // แปลงเวลาเป็น Date
-    const temperature = Timeseriesdata.data.map(item => item[1]);
-    setTimeSeriesData({ time, temperature });
-  }, []);
+  // // ใช้ useEffect เพื่อโหลดข้อมูล time series
+  // useEffect(() => {
+  //   const time = Timeseriesdata.data.map(item => new Date(item[0])); // แปลงเวลาเป็น Date
+  //   const temperature = Timeseriesdata.data.map(item => item[1]);
+  //   setTimeSeriesData({ time, temperature });
+  // }, []);
 
-  // ใช้ฟังก์ชัน plotTimeSeries เมื่อข้อมูลถูกโหลด
-  useEffect(() => {
-    if (timeSeriesData) {
-      plotTimeSeries(timeSeriesData);  // ใช้ฟังก์ชัน plotTimeSeries
-    }
-  }, [timeSeriesData]);
-
+  // // ใช้ฟังก์ชัน plotTimeSeries เมื่อข้อมูลถูกโหลด
+  // useEffect(() => {
+  //   if (timeSeriesData) {
+  //     plotTimeSeries(timeSeriesData);  // ใช้ฟังก์ชัน plotTimeSeries
+  //   }
+  // }, [timeSeriesData]);
+//-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
   const filterByRegion = (data, region) => {
     if (region === 'All') {
@@ -58,6 +66,22 @@ function App() {
 };
 
 
+const dataByYear = {
+  1901: data1901,
+  1902: data1902,
+};
+
+  const handleYearChange = (event) => {
+    const year = event.target.value;
+    setSelectedYear(year);
+    setSelectedData(dataByYear[year]);
+  };
+
+const TimeSeriesChart = () => {
+  return <Line data={dummyTimeSeriesData} />;
+};
+
+//-----------------------------------------------------------------------------//
  useEffect(() => {
     if (data2001) {
       let filtered = filterByRegion(data2001, selectedRegion); // กรองตามภูมิภาค
@@ -71,116 +95,135 @@ function App() {
   
 
   return (
-    <div className="main-container">
-      <h1>Multidimensional climate data visualization</h1> 
+  <div className="main-container">
+    <h1>Multidimensional climate data visualization</h1> 
 
-      {/* Dropdown สำหรับเลือกภูมิภาค */}
-      <div className="region-selector">
-        <label>Select Region:</label>
+
+    {/* Dropdown สำหรับเลือกภูมิภาค */}
+    <div className="region-selector">
+      <label>Select Region:</label>
+      <select 
+        onChange={(e) => setSelectedRegion(e.target.value)} 
+        value={selectedRegion} 
+        style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+      >
+        <option value="All">All Regions</option>
+        <option value="North_East_region">North East</option>
+        <option value="North_region">North</option>
+        <option value="South_region">South</option>
+        <option value="Middle_region">Middle</option>
+        <option value="East_region">East</option>
+        <option value="West_region">West</option>
+      </select>
+    </div>
+
+    {/* Dropdown สำหรับเลือกจังหวัด */}
+    {selectedRegion !== 'All' && (
+      <div className="province-selector">
+        <label>Select Province:</label>
         <select 
-          onChange={(e) => setSelectedRegion(e.target.value)} 
-          value={selectedRegion} 
+          onChange={(e) => {
+            const provinceName = e.target.value;
+            setSelectedProvince(provinceName);
+
+            // กรองข้อมูล GeoJSON ตามจังหวัดที่เลือก
+            if (provinceName) {
+              const provinceData = data2001.features.find(
+                (feature) => feature.properties.name === provinceName
+              );
+
+              console.log('GeoJSON Data for Selected Province:', provinceData); // แสดงข้อมูลจังหวัดใน Console
+              
+              // ส่งข้อมูล provinceData ไปยัง mapComponent.js ผ่าน props หรือ context
+              setSelectedProvinceData(provinceData);
+            } else {
+              console.log('All Provinces selected');
+              setSelectedProvinceData(null);  // ถ้าเลือก "All Provinces"
+            }
+          }} 
+          value={selectedProvince} 
           style={{ width: '200px', padding: '10px', fontSize: '16px' }}
         >
-          <option value="All">All Regions</option>
-          <option value="North_East_region">North East</option>
-          <option value="North_region">North</option>
-          <option value="South_region">South</option>
-          <option value="Middle_region">Middle</option>
-          <option value="East_region">East</option>
-          <option value="West_region">West</option>
+          <option value="">All Provinces</option>
+          {provinces.map((province, index) => (
+            <option key={index} value={province}>
+              {province}
+            </option>
+          ))}
         </select>
-
-{/* Dropdown สำหรับเลือกจังหวัด */}
-{selectedRegion !== 'All' && (
-  <div className="province-selector">
-    <label>Select Province:</label>
-    <select 
-      onChange={(e) => {
-        const provinceName = e.target.value;
-        setSelectedProvince(provinceName);
-
-        // กรองข้อมูล GeoJSON ตามจังหวัดที่เลือก
-        if (provinceName) {
-          const provinceData = data2001.features.find(
-            (feature) => feature.properties.name === provinceName
-          );
-
-          console.log('GeoJSON Data for Selected Province:', provinceData); // แสดงข้อมูลจังหวัดใน Console
-          
-          // ส่งข้อมูล provinceData ไปยัง mapComponent.js ผ่าน props หรือ context
-          setSelectedProvinceData(provinceData);  // สมมติว่า setSelectedProvinceData เป็นฟังก์ชันที่ส่งข้อมูลไปยัง mapComponent
-        } else {
-          console.log('All Provinces selected');
-          // ส่งข้อมูลทั้งหมดไปยัง mapComponent.js (ถ้าต้องการให้แสดงทั้งหมด)
-          setSelectedProvinceData(null);  // ถ้าเลือก "All Provinces"
-        }
-      }} 
-      value={selectedProvince} 
-      style={{ width: '200px', padding: '10px', fontSize: '16px' }}
-    >
-      <option value="">All Provinces</option>
-      {provinces.map((province, index) => (
-        <option key={index} value={province}>
-          {province}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
-  {/* Dropdown สำหรับเลือกเดือน */}
-        <div className="month-selector">
-          <label>Select Month:</label>
-          <select 
-            onChange={(e) => {
-              const selectedMonth = parseInt(e.target.value, 10);
-              setSelectedMonth(selectedMonth);  // กำหนดเดือนที่เลือก
-            }}
-            value={selectedMonth}
-            style={{ width: '200px', padding: '10px', fontSize: '16px' }}
-          >
-            <option value="">All Months</option>
-            {[...Array(12).keys()].map((month) => (
-              <option key={month} value={month + 1}>
-                {`Month ${month + 1}`}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <p>Selected Region: {selectedRegion}</p>
-          <p>Selected Province: {selectedProvince || 'All'}</p>
-          <p>Number of provinces: {filteredData ? filteredData.length : 0}</p>
-        </div>
       </div>
+    )}
+ {/* Dropdown for year selection */}
+      <div className="year-selector">
+  <h2>Select Year</h2>
+  <select
+  onChange={(event) => handleYearChange(setSelectedYear, setSelectedData, dataByYear)(event)}
+  value={selectedYear}
+  style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+>
+  <option value="">-- Select Year --</option>
+  {Object.keys(dataByYear).map((year) => (
+    <option key={year} value={year}>
+      {year}
+    </option>
+  ))}
+</select>
 
-      <div className="container">
-        <div className="content">
-          <div className="left-content">
-            <div id="timeSeriesPlot" style={{ width: '100%', height: '650px' }}></div>
-          </div>
-          <div className="right-map">
-            {/* แสดงแผนที่ใน MapComponent */}
-            {filteredData && (
-              <MapComponent 
-                data={ShapefileThai_lv0} // หรือสามารถเลือกเป็น data อื่น ๆ
-                filteredData={filteredData} 
-                selectedRegion={selectedRegion}
-                selectedProvinceData={selectedProvinceData}  // ส่งข้อมูล provinceData ไปที่ MapComponent
-                setSelectedProvinceData={setSelectedProvinceData}
-                selectedProvince={selectedProvince} 
-                selectedMonth={selectedMonth}
-              />
-            )}
-          </div>
+</div>
+
+
+    {/* แสดงข้อมูลสรุป */}
+    <div>
+      <p>Selected Year: {selectedYear}</p>
+      <p>Selected Region: {selectedRegion}</p>
+      <p>Selected Province: {selectedProvince || 'All'}</p>
+      <p>Number of provinces: {filteredData ? filteredData.length : 0}</p>
+    </div>
+  <div className="content-container">
+    {/* Time series chart */}
+      <div className="left-content">
+        <h3>Time Series Data</h3>
+        <Line
+          data={dummyTimeSeriesData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+              },
+            },
+          }}
+        />
+      </div>
+    
+
+    <div className="container">
+      <div className="content">
+        <div className="left-content">
+          <div id="timeSeriesPlot" style={{ width: '100%', height: '650px' }}></div>
+        </div>
+        <div className="right-map">
+          {/* แสดงแผนที่ใน MapComponent */}
+          {filteredData && (
+            <MapComponent 
+              data={ShapefileThai_lv0} // หรือสามารถเลือกเป็น data อื่น ๆ
+              filteredData={filteredData} 
+              selectedRegion={selectedRegion}
+              selectedProvinceData={selectedProvinceData}  // ส่งข้อมูล provinceData ไปที่ MapComponent
+              setSelectedProvinceData={setSelectedProvinceData}
+              selectedProvince={selectedProvince} 
+              selectedMonth={selectedMonth}
+            />
+          )}
         </div>
       </div>
     </div>
-  );
-}
-
+  </div>
+  </div>
+);
+};
 export default App;
-
 
 
 // import React, { useEffect, useState } from 'react';
@@ -326,68 +369,3 @@ export default App;
 //     `;
 
 //     layer.bindPopup(popupContent); // ผูก popup กับ layer
-//   }
-// };
-
-// // // สไตล์ polygon ใน GeoJSON
-// // const style = (feature) => ({
-// //   fillColor: getColor(feature.properties.temperature), // เปลี่ยนสีตามค่า temperature
-// //   weight: 2,
-// //   opacity: 1,
-// //   color: 'white',
-// //   fillOpacity: 0.7,
-// // });
-
-//   return (
-//     <div className="main-container">
-//       <h1>Multidimensional climate data visualization</h1> {/* name webapp (testing) */}
-//       <div className="container">
-//         <div className="content">
-//           <div className="left-content">
-//             <div id="timeSeriesPlot" style={{ width: '100%', height: '650px' }}></div>
-//           </div>
-//           <div className="right-map">
-//             <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "700px", width: "800px" }}>
-//               <LayersControl position="topright">
-//                 <LayersControl.Overlay checked name="Thailand Map">
-//                   <div className='thai-map'>
-//                     <GeoJSON data={ShapefileThai_lv0} style={style} onEachFeature={onEachFeature} />
-//                   </div>
-//                 </LayersControl.Overlay>
-//                 <LayersControl.Overlay checked name="Heatmap">
-//                   <GeoJSON data={HeatmapThailand} style={style} onEachFeature={onEachFeature} />
-//                 </LayersControl.Overlay>
-//                 <LayersControl.Overlay checked name="Province Mean Temperature">
-//                   <GeoJSON data={{ type: 'FeatureCollection', features: filterRegionData(selectedRegion) }} style={style} onEachFeature={onEachFeature} />
-//                 </LayersControl.Overlay>
-//               </LayersControl>
-//             </MapContainer>
-//             <ColorBar /> {/* แสดง ColorBar */}
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Dropdown ให้เลือกภูมิภาค */}
-//       <div>
-//         <label>Select Region:</label>
-//         <select onChange={(e) => setSelectedRegion(e.target.value)} value={selectedRegion}>
-//           <option value="All">All Regions</option>
-//           <option value="North_East_region">North East</option>
-//           <option value="North_region">North</option>
-//           <option value="South_region">South</option>
-//           <option value="Middle_region">Middle</option>
-//           <option value="East_region">East</option>
-//           <option value="West_region">West</option>
-//         </select>
-
-//         <div>
-//   <p>Selected Region: {selectedRegion}</p>
-//   <p>Number of provinces: {filterRegionData(selectedRegion).length}</p>
-//   </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default App;
-

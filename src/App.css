@@ -40,7 +40,8 @@
 }
 
 .right-map {
-  flex: 1;
+  flex: row;
+  margin-left: 100px;
 }
 
 .thai-map {
@@ -55,8 +56,8 @@
     flex-direction: column;
     align-items: center;
     position: absolute;
-    bottom: -100px;
-    left: 410px;
+    bottom: -650px;
+    left: 320px;
     transform: translateX(-50%);
     background-color: white;
     padding: 10px;
@@ -98,4 +99,16 @@
   font-size: 18px;
   margin: -500px 0;
   margin-bottom: 10px;
+}
+
+.left-content {
+  width: 800px; /* กำหนดความกว้าง */
+  height: 500px; /* กำหนดความสูง */
+  margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
+  margin-left: 20px;
+}
+
+.year-selector{
+  position: center;
+  left: 400px;
 }

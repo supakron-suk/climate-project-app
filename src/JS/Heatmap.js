@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const ColorBar = () => {
     return (
         <div className="color-bar-horizontal">

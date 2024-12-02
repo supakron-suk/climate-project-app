@@ -108,8 +108,8 @@ const MapComponent = ({ filteredData, selectedRegion, selectedProvince, selected
   };
 
   return (
-  <div style={{ position: "relative" }}>
-    <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "700px", width: "800px" }}>
+  <div style={{ position: "relative", top: "-650px", left: "50px", width: "300px", height: "200px"}}>
+    <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "730px", width: "650px" }}>
       <LayersControl position="topright">
         <LayersControl.Overlay checked name="Province Mean Temperature">
           <GeoJSON
