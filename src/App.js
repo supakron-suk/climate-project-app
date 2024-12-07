@@ -15,7 +15,12 @@ import ShapefileThai_lv0 from "./Geo-data/shapefile-thailand.json";
 import { Line } from 'react-chartjs-2';
 import './App.css';
 import MapComponent from './MapComponent'; // นำเข้า MapComponent
-import { dummyTimeSeriesData, filterByRegion, filterByMonth,  handleYearChange, calculatemean, getProvinceTemp } from './JS/TimeSeries';
+import { dummyTimeSeriesData,
+         filterByRegion, 
+         filterByMonth,  
+         handleYearChange, 
+         calculatemean,
+        getProvinceTemp } from './JS/TimeSeries';
 
 //-------------------------IMPORT DATA YEAR-----------------------------------//
 import data1901 from './Geo-data/Year-Dataset/data_polygon_1901.json';
@@ -29,7 +34,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
 //------------------------IMPORT FUCTION-------------------------------------//
 
-//---------------------------------------------------------------------------//
+//------------------------FUNCTION APP-------------------------------------//
 function App() {
   const [timeSeriesData, setTimeSeriesData] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState('All');
@@ -51,6 +56,10 @@ function App() {
   // เพิ่มปีอื่น ๆ ถ้ามี
 });
 
+const [selectedYearStart, setSelectedYearStart] = useState('');
+const [selectedYearEnd, setSelectedYearEnd] = useState('');
+const [filteredDataByRange, setFilteredDataByRange] = useState(null);
+//------------------------FUNCTION APP-------------------------------------//
 
 // User effect เมื่อมีการเปลี่ยนแปลงข้อมูลในระดับปี
 useEffect(() => {
@@ -73,6 +82,32 @@ useEffect(() => {
       return data.features.filter(feature => feature.properties.region === region);
     }
   };
+
+  const filterDataByYearRange = (startYear, endYear) => {
+  if (startYear && endYear) {
+    const start = parseInt(startYear);
+    const end = parseInt(endYear);
+
+    if (start > end) {
+      alert("Please select a start year that is less than or equal to the end year.");
+      return;
+    }
+
+    let combinedData = [];
+    for (let year = start; year <= end; year++) {
+      if (dataByYear[year]) {
+        combinedData = combinedData.concat(dataByYear[year].features);
+      }
+    }
+
+    // แสดงข้อมูลที่กรองใน Console
+    console.log(`Filtered data from ${startYear} to ${endYear}:`, combinedData);
+
+    // ตั้งค่า filteredDataByRange เพื่อใช้ใน UI (หากต้องการ)
+    setFilteredDataByRange(combinedData);
+  }
+};
+
 
 //----------------------------------User Effect-------------------------------------------//
 
@@ -98,21 +133,43 @@ useEffect(() => {
       }
     } else if (selectedRegion) {
       // กรณีเลือกภูมิภาค
-      const result = calculatemean(dataByYear, selectedYear, selectedRegion);
-      if (result) {
-        setChartData({
-          ...dummyTimeSeriesData,
-          datasets: [
-            {
-              ...dummyTimeSeriesData.datasets[0],
-              data: result, // ใช้ค่า mean temperature ของภูมิภาค
-            },
-          ],
-        });
+      const chartData = calculatemean(dataByYear, selectedYear, selectedRegion);
+      if (chartData) {
+        setChartData(chartData); // ใช้ข้อมูลจาก calculatemean โดยตรง
       }
     }
   }
 }, [selectedYear, selectedRegion, selectedProvince]);
+
+// useEffect(() => {
+//   // ถ้ามีการเลือกปีและภูมิภาคหรือจังหวัด
+//   if (selectedYear) {
+//     if (selectedProvince) {
+//       // กรณีเลือกจังหวัด
+//       const provinceData = dataByYear[selectedYear];
+//       const provinceTemperatures = getProvinceTemp(provinceData, selectedProvince);
+
+//       if (provinceTemperatures) {
+//         setChartData({
+//           ...dummyTimeSeriesData,
+//           datasets: [
+//             {
+//               ...dummyTimeSeriesData.datasets[0],
+//               data: provinceTemperatures, // ใช้ค่า temperature ของจังหวัด
+//             },
+//           ],
+//         });
+//       }
+//     } else if (selectedRegion) {
+//       // กรณีเลือกภูมิภาค
+//       const chartData = calculatemean(dataByYear, selectedYear, selectedRegion);
+//       if (chartData) {
+//         setChartData(chartData); // ใช้ข้อมูลจาก calculatemean โดยตรง
+//       }
+//     }
+//   }
+// }, [selectedYear, selectedRegion, selectedProvince]);
+
 
   // useEffect(() => {
   //   // ถ้ามีการเลือกปีแล้ว อัปเดตกราฟ
@@ -142,7 +199,7 @@ useEffect(() => {
   }
 }, [selectedYear, selectedRegion, dataByYear]); // 
 //----------------------------------User Effect-------------------------------------------//
-
+//----------------------------------webpage UI AREA-------------------------------------------//
 
   return (
   <div className="main-container">
@@ -199,8 +256,60 @@ useEffect(() => {
 </div>
 
 
-    {/* Dropdown สำหรับเลือกปี */}
-    <div className="year-selector">
+  <div style={{ padding: '20px' }}>
+  <h2>เลือกช่วงปี</h2>
+
+  {/* Dropdown สำหรับเลือกปีเริ่มต้น */}
+  <select
+    value={selectedYearStart}
+    onChange={(e) => setSelectedYearStart(e.target.value)}
+    style={{ width: '200px', padding: '10px', margin: '10px' }}
+  >
+    <option value="">-- select start year --</option>
+    {Object.keys(dataByYear).map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
+
+  {/* Dropdown สำหรับเลือกปีสิ้นสุด */}
+  <select
+    value={selectedYearEnd}
+    onChange={(e) => setSelectedYearEnd(e.target.value)}
+    style={{ width: '200px', padding: '10px', margin: '10px' }}
+  >
+    <option value="">-- select end year --</option>
+    {Object.keys(dataByYear).map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
+
+  {/* ปุ่ม Apply */}
+  <button
+    onClick={() => {
+      if (selectedYearStart && selectedYearEnd) {
+        filterDataByYearRange(selectedYearStart, selectedYearEnd);
+      } else {
+        alert('Please select both a start year and an end year.');
+      }
+    }}
+    style={{
+      padding: '10px 20px',
+      margin: '10px',
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      borderRadius: '5px',
+      fontSize: '16px',
+      cursor: 'pointer',
+    }}
+  >
+    Apply
+  </button>
+    {/* <div className="year-selector">
       <h2>เลือกปี</h2>
       <select
         onChange={(e) => {
@@ -224,7 +333,7 @@ useEffect(() => {
             {year}
           </option>
         ))}
-      </select>
+      </select> */}
     </div>
 
     {/* แสดงข้อมูลสรุป */}
