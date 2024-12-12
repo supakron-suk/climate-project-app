@@ -13,6 +13,7 @@ import 'leaflet/dist/leaflet.css';
 import ShapefileThai_lv0 from "./Geo-data/shapefile-thailand.json";
 //import ShapefileThai_lv1 from "./Geo-data/shapefile-lv1-thailand.json";
 import { Line } from 'react-chartjs-2';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import './App.css';
 import MapComponent from './MapComponent'; // นำเข้า MapComponent
 import { dummyTimeSeriesData,
@@ -31,10 +32,10 @@ import data1905 from './Geo-data/Year-Dataset/data_polygon_1905.json';
 
 //----------------------------------------------------------------------------//
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
 //------------------------IMPORT FUCTION-------------------------------------//
 
-//------------------------FUNCTION APP-------------------------------------//
+//------------------------FUNCTION APP-------------------------------- -----//
 function App() {
   const [timeSeriesData, setTimeSeriesData] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState('All');
@@ -59,6 +60,7 @@ function App() {
 const [selectedYearStart, setSelectedYearStart] = useState('');
 const [selectedYearEnd, setSelectedYearEnd] = useState('');
 const [filteredDataByRange, setFilteredDataByRange] = useState(null);
+const [isApplied, setIsApplied] = useState(false);
 //------------------------FUNCTION APP-------------------------------------//
 
 // User effect เมื่อมีการเปลี่ยนแปลงข้อมูลในระดับปี
@@ -83,7 +85,7 @@ useEffect(() => {
     }
   };
 
-  const filterDataByYearRange = (startYear, endYear) => {
+const filterDataByYearRange = (startYear, endYear, region) => {
   if (startYear && endYear) {
     const start = parseInt(startYear);
     const end = parseInt(endYear);
@@ -97,10 +99,16 @@ useEffect(() => {
     for (let year = start; year <= end; year++) {
       if (dataByYear[year]) {
         combinedData = combinedData.concat(dataByYear[year].features);
+
+        // เรียกใช้ calculatemean สำหรับปีนี้
+        const meanData = calculatemean(dataByYear, year, region);
+
+        // แสดงข้อมูลที่คำนวณแล้วใน console
+        console.log(`Mean Data for year ${year}:`, meanData);
       }
     }
 
-    // แสดงข้อมูลที่กรองใน Console
+    // แสดงข้อมูลทั้งหมดที่กรองใน console
     console.log(`Filtered data from ${startYear} to ${endYear}:`, combinedData);
 
     // ตั้งค่า filteredDataByRange เพื่อใช้ใน UI (หากต้องการ)
@@ -109,101 +117,136 @@ useEffect(() => {
 };
 
 
+
 //----------------------------------User Effect-------------------------------------------//
 
 // Effect User สำหรับ Update Graph Time series
 useEffect(() => {
-  // ถ้ามีการเลือกปีและภูมิภาคหรือจังหวัด
-  if (selectedYear) {
-    if (selectedProvince) {
-      // กรณีเลือกจังหวัด
-      const provinceData = dataByYear[selectedYear];
-      const provinceTemperatures = getProvinceTemp(provinceData, selectedProvince);
+  if (isApplied) {
+    if (selectedYearStart && selectedYearEnd) {
+      if (selectedProvince) {
+        // กรณีเลือกจังหวัด
+        const provinceTemperatures = [];
+        for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+          const yearData = dataByYear[year];
+          const yearlyTemperatures = getProvinceTemp(yearData, selectedProvince);
+          if (yearlyTemperatures) {
+            provinceTemperatures.push(...yearlyTemperatures);
+          }
+        }
 
-      if (provinceTemperatures) {
-        setChartData({
-          ...dummyTimeSeriesData,
-          datasets: [
-            {
-              ...dummyTimeSeriesData.datasets[0],
-              data: provinceTemperatures, // ใช้ค่า temperature ของจังหวัด
-            },
-          ],
-        });
-      }
-    } else if (selectedRegion) {
-      // กรณีเลือกภูมิภาค
-      const chartData = calculatemean(dataByYear, selectedYear, selectedRegion);
-      if (chartData) {
-        setChartData(chartData); // ใช้ข้อมูลจาก calculatemean โดยตรง
+        if (provinceTemperatures.length > 0) {
+          setChartData({
+            ...dummyTimeSeriesData,
+            datasets: [
+              {
+                ...dummyTimeSeriesData.datasets[0],
+                data: provinceTemperatures, // ค่า temperature รวมทุกปีของจังหวัด
+              },
+            ],
+          });
+        }
+      } else if (selectedRegion) {
+        // กรณีเลือกภูมิภาค
+        const chartData = calculatemean(dataByYear, selectedYearStart, selectedYearEnd, selectedRegion);
+        if (chartData) {
+          setChartData(chartData);
+        }
+
+        // กรองข้อมูลตามภูมิภาค
+        const yearData = dataByYear[selectedYearStart]; // ใช้ข้อมูลปีเริ่มต้นในการกรอง
+        let filtered = filterByRegion(yearData, selectedRegion);
+
+        // อัปเดตข้อมูลที่กรองแล้ว
+        setFilteredData(filtered);
+
+        // อัปเดตรายชื่อจังหวัดที่สามารถเลือกได้
+        if (filtered.length > 0) {
+          setProvinces(filtered.map((feature) => feature.properties.name));
+        } else {
+          setProvinces([]); // ถ้าไม่มีข้อมูล ให้เคลียร์รายชื่อจังหวัด
+        }
+
+        // รีเซ็ตจังหวัดที่เลือก
+        setSelectedProvince('');
       }
     }
+
+    // Reset isApplied หลังจากทำงานเสร็จ
+    setIsApplied(false);
   }
-}, [selectedYear, selectedRegion, selectedProvince]);
+}, [isApplied, selectedYearStart, selectedYearEnd, selectedProvince, selectedRegion, dataByYear]);
+
 
 // useEffect(() => {
-//   // ถ้ามีการเลือกปีและภูมิภาคหรือจังหวัด
-//   if (selectedYear) {
+//   // ถ้ามีการเลือกช่วงปีและภูมิภาคหรือจังหวัด
+//   if (selectedYearStart && selectedYearEnd) {
 //     if (selectedProvince) {
 //       // กรณีเลือกจังหวัด
-//       const provinceData = dataByYear[selectedYear];
-//       const provinceTemperatures = getProvinceTemp(provinceData, selectedProvince);
+//       const provinceTemperatures = [];
+//       for (let year = selectedYearStart; year <= selectedYearEnd; year++) {
+//         const provinceData = dataByYear[year];
+//         const yearlyTemperatures = getProvinceTemp(provinceData, selectedProvince);
 
-//       if (provinceTemperatures) {
+//         if (yearlyTemperatures) {
+//           provinceTemperatures.push(...yearlyTemperatures);
+//         }
+//       }
+
+//       if (provinceTemperatures.length > 0) {
 //         setChartData({
 //           ...dummyTimeSeriesData,
 //           datasets: [
 //             {
 //               ...dummyTimeSeriesData.datasets[0],
-//               data: provinceTemperatures, // ใช้ค่า temperature ของจังหวัด
+//               data: provinceTemperatures, // ค่า temperature รวมทุกปีของจังหวัด
 //             },
 //           ],
 //         });
 //       }
 //     } else if (selectedRegion) {
 //       // กรณีเลือกภูมิภาค
-//       const chartData = calculatemean(dataByYear, selectedYear, selectedRegion);
+//       const chartData = calculatemean(dataByYear, selectedYearStart, selectedYearEnd, selectedRegion);
 //       if (chartData) {
 //         setChartData(chartData); // ใช้ข้อมูลจาก calculatemean โดยตรง
 //       }
 //     }
 //   }
+// }, [selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince]);
+
+
 // }, [selectedYear, selectedRegion, selectedProvince]);
 
-
-  // useEffect(() => {
-  //   // ถ้ามีการเลือกปีแล้ว อัปเดตกราฟ
-  //   if (selectedYear && selectedRegion) {
-  //     const result = calculatemean(dataByYear, selectedYear, selectedRegion);
-  //     if (result) {
-  //       setChartData({ ...dummyTimeSeriesData, datasets: [{ ...dummyTimeSeriesData.datasets[0], data: result }] });
-  //     }
-  //   }
-  // }, [selectedYear, selectedRegion]);
-
 useEffect(() => {
-  // ตรวจสอบว่าเลือกปีแล้วและข้อมูลปีนั้นมีอยู่ใน dataByYear
   if (selectedYear && dataByYear[selectedYear]) {
     const yearData = dataByYear[selectedYear]; // ใช้ข้อมูลจากปีที่เลือก
 
     // กรองข้อมูลตามภูมิภาค
     let filtered = filterByRegion(yearData, selectedRegion);
-    // console.log(`Filtered data for region ${selectedRegion}:`);
-    // กรองข้อมูลตามเดือน
-    filtered = filterByMonth(filtered, selectedMonth);
-    
-    setFilteredData(filtered); // อัปเดตข้อมูลที่กรองแล้ว
-    setProvinces(filtered.map(feature => feature.properties.name)); // อัปเดตรายชื่อจังหวัด
-    setSelectedProvince(''); // รีเซ็ตจังหวัดที่เลือก
 
+    // อัปเดตข้อมูลที่กรองแล้ว
+    setFilteredData(filtered);
+
+    // อัปเดตรายชื่อจังหวัดที่สามารถเลือกได้
+    if (filtered.length > 0) {
+      setProvinces(filtered.map((feature) => feature.properties.name));
+    } else {
+      setProvinces([]); // ถ้าไม่มีข้อมูล ให้เคลียร์รายชื่อจังหวัด
+    }
+
+    // รีเซ็ตจังหวัดที่เลือก
+    setSelectedProvince('');
   }
-}, [selectedYear, selectedRegion, dataByYear]); // 
+}, [selectedYear, selectedRegion,  dataByYear]);
+
 //----------------------------------User Effect-------------------------------------------//
 //----------------------------------webpage UI AREA-------------------------------------------//
 
   return (
   <div className="main-container">
-    <h1>Multidimensional climate data visualization</h1> 
+    <div className="header-text">
+      <h1 className="block-text">Multidimensional climate data visualization</h1>
+    </div>
 
     {/* Dropdown สำหรับเลือกภูมิภาค */}
     <div className="region-selector">
@@ -287,53 +330,44 @@ useEffect(() => {
     ))}
   </select>
 
-  {/* ปุ่ม Apply */}
-  <button
-    onClick={() => {
-      if (selectedYearStart && selectedYearEnd) {
-        filterDataByYearRange(selectedYearStart, selectedYearEnd);
-      } else {
-        alert('Please select both a start year and an end year.');
-      }
-    }}
-    style={{
-      padding: '10px 20px',
-      margin: '10px',
-      backgroundColor: '#4CAF50',
-      color: 'white',
-      border: 'none',
-      borderRadius: '5px',
-      fontSize: '16px',
-      cursor: 'pointer',
-    }}
-  >
-    Apply
-  </button>
-    {/* <div className="year-selector">
-      <h2>เลือกปี</h2>
-      <select
-        onChange={(e) => {
-          const year = e.target.value;
-          setSelectedYear(year);
+  {/* แสดงข้อความแจ้งเตือน */}
+  {!selectedYearStart || !selectedYearEnd ? (
+    <p style={{ color: 'red' }}>
+      Please select both a start year and an end year before applying.
+    </p>
+  ) : null}
 
-          // เมื่อเลือกปี ให้กรองข้อมูลตามปี
-          if (year) {
-            const yearData = dataByYear[year];
-            setFilteredData(yearData);
-          } else {
-            setFilteredData(null); // ถ้าไม่เลือกปี
-          }
-        }}
-        value={selectedYear}
-        style={{ width: '200px', padding: '10px', fontSize: '16px' }}
-      >
-        <option value="">-- เลือกปี --</option>
-        {Object.keys(dataByYear).map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select> */}
+  {/* ปุ่ม Apply */}
+ <button
+  onClick={() => {
+    if (!selectedYearStart || !selectedYearEnd) {
+      alert('Please select both a start year and an end year.');
+      return;
+    }
+
+    if (selectedYearStart > selectedYearEnd) {
+      alert('The start year must be less than or equal to the end year.');
+      return;
+    }
+
+    // ตั้งค่า isApplied เพื่อให้ useEffect ทำงาน
+    setIsApplied(true);
+  }}
+  disabled={!selectedYearStart || !selectedYearEnd}
+  style={{
+    padding: '10px 20px',
+    margin: '10px',
+    backgroundColor: !selectedYearStart || !selectedYearEnd ? '#ccc' : '#4CAF50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    fontSize: '16px',
+    cursor: !selectedYearStart || !selectedYearEnd ? 'not-allowed' : 'pointer',
+  }}
+>
+  Apply
+</button>
+
     </div>
 
     {/* แสดงข้อมูลสรุป */}
@@ -349,25 +383,48 @@ useEffect(() => {
       <div className="left-content">
         <h3>Time Series Data</h3>
         <Line
-          data={chartData} // ใช้ข้อมูลที่จัดรูปแบบแล้ว
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'top',
-              },
-            },
-            scales: {
-              x: {
-                beginAtZero: true,
-              },
-              y: {
-                beginAtZero: true,
-              },
-            },
-          }}
-        />
+  data={chartData}
+  options={{
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+      annotation: {
+        annotations: chartData?.options?.plugins?.annotation?.annotations || [],
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true, // เปิดการแสดงข้อความ
+          text: 'Month and Year', // ข้อความบรรยายแกน x
+          font: {
+            size: 14, // ขนาดตัวอักษร
+            weight: 'bold', // น้ำหนักตัวอักษร
+          },
+        },
+      },
+      y: {
+        min: 10, // กำหนดค่าต่ำสุด
+        max: 40, // กำหนดค่าสูงสุด
+        ticks: {
+          stepSize: 5, // เพิ่มเส้นบอกค่าทุกๆ 5 องศา (optional)
+        },
+        title: {
+          display: true, // เปิดการแสดงข้อความ
+          text: 'Temperature (°C)', // ข้อความบรรยายแกน y
+          font: {
+            size: 14, // ขนาดตัวอักษร
+            weight: 'bold', // น้ำหนักตัวอักษร
+          },
+        },
+      },
+    },
+  }}
+/>
       </div>
 
       <div className="container">

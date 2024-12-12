@@ -3,7 +3,25 @@
   display: flex;
   flex-direction: column;
   align-items: right;
-  margin-top: 20px; /* กำหนดระยะห่างจากด้านบนของเว็บเพจ */
+  margin-top: 5px; /* กำหนดระยะห่างจากด้านบนของเว็บเพจ */
+}
+
+.header-text {
+  background: linear-gradient(to right, #062b74 0%, #062b74 70%, #17abe3 100%);
+ /* ไล่สีจากน้ำเงินไปฟ้าน้ำทะเล */
+  height: 50px; /* กำหนดความสูงของบล็อก */
+  width: 100%; /* กำหนดให้บล็อกกว้างเต็มหน้า */
+  display: flex; /* ใช้ Flexbox จัดข้อความ */
+  justify-content: center; /* จัดข้อความให้อยู่กึ่งกลางแนวนอน */
+  align-items: center; /* จัดข้อความให้อยู่กึ่งกลางแนวตั้ง */
+  margin-bottom: 20px; /* เพิ่มระยะห่างด้านล่างระหว่างบล็อกกับเนื้อหาอื่น */
+}
+
+.block-text {
+  color: white; /* สีข้อความ */
+  font-size: 24px; /* ขนาดตัวอักษร */
+  font-weight: bold; /* ความหนาของข้อความ */
+  text-align: center; /* จัดข้อความให้อยู่กึ่งกลาง */
 }
 
 .timeseries-text{
@@ -102,7 +120,7 @@
 }
 
 .left-content {
-  width: 800px; /* กำหนดความกว้าง */
+  width: 1000px; /* กำหนดความกว้าง */
   height: 500px; /* กำหนดความสูง */
   margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
   margin-left: 20px;

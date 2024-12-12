@@ -13,12 +13,16 @@ export const dummyTimeSeriesData = {
   ],
 };
 
-export const calculatemean = (dataByYear, year, region) => {
-  const geojson = dataByYear[year];
+export const calculatemean = (dataByYear, startYear, endYear, region) => {
+  // ตรวจสอบความถูกต้องของช่วงปี
+  if (startYear > endYear) {
+    console.error("Start year must be less than or equal to end year.");
+    return null;
+  }
 
   // สร้างอาร์เรย์เก็บผลรวมและจำนวนข้อมูลของแต่ละเดือน
-  const monthlyAverages = Array(12).fill(0);
-  const monthlyCounts = Array(12).fill(0);
+  const monthlyAverages = Array(12 * (endYear - startYear + 1)).fill(0);
+  const monthlyCounts = Array(12 * (endYear - startYear + 1)).fill(0);
 
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
   const filterByRegion = (features, region) => {
@@ -29,19 +33,56 @@ export const calculatemean = (dataByYear, year, region) => {
     return features.filter((feature) => feature.properties.region === region);
   };
 
-  // กรองข้อมูลตามภูมิภาคที่เลือก
-  const filteredFeatures = filterByRegion(geojson.features, region);
+  // วนลูปผ่านแต่ละปีในช่วงที่เลือก
+  let overallCount = 0;
+  let yearlyMeans = {}; // สร้างอ็อบเจกต์เก็บค่าเฉลี่ยรายปี
 
-  // วนลูปผ่าน features เพื่อรวบรวมข้อมูล
-  filteredFeatures.forEach((feature) => {
-    const { temperature, month } = feature.properties;
-
-    // ตรวจสอบว่า month และ temperature มีค่า
-    if (month >= 1 && month <= 12 && typeof temperature === 'number') {
-      monthlyAverages[month - 1] += temperature;
-      monthlyCounts[month - 1] += 1;
+  for (let year = startYear; year <= endYear; year++) {
+    const geojson = dataByYear[year];
+    if (!geojson) {
+      console.warn(`No data available for year ${year}`);
+      continue;
     }
-  });
+
+    // กรองข้อมูลตามภูมิภาค
+    const filteredFeatures = filterByRegion(geojson.features, region);
+
+    // วนลูปผ่าน features เพื่อรวบรวมข้อมูล
+    filteredFeatures.forEach((feature) => {
+      const { temperature, month } = feature.properties;
+
+      // ตรวจสอบว่า month และ temperature มีค่า
+      if (month >= 1 && month <= 12 && typeof temperature === 'number') {
+        const index = (year - startYear) * 12 + (month - 1);
+        monthlyAverages[index] += temperature;
+        monthlyCounts[index] += 1;
+        overallCount += 1;
+      }
+    });
+
+    // คำนวณค่าเฉลี่ยรายปี
+    // วนลูปผ่านปีที่เลือกเพื่อคำนวณค่าเฉลี่ยของแต่ละปี
+for (let year = startYear; year <= endYear; year++) {
+  // สกัดข้อมูลรายเดือนของปีนั้น
+  const yearlySum = monthlyAverages.slice((year - startYear) * 12, (year - startYear + 1) * 12).reduce((sum, val, i) => {
+    const value = monthlyCounts[(year - startYear) * 12 + i] > 0 ? val / monthlyCounts[(year - startYear) * 12 + i] : 0;
+    // ใช้ console.log เพื่อตรวจสอบค่า value ในแต่ละรอบ
+    //console.log(`Year: ${year}, Month: ${i + 1}, Value: ${value}`);
+    return sum + value;
+  }, 0);
+
+  // แสดงค่า yearlySum
+  //console.log(`Yearly sum for year ${year}: ${yearlySum}`);
+
+  // คำนวณค่าเฉลี่ยรายปี
+  const yearlyMean = yearlySum / 12;
+  console.log(`Yearly mean for year ${year}: ${yearlyMean}`);
+
+  // เก็บค่าเฉลี่ยของแต่ละปี
+  yearlyMeans[year] = yearlyMean;
+}
+
+  }
 
   // คำนวณค่าเฉลี่ยรายเดือน
   const result = monthlyAverages.map((sum, index) => {
@@ -56,17 +97,67 @@ export const calculatemean = (dataByYear, year, region) => {
   const overallMean =
     validValues.reduce((sum, value) => sum + value, 0) / validValues.length;
 
+  // แสดงจำนวนข้อมูลที่ใช้ในการคำนวณในแต่ละเดือน
+  console.log(`Monthly Data Counts (${startYear}-${endYear}):`, monthlyCounts);
+
+  // แสดงผลลัพธ์ค่าเฉลี่ยรายเดือน
+  console.log(`Monthly Averages (${startYear}-${endYear}):`, result);
+
+  // แสดงผลค่าเฉลี่ยรวม
+  console.log(`Overall Mean Temperature (${startYear}-${endYear}):`, overallMean);
+
   // สร้างกราฟข้อมูล
-const dummyTimeSeriesData = {
+  // กำหนดเส้นประสำหรับแต่ละปี
+  const yearBoundaries = Array.from(
+  { length: endYear - startYear + 1 },
+  (_, i) => {
+    const yearIndex = i * 12;
+    const midYearIndex = yearIndex + 11; // จุดกลางระหว่างเดือน 12 และเดือน 1
+
+    return {
+      type: "line",
+      scaleID: "x",
+      value: midYearIndex, // เปลี่ยนไปใช้จุดกลางระหว่างปี
+      borderColor: "rgba(255, 0, 0, 0.5)",
+      borderWidth: 2,
+      borderDash: [10, 5],
+      label: {
+        enabled: true,
+        content: `${startYear + i}`,
+      },
+      // เพิ่มข้อมูล tooltip เพื่อแสดงค่าเฉลี่ยของปีนั้นๆ
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: function (context) {
+            const year = startYear + i;
+            const mean = yearlyMeans[year] || 'N/A'; // ดึงค่าเฉลี่ยรายปี
+            return `Year ${year}: Mean Temperature = ${mean.toFixed(2)}°C`; // แสดงค่าเฉลี่ยใน tooltip
+          },
+        },
+      },
+    };
+  }
+);
+
+
+  const dummyTimeSeriesData = {
   labels: [
-    ...Array(12).keys() // ใช้ index จาก 0 ถึง 11 (เดือน)
-      .map((i) => i + 1), // ปรับให้เริ่มจาก 1 ถึง 12
-    `Overall Mean (${year})`, // เพิ่มจุดข้อมูลพิเศษที่ตำแหน่งสุดท้าย
+    ...Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
+    const year = parseInt(startYear) + Math.floor(i / 12); // ใช้ parseInt เพื่อแปลง startYear เป็นตัวเลข
+    const month = i % 12;
+
+    // เพิ่มการตรวจสอบค่า year และ month
+    console.log(`Index: ${i}, Year: ${year}, Month: ${month}`);
+    
+    return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; // สร้าง label ใหม่
+    }),
   ],
+  
   datasets: [
     {
       label: 'Average Temperature (°C)',
-      data: [...result, null], // ค่าเฉลี่ยรายเดือน (เติม null ไว้สำหรับจุดสุดท้าย)
+      data: [...result, null],
       borderColor: 'rgba(75,192,192,1)',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
@@ -75,36 +166,48 @@ const dummyTimeSeriesData = {
     {
       label: 'Overall Mean Temperature (°C)',
       data: [
-        ...Array(12).fill(null), // เติม null เพื่อให้เส้นประไม่แสดงใน 12 เดือนแรก
-        overallMean, // จุดเดียวที่เป็นค่าเฉลี่ยรวม
+        ...Array(result.length).fill(null),
+        overallMean,
       ],
       borderColor: 'black',
       borderWidth: 2,
-      borderDash: [5, 5], // เส้นประ
+      borderDash: [5, 5],
       pointBackgroundColor: 'black',
-      pointRadius: 6, // ขนาดจุดที่ค่าเฉลี่ยรวม
+      pointRadius: 6,
       fill: false,
       tension: 0.4,
     },
   ],
+  options: {
+    responsive: true,
+    plugins: {
+      annotation: {
+        annotations: yearBoundaries,
+      },
+      tooltip: {
+        enabled: true,
+      },
+    },
+  },
 };
 
+// ตรวจสอบค่า labels
+console.log("Generated Labels:", dummyTimeSeriesData.labels);
 
+return dummyTimeSeriesData;
 
-  // แสดงผลลัพธ์
-  console.log(`Monthly Averages for region "${region}" in year ${year}:`, result);
-  console.log(`Overall Mean Temperature for region "${region}" in year ${year}:`, overallMean);
-  console.log('Time Series Data for Plotting:', dummyTimeSeriesData);
-
-  return dummyTimeSeriesData;
 };
 
-// export const calculatemean = (dataByYear, year, region) => {
-//   const geojson = dataByYear[year];
+// export const calculatemean = (dataByYear, startYear, endYear, region) => {
+//   // ตรวจสอบความถูกต้องของช่วงปี
+//   if (startYear > endYear) {
+//     console.error("Start year must be less than or equal to end year.");
+//     return null;
+//   }
 
 //   // สร้างอาร์เรย์เก็บผลรวมและจำนวนข้อมูลของแต่ละเดือน
-//   const monthlyAverages = Array(12).fill(0);
-//   const monthlyCounts = Array(12).fill(0);
+//   const monthlyAverages = Array(12 * (endYear - startYear + 1)).fill(0);
+//   const monthlyCounts = Array(12 * (endYear - startYear + 1)).fill(0);
 
 //   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
 //   const filterByRegion = (features, region) => {
@@ -115,21 +218,33 @@ const dummyTimeSeriesData = {
 //     return features.filter((feature) => feature.properties.region === region);
 //   };
 
-//   // กรองข้อมูลตามภูมิภาคที่เลือก
-//   const filteredFeatures = filterByRegion(geojson.features, region);
-
-//   // วนลูปผ่าน features เพื่อรวบรวมข้อมูล
-//   filteredFeatures.forEach((feature) => {
-//     const { temperature, month } = feature.properties;
-
-//     // ตรวจสอบว่า month และ temperature มีค่า
-//     if (month >= 1 && month <= 12 && typeof temperature === 'number') {
-//       monthlyAverages[month - 1] += temperature;
-//       monthlyCounts[month - 1] += 1;
+//   // วนลูปผ่านแต่ละปีในช่วงที่เลือก
+//   let overallCount = 0;
+//   for (let year = startYear; year <= endYear; year++) {
+//     const geojson = dataByYear[year];
+//     if (!geojson) {
+//       console.warn(`No data available for year ${year}`);
+//       continue;
 //     }
-//   });
 
-//   // คำนวณค่าเฉลี่ย
+//     // กรองข้อมูลตามภูมิภาค
+//     const filteredFeatures = filterByRegion(geojson.features, region);
+
+//     // วนลูปผ่าน features เพื่อรวบรวมข้อมูล
+//     filteredFeatures.forEach((feature) => {
+//       const { temperature, month } = feature.properties;
+
+//       // ตรวจสอบว่า month และ temperature มีค่า
+//       if (month >= 1 && month <= 12 && typeof temperature === 'number') {
+//         const index = (year - startYear) * 12 + (month - 1);
+//         monthlyAverages[index] += temperature;
+//         monthlyCounts[index] += 1;
+//         overallCount += 1;
+//       }
+//     });
+//   }
+
+//   // คำนวณค่าเฉลี่ยรายเดือน
 //   const result = monthlyAverages.map((sum, index) => {
 //     if (monthlyCounts[index] > 0) {
 //       return sum / monthlyCounts[index];
@@ -142,13 +257,88 @@ const dummyTimeSeriesData = {
 //   const overallMean =
 //     validValues.reduce((sum, value) => sum + value, 0) / validValues.length;
 
-//   // แสดงผลค่าเฉลี่ยที่คำนวณได้ในแต่ละเดือน
-//   console.log(`Monthly Averages for region "${region}" in year ${year}:`, result);
-//   console.log(`Overall Mean Temperature for region "${region}" in year ${year}:`, overallMean);
+//   // แสดงจำนวนข้อมูลที่ใช้ในการคำนวณในแต่ละเดือน
+//   console.log(`Monthly Data Counts (${startYear}-${endYear}):`, monthlyCounts);
 
+//   // แสดงผลลัพธ์ค่าเฉลี่ยรายเดือน
+//   console.log(`Monthly Averages (${startYear}-${endYear}):`, result);
 
-//   return result;
+//   // แสดงผลค่าเฉลี่ยรวม
+//   console.log(`Overall Mean Temperature (${startYear}-${endYear}):`, overallMean);
+
+//   // สร้างกราฟข้อมูล
+//   // สร้างกราฟข้อมูล
+
+//   // กำหนดเส้นประสำหรับแต่ละปี
+
+//   const yearBoundaries = Array.from(
+//     { length: endYear - startYear + 1 },
+//     (_, i) => {
+//       const yearIndex = i * 12;
+//       return {
+//         type: "line",
+//         scaleID: "x",
+//         value: yearIndex,
+//         borderColor: "rgba(255, 0, 0, 0.5)",
+//         borderWidth: 2,
+//         borderDash: [10, 5],
+//         label: {
+//           enabled: true,
+//           content: `${startYear + i}`,
+//         },
+//       };
+//     }
+//   );
+
+// const dummyTimeSeriesData = {
+//   labels: [
+//     ...Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
+//       const year = startYear + Math.floor(i / 12);
+//       const month = (i % 12) + 1;
+//       return `${new Date(year, month - 1).toLocaleString('en-US', { month: 'short' })} ${year}`;
+//     }),
+//     `Overall Mean (${startYear}-${endYear})`,
+//   ],
+//   datasets: [
+//     {
+//       label: 'Average Temperature (°C)',
+//       data: [...result, null],
+//       borderColor: 'rgba(75,192,192,1)',
+//       backgroundColor: 'rgba(75,192,192,0.2)',
+//       fill: true,
+//       tension: 0.4,
+//     },
+//     {
+//       label: 'Overall Mean Temperature (°C)',
+//       data: [
+//         ...Array(result.length).fill(null),
+//         overallMean,
+//       ],
+//       borderColor: 'black',
+//       borderWidth: 2,
+//       borderDash: [5, 5],
+//       pointBackgroundColor: 'black',
+//       pointRadius: 6,
+//       fill: false,
+//       tension: 0.4,
+//     },
+//   ],
+//   options: {
+//     responsive: true,
+//     plugins: {
+//       annotation: {
+//         annotations:  yearBoundaries,
+//       },
+//     },
+//   },
 // };
+
+
+
+// return dummyTimeSeriesData;
+
+// };
+
 
 // Function to filter data by month
 export const filterByMonth = (data, month) => {

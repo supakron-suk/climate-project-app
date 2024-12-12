@@ -4,14 +4,12 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 # เปิดไฟล์ NetCDF
-ds = xr.open_dataset("src/dataset-nc/cru_ts4.08.1901.1910.wet.dat.nc")
+ds = xr.open_dataset("src/dataset-nc/cru_ts4.08.1901.1910.pre.dat.nc")
 
 # กรองข้อมูลให้เลือกช่วงเวลาที่ต้องการ (เช่น ปี 1901-1910)
 # ในกรณีนี้ ค่าเฉลี่ยของข้อมูลทั้งหมด
-#print(ds)
-data_avg = ds['wet'].mean(dim='time').dt.days
+print(ds)
 
-print(data_avg)
 
 # สร้างกราฟแผนที่
 # fig = plt.figure(figsize=(10, 6))
