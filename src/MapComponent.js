@@ -3,18 +3,19 @@ import { MapContainer, GeoJSON, LayersControl } from 'react-leaflet';
 
 // ฟังก์ชันที่ใช้ในการกำหนดสีตามอุณหภูมิ
 const getColor = (temp) => {
-  return temp > 30 ? '#a50026' :
-         temp > 29 ? '#d73027' :
-         temp > 28 ? '#f46d43' :
-         temp > 27 ? '#fc8d59' :
-         temp > 26 ? '#fee08b' :
-         temp > 25 ? '#d9ef8b' :
-         temp > 24 ? '#91cf60' :
-         temp > 23 ? '#1cc3ff' :
-         temp > 22 ? '#4575b4' :
-         temp > 21 ? '#313695' :
-         '#2c7bb6';
+  return temp > 30 ? '#67001f' :
+         temp > 29 ? '#b6202f' :
+         temp > 28 ? '#dd6f59' :
+         temp > 27 ? '#f7b799' :
+         temp > 26 ? '#f3a582' :
+         temp > 25 ? '#fae7dc' :
+         temp > 24 ? '#e2edf3' :
+         temp > 23 ? '#a7d0e4' :
+         temp > 22 ? '#559ec9' :
+         temp > 21 ? '#256baf' :
+         '#053061';
 };
+
 
 // ฟังก์ชันกำหนดสไตล์การแสดงผล
 const style = (feature, selectedRegion, selectedProvince, selectedMonth) => {

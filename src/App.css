@@ -52,9 +52,19 @@
   flex-direction: row;
 }
 
-.left-content {
+.time-series-chart {
   flex: 1;
   margin-right: 100px;
+}
+
+.Seasonal-Cycle-chart {
+  width: 100%; /* กำหนดความกว้างให้กราฟเป็น 50% ของหน้าจอ */
+  height: 650px; /* กำหนดความสูงให้กราฟ */
+}
+
+.Seasonal-Cycle-chart canvas {
+  width: 100% !important; /* ให้กราฟขยายเต็มพื้นที่ที่กำหนด */
+  height: auto !important; /* ปรับความสูงอัตโนมัติตามพื้นที่ */
 }
 
 .right-map {
@@ -88,15 +98,17 @@
     width: 700px;
     height: 30px;
     background: linear-gradient(to right, 
-        #313695, 
-        #1cc3ff, 
-        #91cf60, 
-        #d9ef8b, 
-        #fee08b, 
-        #fc8d59, 
-        #f46d43, 
-        #d73027, 
-        #a50026);
+        #67001f, 
+        #b6202f, 
+        #dd6f59, 
+        #f7b799, 
+        #f3a582, 
+        #fae7dc, 
+        #e2edf3, 
+        #a7d0e4, 
+        #559ec9,
+        #256baf,
+        #053061);
     border: 1px solid #000;
     margin-bottom: 8px;
 }
@@ -111,15 +123,45 @@
     font-size: 14px;
 }
 
+
+/* ตั้งค่าสำหรับ container หลัก */
+
+/*-----------------------dropdown region--------------------------------------*/
+.region-selector {
+  display: flex;
+  align-items: center; /* จัดกึ่งกลางในแนวตั้ง */
+  margin-bottom: 20px; /* ระยะห่างด้านล่าง */
+}
+
+/* สไตล์สำหรับ label */
+.region-selector label {
+  margin-right: 10px; /* ระยะห่างด้านขวา */
+  font-size: 16px; /* ขนาดตัวอักษร */
+}
+
+/* สไตล์สำหรับ select */
 .region-selector select {
+  width: 200px;
+  padding: 10px;
+  font-size: 16px;
+}
+/*-------------------------------------------------------------*/
+/* .region-selector select {
   width: 250px;
   padding: 12px;
   font-size: 18px;
-  margin: -500px 0;
-  margin-bottom: 10px;
+  margin: -400px 0;
+  margin-bottom: 20px;
+} */
+
+.time-series-chart {
+  width: 1000px; /* กำหนดความกว้าง */
+  height: 500px; /* กำหนดความสูง */
+  margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
+  margin-left: 20px;
 }
 
-.left-content {
+.Seasonal-Cycle-chart{
   width: 1000px; /* กำหนดความกว้าง */
   height: 500px; /* กำหนดความสูง */
   margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
