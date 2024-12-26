@@ -72,6 +72,11 @@
   margin-left: 100px;
 }
 
+.map-container{
+  flex: auto;
+  margin-top: -1015px;
+}
+
 .thai-map {
   position: relative; /* Positioning relative for child elements */
   width: 800px;

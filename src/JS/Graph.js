@@ -30,7 +30,7 @@ export const dummySeasonalCycleData = {
 };
 
 //---------------------------------------- Seasonal Cycle Graph---------------------------------------------//
-export const calculatemean = (dataByYear, startYear, endYear, region, province) => {
+export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex) => {
   // ฟังก์ชันหลักสำหรับคำนวณค่าเฉลี่ยอุณหภูมิ
   // `dataByYear` เป็นข้อมูล GeoJSON แยกตามปี
   // `startYear` และ `endYear` เป็นปีเริ่มต้นและสิ้นสุดที่ต้องการคำนวณ
@@ -81,21 +81,24 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province) 
     // กรองข้อมูลตาม region และ province ที่เลือก
 
     filteredFeatures.forEach((feature) => {
-      const { name, temperature, month } = feature.properties;
+  const { name, month } = feature.properties;
+  const value = feature.properties[selectedIndex]; // ดึงค่าของ selectedIndex
 
-      // เก็บข้อมูลของจังหวัดที่เลือก
-      if (!provinceData[name]) {
-        provinceData[name] = [];
-      }
-      provinceData[name].push({ year, month, temperature });
+  // Log ข้อมูลที่เลือกใน console
+  console.log(`Year: ${year}, Month: ${month}, Region: ${region}, Province: ${name}, ${selectedIndex}: ${value}`);
 
-      if (month >= 1 && month <= 12 && typeof temperature === 'number') {
-        const index = (year - startYear) * 12 + (month - 1);
-        monthlyAverages[index] += temperature;
-        monthlyCounts[index] += 1;
-        overallCount += 1;
-      }
-    });
+  if (!provinceData[name]) {
+    provinceData[name] = [];
+  }
+  provinceData[name].push({ year, month, [selectedIndex]: value });
+
+  if (month >= 1 && month <= 12 && typeof value === 'number') {
+    const index = (year - startYear) * 12 + (month - 1);
+    monthlyAverages[index] += value;
+    monthlyCounts[index] += 1;
+    overallCount += 1;
+  }
+});
 
     const yearlySum = monthlyAverages
       .slice((year - startYear) * 12, (year - startYear + 1) * 12)
@@ -136,6 +139,19 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province) 
     }
   }
 
+
+  //------------------------------------GRAPH ZONE------------------------------------------------------//
+
+  const indexLabels = {
+  temperature: { label: 'Average Temperature', unit: '°C' },
+  precipitation: { label: 'Average Precipitation', unit: 'mm' },
+  humidity: { label: 'Average Humidity', unit: '%' },
+  // เพิ่ม index อื่น ๆ ตามที่คุณมีในข้อมูล
+};
+
+const selectedIndexLabel = indexLabels[selectedIndex]?.label || 'Unknown Data';
+const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
+
   const Seasonal_Cycle = (monthlyData) => {
     const seasonalCycle = Array.from({ length: 12 }, () => []); 
     monthlyData.forEach(({ month, mean }) => {
@@ -154,18 +170,42 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province) 
   const seasonalMeans = Seasonal_Cycle(monthlyData); 
 
   const seasonalCycleData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [
-      {
-        label: 'Seasonal Cycle (°C)',
-        data: seasonalMeans, 
-        borderColor: 'rgba(75,192,192,1)', 
-        backgroundColor: 'rgba(75,192,192,0.2)', 
-        fill: true, 
-        tension: 0.4, 
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [
+    {
+      label: `${selectedIndexLabel} (${selectedIndexUnit})`,
+      data: seasonalMeans, 
+      borderColor: 'rgba(75,192,192,1)', 
+      backgroundColor: 'rgba(75,192,192,0.2)', 
+      fill: true, 
+      tension: 0.4, 
+    },
+  ],
+  options: {
+    responsive: true,
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: `${selectedIndexLabel} (${selectedIndexUnit})`,
+        },
       },
-    ],
-  }; 
+    },
+  },
+};
+  // const seasonalCycleData = {
+  //   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  //   datasets: [
+  //     {
+  //       label: 'Seasonal Cycle (°C)',
+  //       data: seasonalMeans, 
+  //       borderColor: 'rgba(75,192,192,1)', 
+  //       backgroundColor: 'rgba(75,192,192,0.2)', 
+  //       fill: true, 
+  //       tension: 0.4, 
+  //     },
+  //   ],
+  // }; 
 
   const yearBoundaries = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
     const midYearIndex = i * 12 + 11; 
@@ -181,46 +221,90 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province) 
   });
 
   const timeSeriesData = {
-    labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-      const year = startYear + Math.floor(i / 12); 
-      const month = i % 12; 
-      return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
-    }),
-    datasets: [
-      {
-        label: 'Average Temperature (°C)',
-        data: result, 
-        borderColor: 'rgba(75,192,192,1)', 
-        backgroundColor: 'rgba(75,192,192,0.2)', 
-        fill: true, 
-        tension: 0.4, 
+  labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
+    const year = startYear + Math.floor(i / 12); 
+    const month = i % 12; 
+    return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
+  }),
+  datasets: [
+    {
+      label: `${selectedIndexLabel} (${selectedIndexUnit})`,
+      data: result, 
+      borderColor: 'rgba(75,192,192,1)', 
+      backgroundColor: 'rgba(75,192,192,0.2)', 
+      fill: true, 
+      tension: 0.4, 
+    },
+    {
+      label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
+      data: Array(result.length).fill(null).concat(overallMean), 
+      borderColor: 'black', 
+      borderWidth: 2, 
+      borderDash: [5, 5], 
+      pointBackgroundColor: 'black', 
+      pointRadius: 6, 
+      fill: false, 
+      tension: 0.4, 
+    },
+  ],
+  options: {
+    responsive: true,
+    plugins: {
+      annotation: {
+        annotations: yearBoundaries, 
       },
-      {
-        label: 'Overall Mean Temperature (°C)',
-        data: Array(result.length).fill(null).concat(overallMean), 
-        borderColor: 'black', 
-        borderWidth: 2, 
-        borderDash: [5, 5], 
-        pointBackgroundColor: 'black', 
-        pointRadius: 6, 
-        fill: false, 
-        tension: 0.4, 
-      },
-    ],
-    options: {
-      responsive: true,
-      plugins: {
-        annotation: {
-          annotations: yearBoundaries, 
+    },
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: `${selectedIndexLabel} (${selectedIndexUnit})`,
         },
       },
     },
-  };
+  },
+};
+  // const timeSeriesData = {
+  //   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
+  //     const year = startYear + Math.floor(i / 12); 
+  //     const month = i % 12; 
+  //     return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
+  //   }),
+  //   datasets: [
+  //     {
+  //       label: 'Average Temperature (°C)',
+  //       data: result, 
+  //       borderColor: 'rgba(75,192,192,1)', 
+  //       backgroundColor: 'rgba(75,192,192,0.2)', 
+  //       fill: true, 
+  //       tension: 0.4, 
+  //     },
+  //     {
+  //       label: 'Overall Mean Temperature (°C)',
+  //       data: Array(result.length).fill(null).concat(overallMean), 
+  //       borderColor: 'black', 
+  //       borderWidth: 2, 
+  //       borderDash: [5, 5], 
+  //       pointBackgroundColor: 'black', 
+  //       pointRadius: 6, 
+  //       fill: false, 
+  //       tension: 0.4, 
+  //     },
+  //   ],
+  //   options: {
+  //     responsive: true,
+  //     plugins: {
+  //       annotation: {
+  //         annotations: yearBoundaries, 
+  //       },
+  //     },
+  //   },
+  // };
 
   return { seasonalCycleData, timeSeriesData }; 
 };
 
-  // คืนค่าข้อมูล Seasonal Cycle และ Time Series
+
 
 
 

@@ -7,14 +7,14 @@ from gridcal import calculate_weighted_temperature  # ฟังก์ชัน�
 
 # กำหนดช่วงปีที่ต้องการ
 start_year = 1901
-end_year = 1910
+end_year = 1905
 
 # โหลดข้อมูล shapefile จังหวัด
 shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
 for year in range(start_year, end_year + 1):
     # โหลดข้อมูล Grid Cell GeoJSON ของปีนั้น
-    grid_file = f"src/Geo-data/Year-Dataset/data_grid_{year}.json"
+    grid_file = f"src/Geo-data/Year-Dataset/data_grid_index_{year}.json"
     grid_data = gpd.read_file(grid_file)
 
     # เตรียมโครงสร้าง GeoJSON สำหรับบันทึกผลลัพธ์ของปีนั้น
@@ -23,47 +23,137 @@ for year in range(start_year, end_year + 1):
         "features": []
     }
 
-    count = 0
-
     # เริ่มคำนวณรายเดือน
     for month in range(1, 13):
         # เลือกข้อมูล Grid Cell สำหรับเดือนนี้
         monthly_data = grid_data[grid_data['month'] == month]
-        print(f"Processing Year {year}, Month {month}: {len(monthly_data)} entries")
+        print(f"Processing Year {year}, Month {month}: {len(monthly_data)} grid cells found")
 
         # เรียกใช้ฟังก์ชัน calculate_weighted_temperature สำหรับทุกจังหวัด
-        for region in province_coord():  # ดึงข้อมูลจังหวัดในแต่ละภาค
+        for region in province_coord():
             for province in region:
                 name, geometry, region_name = province
-                avg_temp, province_shape = calculate_weighted_temperature(name, shapefile, monthly_data)
+                average_data, province_shape = calculate_weighted_temperature(name, shapefile, monthly_data)
 
-                # ตรวจสอบว่าค่าคำนวณเสร็จสิ้นและไม่ใช่ค่า None
-                if avg_temp is not None and province_shape is not None:
-                    # สร้างฟีเจอร์สำหรับจังหวัดและเดือนนี้
+                if average_data is not None and province_shape is not None:
                     feature = {
                         "type": "Feature",
-                        "geometry": mapping(geometry),  # ใช้ mapping ของรูปทรงจังหวัดโดยตรง
+                        "geometry": mapping(geometry),
                         "properties": {
                             "name": name,
-                            "temperature": float(f"{avg_temp:.2f}"),  # ค่าอุณหภูมิเฉลี่ยถ่วงน้ำหนัก
-                            "region": region_name,  # เพิ่มข้อมูลภูมิภาค
-                            "month": month  # เพิ่มข้อมูลเดือน
+                            "region": region_name,
+                            "month": month,
+                            "temperature": float(f"{average_data['temperature']:.2f}"),
+                            "dtr": float(f"{average_data['dtr']:.2f}"),
+                            "pre": float(f"{average_data['pre']:.2f}"),
+                            "tmin": float(f"{average_data['tmin']:.2f}"),
+                            "tmax": float(f"{average_data['tmax']:.2f}"),
                         }
                     }
                     geojson_data["features"].append(feature)
 
-                # แสดงสถานะการคำนวณ
-                #count += 1
-                #print(f"{count}: Year {year}, Month {month}, Province: {name}, Avg Temp: {avg_temp:.3f}")
+                    # พิมพ์ผลลัพธ์ที่ถูกบันทึก
+                    print(f"  Province: {name} | Region: {region_name} | Month: {month} | "
+                          f"Temperature: {average_data['temperature']:.2f} | DTR: {average_data['dtr']:.2f}")
+                else:
+                    # พิมพ์แจ้งเตือนถ้าข้อมูลหายไป
+                    print(f"  WARNING: No data for Province: {name} | Region: {region_name} | Month: {month}")
 
-    # บันทึกข้อมูล GeoJSON ของปีนั้นลงไฟล์
-    output_geojson_path = f"src/Geo-data/Year-Dataset/data_polygon_{year}.json"
-    with open(output_geojson_path, 'w', encoding='utf-8') as geojson_file:
-        json.dump(geojson_data, geojson_file, indent=2, ensure_ascii=False)
+    # บันทึก GeoJSON ของปีนี้
+    output_file = f"src/Geo-data/Year-Dataset/data_index_polygon_{year}.json"
+    with open(output_file, 'w') as f:
+        json.dump(geojson_data, f, indent=2)
+    print(f"Finished Year {year}. Results saved to {output_file}")
 
-    print(f"GeoJSON data for Year {year} saved successfully.")
 
+# import geopandas as gpd
+# import numpy as np
+# from shapely.geometry import mapping
+# import json
+# from province import province_coord  # ดึงข้อมูลพิกัดของจังหวัดในแต่ละภาคจาก province.py
+# from gridcal import calculate_weighted_temperature  # ฟังก์ชันคำนวณค่าเฉลี่ยถ่วงน้ำหนัก
 
+# # กำหนดช่วงปีที่ต้องการ
+# start_year = 1901
+# end_year = 1905
+
+# # โหลดข้อมูล shapefile จังหวัด
+# shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
+
+# for year in range(start_year, end_year + 1):
+#     # โหลดข้อมูล Grid Cell GeoJSON ของปีนั้น
+#     grid_file = f"src/Geo-data/Year-Dataset/data_grid_index_{year}.json"
+#     grid_data = gpd.read_file(grid_file)
+
+#     # เตรียมโครงสร้าง GeoJSON สำหรับบันทึกผลลัพธ์ของปีนั้น
+#     geojson_data = {
+#         "type": "FeatureCollection",
+#         "features": []
+#     }
+
+#     count = 0
+
+#     # เริ่มคำนวณรายเดือน
+#     for month in range(1, 13):
+#         # เลือกข้อมูล Grid Cell สำหรับเดือนนี้
+#         monthly_data = grid_data[grid_data['month'] == month]
+#         print(f"Processing Year {year}, Month {month}: {len(monthly_data)} entries")
+
+#         # เรียกใช้ฟังก์ชัน calculate_weighted_temperature สำหรับทุกจังหวัด
+#         for region in province_coord():
+#             for province in region:
+#                  name, geometry, region_name = province
+#                  average_data, province_shape = calculate_weighted_temperature(name, shapefile, monthly_data)
+
+#             if average_data is not None and province_shape is not None:
+#                 feature = {
+#                     "type": "Feature",
+#                     "geometry": mapping(geometry),
+#                     "properties": {
+#                         "name": name,
+#                         "region": region_name,
+#                         "month": month,
+#                         # เพิ่มตัวแปรใหม่ใน GeoJSON
+#                         "temperature": float(f"{average_data['temperature']:.2f}"),
+#                         "dtr": float(f"{average_data['dtr']:.2f}"),
+#                         "pre": float(f"{average_data['pre']:.2f}"),
+#                         "tmin": float(f"{average_data['tmin']:.2f}"),
+#                         "tmax": float(f"{average_data['tmax']:.2f}"),
+#                     }
+#                 }
+#                 geojson_data["features"].append(feature)
+#         # for region in province_coord():  # ดึงข้อมูลจังหวัดในแต่ละภาค
+#         #     for province in region:
+#         #         name, geometry, region_name = province
+#         #         avg_temp, province_shape = calculate_weighted_temperature(name, shapefile, monthly_data)
+
+#         #         # ตรวจสอบว่าค่าคำนวณเสร็จสิ้นและไม่ใช่ค่า None
+#         #         if avg_temp is not None and province_shape is not None:
+#         #             # สร้างฟีเจอร์สำหรับจังหวัดและเดือนนี้
+#         #             feature = {
+#         #                 "type": "Feature",
+#         #                 "geometry": mapping(geometry),  # ใช้ mapping ของรูปทรงจังหวัดโดยตรง
+#         #                 "properties": {
+#         #                     "name": name,
+#         #                     "temperature": float(f"{avg_temp:.2f}"),  # ค่าอุณหภูมิเฉลี่ยถ่วงน้ำหนัก
+#         #                     "region": region_name,  # เพิ่มข้อมูลภูมิภาค
+#         #                     "month": month  # เพิ่มข้อมูลเดือน
+#         #                 }
+#         #             }
+#         #             geojson_data["features"].append(feature)
+
+#                 # แสดงสถานะการคำนวณ
+#                 #count += 1
+#                 #print(f"{count}: Year {year}, Month {month}, Province: {name}, Avg Temp: {avg_temp:.3f}")
+
+#     # บันทึกข้อมูล GeoJSON ของปีนั้นลงไฟล์
+#     output_geojson_path = f"src/Geo-data/Year-Dataset/data_index_polygon_{year}.json"
+#     with open(output_geojson_path, 'w', encoding='utf-8') as geojson_file:
+#         json.dump(geojson_data, geojson_file, indent=2, ensure_ascii=False)
+
+#     print(f"GeoJSON data for Year {year} saved successfully.")
+
+#ss
 # import xarray as xr
 # import pandas as pd
 # import json
