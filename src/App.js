@@ -43,7 +43,11 @@ import data_index_1902 from './Geo-data/Year-Dataset/data_index_polygon_1902.jso
 import data_index_1903 from './Geo-data/Year-Dataset/data_index_polygon_1903.json';
 import data_index_1904 from './Geo-data/Year-Dataset/data_index_polygon_1904.json';
 import data_index_1905 from './Geo-data/Year-Dataset/data_index_polygon_1905.json';
-
+import data_index_1906 from './Geo-data/Year-Dataset/data_index_polygon_1906.json';
+import data_index_1907 from './Geo-data/Year-Dataset/data_index_polygon_1907.json';
+import data_index_1908 from './Geo-data/Year-Dataset/data_index_polygon_1908.json';
+import data_index_1909 from './Geo-data/Year-Dataset/data_index_polygon_1909.json';
+import data_index_1910 from './Geo-data/Year-Dataset/data_index_polygon_1910.json';
 
 
 //----------------------------------------------------------------------------//
@@ -84,6 +88,11 @@ const [dataByYear, setDataByYear] = useState({
   "1903": data_index_1903,
   "1904": data_index_1904,
   "1905": data_index_1905,
+  "1906": data_index_1906,
+  "1907": data_index_1907,
+  "1908": data_index_1908,
+  "1909": data_index_1909,
+  "1910": data_index_1910,
 });
 
 const [selectedYearStart, setSelectedYearStart] = useState('');

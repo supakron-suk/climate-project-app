@@ -7,7 +7,7 @@ from gridcal import calculate_weighted_temperature  # ฟังก์ชัน�
 
 # กำหนดช่วงปีที่ต้องการ
 start_year = 1901
-end_year = 1905
+end_year = 1910
 
 # โหลดข้อมูล shapefile จังหวัด
 shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')

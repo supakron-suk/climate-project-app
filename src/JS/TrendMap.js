@@ -1,153 +1,277 @@
 // Trendmap.js
+// export const TrendMap = (dataByYear, startYear, endYear, region, province) => {
+//   if (startYear > endYear) {
+//     console.error("Start year must be less than or equal to end year.");
+//     return null;
+//   }
+
+//   // ฟกรองข้อมูลตามภูมิภาค
+//   const filterByRegion = (features, region) => {
+//     if (region === 'All') return features; 
+//     return features.filter((feature) => feature.properties.region === region);
+//   };
+
+//   // ฟังก์ชันสำหรับกรองข้อมูลตามจังหวัด
+//   const filterByProvince = (features, province) => {
+//     if (!province) return features; // ถ้าไม่ได้ระบุจังหวัด ให้คืนค่าทุกจังหวัด
+//     return features.filter((feature) => feature.properties.name === province);
+//   };
+
+//   const trends = []; // ใช้เก็บข้อมูลเทรนด์
+//   const geometryMap = {}; // ใช้เก็บข้อมูลตำแหน่งทางภูมิศาสตร์ (geometry)
+
+//   // วนลูปปีที่อยู่ในช่วงที่กำหนด
+//   for (let year = startYear; year <= endYear; year++) {
+//     const geojson = dataByYear[year]; // ดึงข้อมูล GeoJSON ตามปี
+//     if (!geojson) continue; // ข้ามปีที่ไม่มีข้อมูล
+
+//     // กรองข้อมูลตามภูมิภาคและจังหวัด
+//     let filteredFeatures = filterByRegion(geojson.features, region);
+//     filteredFeatures = filterByProvince(filteredFeatures, province);
+
+//     // วนลูปข้อมูลที่กรองแล้ว
+//     filteredFeatures.forEach((feature) => {
+//       const { temperature, month, name, region: region } = feature.properties;
+
+//       // ตรวจสอบว่าข้อมูลอุณหภูมิและเดือนมีค่าถูกต้อง
+//       if (typeof temperature === 'number' && month >= 1 && month <= 12) {
+//         trends.push({ year, name, temperature, month, region: feature.properties.region });
+//         // เก็บข้อมูลตำแหน่งทางภูมิศาสตร์ของแต่ละพื้นที่
+//         if (!geometryMap[name]) geometryMap[name] = feature.geometry;
+//       }
+//     });
+//   }
+
+//   // ถ้าไม่มีข้อมูลเทรนด์ แจ้งเตือนและคืนค่า null
+//   if (trends.length === 0) {
+//     console.warn("No trends data available.");
+//     return null;
+//   }
+
+//   // จัดกลุ่มข้อมูลเทรนด์ตามพื้นที่ (name)
+//   const groupedTrends = trends.reduce((acc, curr) => {
+//     const key = curr.name; // ใช้ชื่อพื้นที่เป็นคีย์
+//     if (!acc[key]) acc[key] = [];
+//     acc[key].push({ year: curr.year, temperature: curr.temperature, month: curr.month }); // เก็บปี, อุณหภูมิ, และเดือน
+//     return acc;
+//   }, {});
+
+//   // คำนวณค่าเฉลี่ยของอุณหภูมิในแต่ละปี
+//   const yearlyTrends = Object.entries(groupedTrends).map(([area, data]) => {
+//     const yearlyData = {};
+    
+//     // เฉลี่ยข้อมูลอุณหภูมิรายเดือนเป็นรายปี
+//     data.forEach(({ year, temperature }) => {
+//       if (!yearlyData[year]) {
+//         yearlyData[year] = { sum: 0, count: 0 };
+//       }
+//       yearlyData[year].sum += temperature;
+//       yearlyData[year].count += 1;
+//     });
+
+//     // คำนวณค่าเฉลี่ยในแต่ละปี
+//     const yearlyAverages = Object.entries(yearlyData).map(([year, { sum, count }]) => {
+//       return { year: parseInt(year), temperature: sum / count };
+//     });
+
+//     return { area, yearlyAverages };
+//   });
+
+//   // คำนวณค่า slope ของแต่ละพื้นที่ และสร้างข้อมูล GeoJSON
+//   const features = yearlyTrends.map(({ area, yearlyAverages }) => {
+//     const slope = calculateModifiedTheilSenSlope(yearlyAverages); // คำนวณ slope จากข้อมูลที่เป็นรายปี
+//     const roundedSlope = parseFloat(slope.toFixed(2)); // ปัดค่า slope ให้มีทศนิยม 2 ตำแหน่ง
+//     return {
+//       type: "Feature", // ระบุประเภทข้อมูล GeoJSON
+//       geometry: geometryMap[area], // นำข้อมูลตำแหน่งทางภูมิศาสตร์มาใส่
+//       properties: {
+//         name: area, // ชื่อพื้นที่
+//         slope_value: roundedSlope, // ค่า slope
+//         region: trends.find((t) => t.name === area).region, // ระบุภูมิภาค
+//       },
+//     };
+//   });
+
+//   // สร้างข้อมูล GeoJSON สำหรับเทรนด์
+//   const geojson_Trendmap = {
+//     type: "FeatureCollection", // ระบุประเภทข้อมูลเป็น FeatureCollection
+//     features, // ใส่ข้อมูล Feature ที่สร้างไว้
+//   };
+
+//   console.log("Generated GeoJSON:", geojson_Trendmap); // แสดงข้อมูล GeoJSON ทาง console
+//   return geojson_Trendmap; // คืนค่าข้อมูล GeoJSON
+// };
+
+// // ฟังก์ชันสำหรับคำนวณ Modified Theil-Sen Slope
+// const calculateModifiedTheilSenSlope = (data) => {
+//   const n = data.length; // จำนวนข้อมูล
+//   const slopes = []; // เก็บค่าความชัน (slope)
+
+//   // วนลูปข้อมูลแบบจับคู่สองจุด
+//   for (let i = 0; i < n - 1; i++) {
+//     for (let j = i + 1; j < n; j++) {
+//       const { year: x1, temperature: y1 } = data[i];
+//       const { year: x2, temperature: y2 } = data[j];
+//       const slope = (y2 - y1) / (x2 - x1); // คำนวณความชันระหว่างจุดสองจุด
+//       slopes.push(slope); // เก็บค่าความชันในอาเรย์
+//     }
+//   }
+
+//   // จัดเรียงค่าความชันจากน้อยไปมาก
+//   slopes.sort((a, b) => a - b);
+
+//   // คำนวณค่า median ของค่าความชัน
+//   const mid = Math.floor(slopes.length / 2);
+//   return slopes.length % 2 === 0 ? (slopes[mid - 1] + slopes[mid]) / 2 : slopes[mid];
+// };
+
+
+
 export const TrendMap = (dataByYear, startYear, endYear, region, province) => {
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year.");
     return null;
   }
 
+  // ฟกรองข้อมูลตามภูมิภาค
   const filterByRegion = (features, region) => {
-    if (region === 'All') return features;
+    if (region === 'All') return features; 
     return features.filter((feature) => feature.properties.region === region);
   };
 
+  // ฟังก์ชันสำหรับกรองข้อมูลตามจังหวัด
   const filterByProvince = (features, province) => {
-    if (!province) return features;
+    if (!province) return features; // ถ้าไม่ได้ระบุจังหวัด ให้คืนค่าทุกจังหวัด
     return features.filter((feature) => feature.properties.name === province);
   };
 
-  const trends = [];
-  const geometryMap = {};
+  const trends = []; // ใช้เก็บข้อมูลเทรนด์
+  const geometryMap = {}; // ใช้เก็บข้อมูลตำแหน่งทางภูมิศาสตร์ (geometry)
 
+  // วนลูปปีที่อยู่ในช่วงที่กำหนด
   for (let year = startYear; year <= endYear; year++) {
-    const geojson = dataByYear[year];
-    if (!geojson) continue;
+    const geojson = dataByYear[year]; // ดึงข้อมูล GeoJSON ตามปี
+    if (!geojson) continue; // ข้ามปีที่ไม่มีข้อมูล
 
+    // กรองข้อมูลตามภูมิภาคและจังหวัด
     let filteredFeatures = filterByRegion(geojson.features, region);
     filteredFeatures = filterByProvince(filteredFeatures, province);
 
+    // วนลูปข้อมูลที่กรองแล้ว
     filteredFeatures.forEach((feature) => {
       const { temperature, month, name, region: region } = feature.properties;
+
+      // ตรวจสอบว่าข้อมูลอุณหภูมิและเดือนมีค่าถูกต้อง
       if (typeof temperature === 'number' && month >= 1 && month <= 12) {
-        trends.push({ year, name, temperature, region: feature.properties.region});
+        trends.push({ year, name, temperature, region: feature.properties.region });
+        // เก็บข้อมูลตำแหน่งทางภูมิศาสตร์ของแต่ละพื้นที่
+        //console.log('trends',trends)
         if (!geometryMap[name]) geometryMap[name] = feature.geometry;
       }
     });
   }
 
+  // ถ้าไม่มีข้อมูลเทรนด์ แจ้งเตือนและคืนค่า null
   if (trends.length === 0) {
     console.warn("No trends data available.");
     return null;
   }
 
-  const groupedTrends = trends.reduce((acc, curr) => {
-    const key = curr.name;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push({ year: curr.year, temperature: curr.temperature });
-    return acc;
-  }, {});
+  // จัดกลุ่มข้อมูลเทรนด์ตามพื้นที่ (name)
+const groupedTrends = trends.reduce((acc, curr) => {
+  const key = curr.name; // ใช้ชื่อพื้นที่เป็นคีย์
+  if (!acc[key]) acc[key] = [];
+  acc[key].push({ year: curr.year, temperature: curr.temperature }); // เก็บปีและอุณหภูมิในแต่ละพื้นที่
+  return acc;
+}, {});
 
+//console.log("Grouped Trends:", groupedTrends); 
+
+  // คำนวณค่า slope ของแต่ละพื้นที่ และสร้างข้อมูล GeoJSON
   const features = Object.entries(groupedTrends).map(([area, data]) => {
-    const slope = calculateModifiedTheilSenSlope(data);
-    const roundedSlope = parseFloat(slope.toFixed(2));
+    const slope = calculateModifiedTheilSenSlope(data); // คำนวณ slope
+    const roundedSlope = parseFloat(slope.toFixed(2)); // ปัดค่า slope ให้มีทศนิยม 2 ตำแหน่ง
     return {
-      type: "Feature",
-      geometry: geometryMap[area],
+      type: "Feature", // ระบุประเภทข้อมูล GeoJSON
+      geometry: geometryMap[area], // นำข้อมูลตำแหน่งทางภูมิศาสตร์มาใส่
       properties: {
-        name: area,
-        slope_value: roundedSlope,
-        region: trends.find((t) => t.name === area).region,
+        name: area, // ชื่อพื้นที่
+        slope_value: roundedSlope, // ค่า slope
+        region: trends.find((t) => t.name === area).region, // ระบุภูมิภาค
       },
     };
   });
 
+  // สร้างข้อมูล GeoJSON สำหรับเทรนด์
   const geojson_Trendmap = {
-    type: "FeatureCollection",
-    features,
+    type: "FeatureCollection", // ระบุประเภทข้อมูลเป็น FeatureCollection
+    features, // ใส่ข้อมูล Feature ที่สร้างไว้
   };
 
-  console.log("Generated GeoJSON:", geojson_Trendmap); // Log ข้อมูล GeoJSON
-  return geojson_Trendmap;
+  console.log("Generated GeoJSON:", geojson_Trendmap); // แสดงข้อมูล GeoJSON ทาง console
+  return geojson_Trendmap; // คืนค่าข้อมูล GeoJSON
 };
 
+// ฟังก์ชันสำหรับคำนวณ Modified Theil-Sen Slope
 const calculateModifiedTheilSenSlope = (data) => {
-  const n = data.length;
-  const slopes = [];
+  console.log('data', data)
+  const n = data.length; // จำนวนข้อมูล
+  const slopes = []; // เก็บค่าความชัน (slope)
+
+  // วนลูปข้อมูลแบบจับคู่สองจุด
   for (let i = 0; i < n - 1; i++) {
     for (let j = i + 1; j < n; j++) {
       const { year: x1, temperature: y1 } = data[i];
       const { year: x2, temperature: y2 } = data[j];
-      const slope = (y2 - y1) / (x2 - x1);
-      slopes.push(slope);
+      const slope = (y2 - y1) / (x2 - x1); // คำนวณความชันระหว่างจุดสองจุด
+      slopes.push(slope); // เก็บค่าความชันในอาเรย์
+      //console.log('slopes',slopes)
+      //console.log('slopes',slopes)
     }
   }
+
+  // จัดเรียงค่าความชันจากน้อยไปมาก
   slopes.sort((a, b) => a - b);
+
+  // คำนวณค่า median ของค่าความชัน
   const mid = Math.floor(slopes.length / 2);
   return slopes.length % 2 === 0 ? (slopes[mid - 1] + slopes[mid]) / 2 : slopes[mid];
 };
 
+// const calculateModifiedTheilSenSlope = (data) => {
+//   const n = data.length;
+//   const slopes = [];
 
-// export const TrendMap = (dataByYear, startYear, endYear, region) => {
-//   if (startYear > endYear) {
-//     console.error("Start year must be less than or equal to end year.");
-//     return;
-//   }
+//   for (let i = 0; i < n - 1; i++) {
+//     for (let j = i + 1; j < n; j++) {
+//       const { year: x1, temperature: y1 } = data[i];
+//       const { year: x2, temperature: y2 } = data[j];
 
-//   const filterByRegion = (features, region) => {
-//     if (region === 'All') {
-//       return features;
-//     }
-//     return features.filter((feature) => feature.properties.region === region);
-//   };
-
-//   const trends = []; // เก็บข้อมูลของแต่ละปีและพื้นที่
-
-//   for (let year = startYear; year <= endYear; year++) {
-//     const geojson = dataByYear[year];
-//     if (!geojson) {
-//       console.warn(`No data available for year ${year}`);
-//       continue;
-//     }
-
-//     const filteredFeatures = filterByRegion(geojson.features, region);
-
-//     // Debug: แสดงข้อมูลปีและภูมิภาคที่กำลังประมวลผล
-//     //console.log(`Processing data for Year: ${year}, Region: ${region}`);
-//     //console.log(`Filtered Features:`, filteredFeatures.map(f => f.properties.name));
-
-//     // สำหรับแต่ละพื้นที่ เก็บข้อมูล temperature, month และ year
-//     filteredFeatures.forEach((feature) => {
-//       const { temperature, month, name, region: featureRegion } = feature.properties;
-
-//       if (typeof temperature === 'number' && month >= 1 && month <= 12) {
-//         // แสดงข้อมูลที่เลือกแบบละเอียด
-//         console.log(`Data -> Year: ${year}, Month: ${month}, Area: ${name} (${featureRegion}), Temperature: ${temperature}`);
-        
-//         trends.push({
-//           year,
-//           month,
-//           name,
-//           temperature,
-//           region: featureRegion,
-//         });
+//       // ตรวจสอบการหารด้วยศูนย์
+//       if (x2 === x1) {
+//         continue;  // ข้ามการคำนวณนี้ เพราะจะทำให้เกิด Infinity หรือ -Infinity
 //       }
-//     });
+
+//       const slope = (y2 - y1) / (x2 - x1);
+
+//       // ตรวจสอบผลลัพธ์ที่เป็น Infinity หรือ -Infinity
+//       if (slope === Infinity || slope === -Infinity) {
+//         continue;  // ข้ามกรณีที่เป็น Infinity
+//       }
+
+//       slopes.push(slope);
+//     }
 //   }
 
-//   // Debug: แสดงข้อมูลที่เก็บอยู่ใน trends
-//   console.log("Collected Trends Data:", trends);
+//   // ถ้าไม่พบการคำนวณใดๆ ก็คืนค่า 0 หรือค่าอื่นที่เหมาะสม
+//   if (slopes.length === 0) {
+//     return 0;
+//   }
 
-//   // แสดงผลข้อมูลแบบ Grouped ตามพื้นที่และปี
-//   const groupedByAreaAndYear = trends.reduce((acc, curr) => {
-//     const { year, name, temperature } = curr;
-//     if (!acc[name]) {
-//       acc[name] = {};
-//     }
-//     if (!acc[name][year]) {
-//       acc[name][year] = [];
-//     }
-//     acc[name][year].push(temperature);
-//     return acc;
-//   }, {});
+//   slopes.sort((a, b) => a - b);
+
+//   const mid = Math.floor(slopes.length / 2);
+//   return slopes.length % 2 === 0 ? (slopes[mid - 1] + slopes[mid]) / 2 : slopes[mid];
 // };
 
 
