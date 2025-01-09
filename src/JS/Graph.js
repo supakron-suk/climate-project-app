@@ -85,7 +85,7 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   const value = feature.properties[selectedIndex]; // ดึงค่าของ selectedIndex
 
   // Log ข้อมูลที่เลือกใน console
-  console.log(`Year: ${year}, Month: ${month}, Region: ${region}, Province: ${name}, ${selectedIndex}: ${value}`);
+  //console.log(`Year: ${year}, Month: ${month}, Region: ${region}, Province: ${name}, ${selectedIndex}: ${value}`);
 
   if (!provinceData[name]) {
     provinceData[name] = [];
@@ -141,12 +141,24 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
 
 
   //------------------------------------GRAPH ZONE------------------------------------------------------//
+  
 
   const indexLabels = {
   temperature: { label: 'Average Temperature', unit: '°C' },
   precipitation: { label: 'Average Precipitation', unit: 'mm' },
   humidity: { label: 'Average Humidity', unit: '%' },
   // เพิ่ม index อื่น ๆ ตามที่คุณมีในข้อมูล
+};
+
+const calculateYAxisBounds = (data) => {
+  const validData = data.filter((value) => typeof value === "number" && !isNaN(value)); // กรองค่าที่ valid
+  const min = Math.min(...validData);
+  const max = Math.max(...validData);
+  const padding = (max - min) * 0.1; // เพิ่ม padding 10% ให้กราฟดูสวยงาม
+  return {
+    min: min - padding > 0 ? min - padding : 0, // ไม่ให้ต่ำกว่าศูนย์ถ้าเป็นข้อมูลบวก
+    max: max + padding,
+  };
 };
 
 const selectedIndexLabel = indexLabels[selectedIndex]?.label || 'Unknown Data';
@@ -168,17 +180,18 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
   };
 
   const seasonalMeans = Seasonal_Cycle(monthlyData); 
+  const seasonalBounds = calculateYAxisBounds(seasonalMeans);
 
   const seasonalCycleData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: seasonalMeans, 
-      borderColor: 'rgba(75,192,192,1)', 
-      backgroundColor: 'rgba(75,192,192,0.2)', 
-      fill: true, 
-      tension: 0.4, 
+      data: seasonalMeans,
+      borderColor: 'rgba(75,192,192,1)',
+      backgroundColor: 'rgba(75,192,192,0.2)',
+      fill: true,
+      tension: 0.4,
     },
   ],
   options: {
@@ -189,23 +202,12 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
           display: true,
           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
         },
+        min: seasonalBounds.min, // ตั้งค่า min อัตโนมัติ
+        max: seasonalBounds.max, // ตั้งค่า max อัตโนมัติ
       },
     },
   },
 };
-  // const seasonalCycleData = {
-  //   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  //   datasets: [
-  //     {
-  //       label: 'Seasonal Cycle (°C)',
-  //       data: seasonalMeans, 
-  //       borderColor: 'rgba(75,192,192,1)', 
-  //       backgroundColor: 'rgba(75,192,192,0.2)', 
-  //       fill: true, 
-  //       tension: 0.4, 
-  //     },
-  //   ],
-  // }; 
 
   const yearBoundaries = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
     const midYearIndex = i * 12 + 11; 
@@ -220,38 +222,40 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
     };
   });
 
+  const timeSeriesBounds = calculateYAxisBounds(result);
+
   const timeSeriesData = {
   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-    const year = startYear + Math.floor(i / 12); 
-    const month = i % 12; 
-    return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
+    const year = startYear + Math.floor(i / 12);
+    const month = i % 12;
+    return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`;
   }),
   datasets: [
     {
       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: result, 
-      borderColor: 'rgba(75,192,192,1)', 
-      backgroundColor: 'rgba(75,192,192,0.2)', 
-      fill: true, 
-      tension: 0.4, 
+      data: result,
+      borderColor: 'rgba(75,192,192,1)',
+      backgroundColor: 'rgba(75,192,192,0.2)',
+      fill: true,
+      tension: 0.4,
     },
     {
       label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: Array(result.length).fill(null).concat(overallMean), 
-      borderColor: 'black', 
-      borderWidth: 2, 
-      borderDash: [5, 5], 
-      pointBackgroundColor: 'black', 
-      pointRadius: 6, 
-      fill: false, 
-      tension: 0.4, 
+      data: Array(result.length).fill(null).concat(overallMean),
+      borderColor: 'black',
+      borderWidth: 2,
+      borderDash: [5, 5],
+      pointBackgroundColor: 'black',
+      pointRadius: 6,
+      fill: false,
+      tension: 0.4,
     },
   ],
   options: {
     responsive: true,
     plugins: {
       annotation: {
-        annotations: yearBoundaries, 
+        annotations: yearBoundaries,
       },
     },
     scales: {
@@ -260,48 +264,60 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
           display: true,
           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
         },
+        min: timeSeriesBounds.min, // ตั้งค่า min อัตโนมัติ
+        max: timeSeriesBounds.max, // ตั้งค่า max อัตโนมัติ
       },
     },
   },
 };
-  // const timeSeriesData = {
-  //   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-  //     const year = startYear + Math.floor(i / 12); 
-  //     const month = i % 12; 
-  //     return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
-  //   }),
-  //   datasets: [
-  //     {
-  //       label: 'Average Temperature (°C)',
-  //       data: result, 
-  //       borderColor: 'rgba(75,192,192,1)', 
-  //       backgroundColor: 'rgba(75,192,192,0.2)', 
-  //       fill: true, 
-  //       tension: 0.4, 
-  //     },
-  //     {
-  //       label: 'Overall Mean Temperature (°C)',
-  //       data: Array(result.length).fill(null).concat(overallMean), 
-  //       borderColor: 'black', 
-  //       borderWidth: 2, 
-  //       borderDash: [5, 5], 
-  //       pointBackgroundColor: 'black', 
-  //       pointRadius: 6, 
-  //       fill: false, 
-  //       tension: 0.4, 
-  //     },
-  //   ],
-  //   options: {
-  //     responsive: true,
-  //     plugins: {
-  //       annotation: {
-  //         annotations: yearBoundaries, 
-  //       },
-  //     },
-  //   },
-  // };
 
-  return { seasonalCycleData, timeSeriesData }; 
+return { seasonalCycleData, timeSeriesData };
+//   const timeSeriesData = {
+//   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
+//     const year = startYear + Math.floor(i / 12); 
+//     const month = i % 12; 
+//     return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
+//   }),
+//   datasets: [
+//     {
+//       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
+//       data: result, 
+//       borderColor: 'rgba(75,192,192,1)', 
+//       backgroundColor: 'rgba(75,192,192,0.2)', 
+//       fill: true, 
+//       tension: 0.4, 
+//     },
+//     {
+//       label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
+//       data: Array(result.length).fill(null).concat(overallMean), 
+//       borderColor: 'black', 
+//       borderWidth: 2, 
+//       borderDash: [5, 5], 
+//       pointBackgroundColor: 'black', 
+//       pointRadius: 6, 
+//       fill: false, 
+//       tension: 0.4, 
+//     },
+//   ],
+//   options: {
+//     responsive: true,
+//     plugins: {
+//       annotation: {
+//         annotations: yearBoundaries, 
+//       },
+//     },
+//     scales: {
+//       y: {
+//         title: {
+//           display: true,
+//           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
+//         },
+//       },
+//     },
+//   },
+// };
+
+//   return { seasonalCycleData, timeSeriesData }; 
 };
 
 
@@ -314,26 +330,3 @@ export const filterByMonth = (data, month) => {
   }
   return data.filter(feature => feature.properties.month === parseInt(month));
 };
-
-
-
-// export const getProvinceTemp = (geojson, provinceName) => {
-//   // สร้างอาร์เรย์เก็บค่า temperature สำหรับ 12 เดือน
-//   const monthlyTemperatures = Array(12).fill(null);
-
-//   // ค้นหาข้อมูลจังหวัดที่เลือก
-//   const provinceFeatures = geojson.features.filter(
-//     (feature) => feature.properties.name === provinceName
-//   );
-
-//   // วนลูปเพื่อดึงค่า temperature สำหรับแต่ละเดือน
-//   provinceFeatures.forEach((feature) => {
-//     const { temperature, month } = feature.properties;
-
-//     if (month >= 1 && month <= 12 && typeof temperature === 'number') {
-//       monthlyTemperatures[month - 1] = temperature;
-//     }
-//   });
-
-//   return monthlyTemperatures;
-// };

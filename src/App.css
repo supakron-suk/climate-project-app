@@ -40,6 +40,12 @@
   margin-left: 800px; /* ปรับตำแหน่งด้วยตัวเลข px เพื่อเลื่อนไปทางขวา */
 }
 
+.title-year {
+  position: relative; 
+  top: -25px; 
+  /* left: 700px;  */
+  text-align: center; 
+}
 
 
 .container {
@@ -52,84 +58,189 @@
   flex-direction: row;
 }
 
+
+/*----------------------Dashboard box-----------------------------*/
+.dashboard-box {
+  width: 100%; 
+  max-width: 2700px; 
+  max-height: 1500px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+}
+
 .time-series-chart {
   flex: 1;
   margin-right: 100px;
 }
 
 .Seasonal-Cycle-chart {
-  width: 100%; /* กำหนดความกว้างให้กราฟเป็น 50% ของหน้าจอ */
-  height: 650px; /* กำหนดความสูงให้กราฟ */
+  width: 100%; 
+  height: 650px; 
 }
 
 .Seasonal-Cycle-chart canvas {
-  width: 100% !important; /* ให้กราฟขยายเต็มพื้นที่ที่กำหนด */
-  height: auto !important; /* ปรับความสูงอัตโนมัติตามพื้นที่ */
+  width: 100% !important; 
+  height: auto !important; 
+}
+
+.time-series-chart {
+  width: 1500px; 
+  height: 650px; 
+  margin: 0 auto; 
+  margin-left: 50px;
+}
+
+.Seasonal-Cycle-chart{
+  width: 1300px; 
+  height: 700px; 
+  margin: 0 auto; 
+  margin-left: 50px;
 }
 
 .right-map {
-  flex: row;
-  margin-left: 100px;
+  display: flex;
+  justify-content: flex-start; 
+  align-items: flex-start; 
+  margin-left: -150px; 
+  margin-right: 20px; 
+  margin-top: -350px;
+  height: 100%;
 }
+
+/*-------------Variable, Index Selector---------------*/
+.dropdown-container {
+  display: flex;
+  align-items: flex-start; /* ชิดด้านซ้ายในแนวตั้ง */
+  justify-content: flex-start; /* ชิดด้านซ้ายในแนวนอน */
+  gap: 30px; /* ลดระยะห่างระหว่าง dropdown */
+  margin: 1px 0; /* เพิ่มระยะห่างด้านบนและล่าง */
+  padding-left: 60px;
+}
+
+.value-selector,
+.index-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* จัด label และ dropdown ชิดซ้าย */
+}
+
+.value-selector select,
+.index-selector select {
+  width: 650px; /* เพิ่มความกว้าง */
+  padding: 15px; /* เพิ่มความสูงโดยการเพิ่ม padding */
+  font-size: 20px; /* เพิ่มขนาดตัวอักษร */
+  border: 1px solid #ccc;
+  border-radius: 8px; /* มุมมน */
+  background-color: #f9f9f9; /* สีพื้นหลัง */
+  color: #333; /* สีข้อความ */
+  text-align: left; /* จัดข้อความใน dropdown ชิดซ้าย */
+}
+
+.value-selector label,
+.index-selector label {
+  font-size: 24px; /* เพิ่มขนาดตัวอักษรของ label */
+  margin: 5px ;
+  font-weight: bold; /* เพิ่มความหนาของตัวอักษร */
+}
+
+
+/*-------------Variable, Index Selector---------------*/
+/*----------------------Dashboard box-----------------------------*/
 
 .map-container{
   flex: auto;
   margin-top: -1015px;
 }
 
-.thai-map {
-  position: relative; /* Positioning relative for child elements */
+/* .thai-map {
+  position: relative; 
   width: 800px;
   height: 700px;
-  /* อาจจะมีการปรับขนาดหรือการจัดเรียงอื่น ๆ ตามต้องการ */
-}
+  
+} */
 
+
+/*----------------Color Value Bar------------------*/
 .color-bar-horizontal {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: absolute;
-    bottom: -650px;
-    left: 320px;
-    transform: translateX(-50%);
-    background-color: white;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+  width: 90%;
 }
 
 .gradient-bar {
-    width: 700px;
-    height: 30px;
-    background: linear-gradient(to right, 
-        #67001f, 
-        #b6202f, 
-        #dd6f59, 
-        #f7b799, 
-        #f3a582, 
-        #fae7dc, 
-        #e2edf3, 
-        #a7d0e4, 
-        #559ec9,
-        #256baf,
-        #053061);
-    border: 1px solid #000;
-    margin-bottom: 8px;
+  display: flex;
+  height: 20px;
+  width: 100%;
+  border: 1px solid #000;
 }
 
-.temperature-labels {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+.color-segment {
+  height: 100%;
 }
 
-.temperature-labels span {
-    font-size: 14px;
+.labels {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
 }
 
+.labels span {
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
 
-/* ตั้งค่าสำหรับ container หลัก */
+.title {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+/* .color-bar-horizontal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+  position: relative;
+  width: 350px;
+  right: -400px;
+}
+
+.gradient-bar {
+  display: flex;
+  height: 20px;
+  width: 300%;
+  border: 1px solid #000;
+  position: relative;
+}
+
+.color-segment {
+  height: 100%;
+}
+
+.labels {
+  position: relative;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.labels span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.title {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+} */
 
 /*-----------------------dropdown region--------------------------------------*/
 .region-selector {
@@ -151,29 +262,169 @@
   font-size: 16px;
 }
 /*-------------------------------------------------------------*/
-/* .region-selector select {
-  width: 250px;
-  padding: 12px;
-  font-size: 18px;
-  margin: -400px 0;
-  margin-bottom: 20px;
-} */
 
-.time-series-chart {
-  width: 1000px; /* กำหนดความกว้าง */
-  height: 500px; /* กำหนดความสูง */
-  margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
-  margin-left: 20px;
+/* .time-series-chart {
+  width: 1500px; 
+  height: 650px; 
+  margin: 0 auto; 
+  margin-left: 50px;
 }
 
 .Seasonal-Cycle-chart{
-  width: 1000px; /* กำหนดความกว้าง */
-  height: 500px; /* กำหนดความสูง */
-  margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
-  margin-left: 20px;
+  width: 1300px; 
+  height: 700px; 
+  margin: 0 auto; 
+  margin-left: 50px;
+} */
+
+/*--------------------------year selector------------------*/
+.year-selector {
+  text-align: center;
+  font-size: 30px; /* เพิ่มขนาดฟอนต์สำหรับ label */
+  margin-bottom: 20px; /* เพิ่มระยะห่างระหว่าง dropdown */
 }
 
-.year-selector{
-  position: center;
-  left: 400px;
+.year-selector select {
+  width: 300px; /* เพิ่มความกว้าง dropdown */
+  padding: 15px; /* เพิ่มพื้นที่ภายใน dropdown */
+  font-size: 18px; /* เพิ่มขนาดตัวอักษรใน dropdown */
+  border: 1px solid #ccc; /* ขอบของ dropdown */
+  border-radius: 8px; /* มุมมนของ dropdown */
+  background-color: #f9f9f9; /* สีพื้นหลัง dropdown */
+  color: #333; /* สีของข้อความ */
+  cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
 }
+
+.year-selector select option {
+  font-size: 18px; /* เพิ่มขนาดตัวอักษรสำหรับตัวเลือกใน dropdown */
+}
+
+/*-------------Region, Province Selector---------------*/
+.region-selector,
+.province-selector {
+  display: flex;
+  flex-direction: column; /* จัดเรียง label และ select ให้อยู่ในแนวตั้ง */
+  align-items: center; /* ทำให้อยู่ตรงกลางแนวนอน */
+  margin: 20px 0; /* เพิ่มระยะห่างระหว่าง dropdown */
+}
+
+.region-selector label,
+.province-selector label {
+  font-size: 18px; /* ขนาดตัวอักษรสำหรับ label */
+  font-weight: bold; /* ตัวหนา */
+  margin-bottom: 10px; /* ระยะห่างระหว่าง label และ select */
+}
+
+.region-selector select,
+.province-selector select {
+  width: 250px; /* กำหนดความกว้าง dropdown */
+  padding: 12px; /* เพิ่มพื้นที่ภายใน dropdown */
+  font-size: 16px; /* ขนาดตัวอักษรใน dropdown */
+  border: 1px solid #ccc; /* ขอบของ dropdown */
+  border-radius: 8px; /* มุมมนของ dropdown */
+  background-color: #f9f9f9; /* สีพื้นหลังของ dropdown */
+  color: #333; /* สีข้อความ */
+  cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
+  text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+}
+
+.region-selector select:disabled,
+.province-selector select:disabled {
+  background-color: #e0e0e0; /* สีพื้นหลังเมื่อถูกปิดการใช้งาน */
+  cursor: not-allowed; /* เปลี่ยน cursor เมื่อปิดการใช้งาน */
+}
+
+.region-selector option,
+.province-selector option {
+  font-size: 20px; /* ขนาดตัวอักษรสำหรับตัวเลือก */
+  text-align: left; /* จัดข้อความตัวเลือกให้อยู่ด้านซ้าย */
+}
+/*-------------Region, Province Selector---------------*/
+
+
+/* -----------------Select map Button----------------- */
+
+.map-buttons {
+  position: absolute; /* ให้อยู่บนสุดของแผนที่ */
+  top: 730px; /* ระยะจากขอบบน */
+  left: 1660px; /* ระยะจากขอบซ้าย */
+  z-index: 1000; /* ให้ปุ่มอยู่ด้านหน้า */
+  display: flex;
+  flex-direction: row; /* เรียงปุ่มในแนวตั้ง */
+  gap: 5px; /* ระยะห่างระหว่างปุ่ม */
+}
+
+.map-buttons button {
+  padding: 10px 15px; /* ขนาดปุ่ม */
+  font-size: 14px; /* ขนาดตัวอักษร */
+  background-color: #007bff; /* สีพื้นหลังของปุ่ม */
+  color: white; /* สีตัวอักษร */
+  border: none; /* ไม่มีเส้นขอบ */
+  border-radius: 5px; /* มุมมน */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
+}
+
+.map-buttons button:hover {
+  background-color: #0056b3; /* สีเมื่อ hover */
+}
+
+.map-container {
+  position: relative; /* ทำให้ปุ่มสามารถแสดงในตำแหน่งสัมพันธ์กับแผนที่ได้ */
+}
+
+
+
+
+/*-------------Variable, Index Selector---------------*/
+/* .dropdown-container {
+  display: flex;
+  align-items: flex-start; 
+  justify-content: flex-start; 
+  gap: 30px; 
+  margin: 1px 0; 
+  padding-left: 60px;
+}
+
+.value-selector,
+.index-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+}
+
+.value-selector select,
+.index-selector select {
+  width: 650px; 
+  padding: 15px; 
+  font-size: 20px; 
+  border: 1px solid #ccc;
+  border-radius: 8px; 
+  background-color: #f9f9f9; 
+  color: #333; 
+  text-align: left; 
+}
+
+.value-selector label,
+.index-selector label {
+  font-size: 24px; 
+  margin: 5px ;
+  font-weight: bold; 
+} */
+
+
+/*-------------Variable, Index Selector---------------*/
+
+/* .dashboard-box {
+  width: 100%; 
+  max-width: 2700px; 
+  max-height: 1450px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+} */
+
+

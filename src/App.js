@@ -24,18 +24,19 @@ import { dummyTimeSeriesData,
          calculatemean,
        } from './JS/Graph';
 import {TrendMap} from './JS/TrendMap.js';
+import { Heatmap } from './JS/Heatmap.js';
 
 //-------------------------IMPORT DATA YEAR-----------------------------------//
-import data1901 from './Geo-data/Year-Dataset/data_polygon_1901.json';
-import data1902 from './Geo-data/Year-Dataset/data_polygon_1902.json';
-import data1903 from './Geo-data/Year-Dataset/data_polygon_1903.json';
-import data1904 from './Geo-data/Year-Dataset/data_polygon_1904.json';
-import data1905 from './Geo-data/Year-Dataset/data_polygon_1905.json';
-import data1906 from './Geo-data/Year-Dataset/data_polygon_1906.json';
-import data1907 from './Geo-data/Year-Dataset/data_polygon_1907.json';
-import data1908 from './Geo-data/Year-Dataset/data_polygon_1908.json';
-import data1909 from './Geo-data/Year-Dataset/data_polygon_1909.json';
-import data1910 from './Geo-data/Year-Dataset/data_polygon_1910.json';
+// import data1901 from './Geo-data/Year-Dataset/data_polygon_1901.json';
+// import data1902 from './Geo-data/Year-Dataset/data_polygon_1902.json';
+// import data1903 from './Geo-data/Year-Dataset/data_polygon_1903.json';
+// import data1904 from './Geo-data/Year-Dataset/data_polygon_1904.json';
+// import data1905 from './Geo-data/Year-Dataset/data_polygon_1905.json';
+// import data1906 from './Geo-data/Year-Dataset/data_polygon_1906.json';
+// import data1907 from './Geo-data/Year-Dataset/data_polygon_1907.json';
+// import data1908 from './Geo-data/Year-Dataset/data_polygon_1908.json';
+// import data1909 from './Geo-data/Year-Dataset/data_polygon_1909.json';
+// import data1910 from './Geo-data/Year-Dataset/data_polygon_1910.json';
 
 //----------------------- IMPROT DATA FULL INDEX -----------------------------//
 import data_index_1901 from './Geo-data/Year-Dataset/data_index_polygon_1901.json';
@@ -48,10 +49,12 @@ import data_index_1907 from './Geo-data/Year-Dataset/data_index_polygon_1907.jso
 import data_index_1908 from './Geo-data/Year-Dataset/data_index_polygon_1908.json';
 import data_index_1909 from './Geo-data/Year-Dataset/data_index_polygon_1909.json';
 import data_index_1910 from './Geo-data/Year-Dataset/data_index_polygon_1910.json';
+//import data_index_1960 from './Geo-data/Year-Dataset/test_1960.json';
 
 
 //----------------------------------------------------------------------------//
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
+import { isCompositeComponent } from 'react-dom/test-utils';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
 //------------------------IMPORT FUCTION-------------------------------------//
 
@@ -102,8 +105,16 @@ const [isApplied, setIsApplied] = useState(false);
 
 //---------------------- Trend VALUE data-----------------------//
 const [trendGeoData, setTrendGeoData] = useState(null);
+const [heatmapData, setHeatmapData] = useState(null);
+const [selectedValue, setSelectedValue] = useState('temperature');
+//----------------------------Select map----------------------------//
+const [viewMode, setViewMode] = useState("Heatmap"); // "Heatmap" หรือ "TrendMap"
+//--------------------------------Select Index of Variable---------------------------//
+const [selectedIndex, setSelectedIndex] = useState(null);
+const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
 
-const [selectedIndex, setSelectedIndex] = useState('temperature');
+
+
 //------------------------FUNCTION APP-------------------------------------//
 
 //-------------------------------------------------- Function Area------------------------------------------//
@@ -141,6 +152,10 @@ const [selectedIndex, setSelectedIndex] = useState('temperature');
   return Array.from(provincesSet); // แปลง Set เป็น Array
 }, [selectedYearStart, selectedYearEnd, selectedRegion, dataByYear]);
 
+// ฟังก์ชันสลับมุมมอง
+  const toggleViewMode = (mode) => {
+    setViewMode(mode);
+  };
 //----------------------------------User Effect-------------------------------------------//
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
@@ -150,7 +165,7 @@ useEffect(() => {
       selectedYearEnd, 
       selectedRegion, 
       selectedProvince,
-      selectedIndex);
+      selectedValue);
 
     if (chartData) {
       setSeasonalCycle(chartData.seasonalCycleData);
@@ -164,18 +179,32 @@ useEffect(() => {
       parseInt(selectedYearEnd),
       selectedRegion,
       selectedProvince,
-      selectedIndex
+      selectedValue
     );
 
     if (generatedGeoJSON) {
       setTrendGeoData(generatedGeoJSON); // เก็บข้อมูลใน state
     }
 
+    // คำนวณค่าเฉลี่ยสำหรับ Heatmap
+    const averageData = Heatmap(
+      dataByYear,
+      parseInt(selectedYearStart),
+      parseInt(selectedYearEnd),
+      selectedRegion,
+      selectedProvince,
+      selectedValue 
+    );
+
+    if (averageData) {
+      //console.log("Heatmap Average Data:", averageData); // ตรวจสอบผลลัพธ์ใน console
+      setHeatmapData(averageData); // เก็บข้อมูลใน state เพื่อใช้งานใน Heatmap
+    }
+
     // Reset isApplied หลังจากทำงานเสร็จ
     setIsApplied(false);
   }
-}, [isApplied, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince, selectedIndex ,dataByYear]);
-
+}, [isApplied, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince, selectedValue, dataByYear]);
 
 useEffect(() => {
   if (selectedRegion && selectedYearStart) {
@@ -196,165 +225,33 @@ useEffect(() => {
     // รีเซ็ตจังหวัดที่เลือก
     setSelectedProvince('');
   }
-}, [selectedRegion, selectedYearStart, dataByYear]);
-//----------------------------------------------------------------------------/
+}, [selectedRegion, selectedYearStart, dataByYear, selectedValue ]);
 
-// useEffect สำหรับการคำนวณข้อมูลเมื่อเลือกปีเริ่มและปีจบ
-//------------------------------------------------------------------------------------------------------------//
-// useEffect สำหรับการคำนวณข้อมูลเมื่อเลือกภูมิภาคใหม่
+//---------------------------------- Index Use Effect------------------------------------//
+useEffect(() => {
+  if (selectedIndex !== null) {
+    console.log(`Selected Index: ${selectedIndex}`);
+    // ถ้าค่า selectedIndex ไม่ใช่ "---" (id: 1) ให้ซ่อนกราฟ Seasonal Cycle
+    if (selectedIndex === 1) {
+      setShowSeasonalCycle(true); // แสดงกราฟ Seasonal Cycle
+    } else {
+      setShowSeasonalCycle(false); // ซ่อนกราฟ Seasonal Cycle
+    }
+  }
+}, [selectedIndex]);
 // useEffect(() => {
-//   if (selectedRegion && selectedYearStart && selectedYearEnd && isApplied) {
-//     // คำนวณข้อมูลทั้งหมดของภูมิภาคเมื่อเลือกภูมิภาคใหม่
-
-//     const yearData = dataByYear[selectedYearStart]; // ใช้ข้อมูลปีเริ่มต้นในการกรอง
-//     let filtered = filterByRegion(yearData, selectedRegion); // กรองข้อมูลตามภูมิภาค
-
-//     // อัปเดตข้อมูลที่กรองแล้ว
-//     setFilteredData(filtered);
-//     const chartData = calculatemean(
-//       dataByYear,
-//       selectedYearStart,
-//       selectedYearEnd,
-//       selectedRegion,
-//       "" 
-//     );
-
-//     if (chartData) {
-//       setSeasonalCycle(chartData.seasonalCycleData);
-//       setChartData(chartData.timeSeriesData);
+//     if (selectedIndex !== null) {
+//       console.log(`Selected Index: ${selectedIndex}`);
+//       // เพิ่ม logic อื่นๆ ได้ เช่น fetch ข้อมูลตาม index ที่เลือก
 //     }
-    
-//     // อัปเดตแผนที่ตามข้อมูล
-//     TrendMap(dataByYear, parseInt(selectedYearStart), parseInt(selectedYearEnd), selectedRegion);
-//   }
-// }, [selectedRegion, selectedYearStart, selectedYearEnd, dataByYear, isApplied]);
+//   }, [selectedIndex]); // ทำงานเมื่อ selectedIndex เปลี่ยน
 
-// // useEffect สำหรับการคำนวณข้อมูลเมื่อเลือกจังหวัด
-// useEffect(() => {
-//   if (selectedYearStart && selectedYearEnd && isApplied && selectedRegion && selectedProvince) {
-
-//      const yearData = dataByYear[selectedYearStart]; // ใช้ข้อมูลปีเริ่มต้นในการกรอง
-//     let filtered = filterByRegion(yearData, selectedRegion); // กรองข้อมูลตามภูมิภาค
-
-//     // อัปเดตข้อมูลที่กรองแล้ว
-//     setFilteredData(filtered);
-    
-//     // คำนวณข้อมูลเมื่อเลือก Region และ Province
-//     const chartData = calculatemean(
-//       dataByYear,
-//       selectedYearStart,
-//       selectedYearEnd,
-//       selectedRegion,
-//       selectedProvince
-//     );
-
-//     if (chartData) {
-//       setSeasonalCycle(chartData.seasonalCycleData);
-//       setChartData(chartData.timeSeriesData);
-//     }
-
-//     // อัปเดตแผนที่ตามข้อมูล
-//     TrendMap(dataByYear, parseInt(selectedYearStart), parseInt(selectedYearEnd), selectedRegion);
-//   }
-// }, [selectedRegion, selectedProvince, selectedYearStart, selectedYearEnd, dataByYear, isApplied]);
-
-//------------------------------------------------------------------------------------------------------------//
-// useEffect(() => {
-//   if (isApplied && selectedYearStart && selectedYearEnd) {
-//     // คำนวณข้อมูลใหม่เมื่อ Region หรือ Province เปลี่ยน
-//     const chartData = calculatemean(
-//       dataByYear,
-//       selectedYearStart,
-//       selectedYearEnd,
-//       selectedRegion,
-//       selectedProvince
-//     );
-
-//     if (chartData) {
-//       setSeasonalCycle(chartData.seasonalCycleData);
-//       setChartData(chartData.timeSeriesData);
-//     }
-
-//     // อัปเดตแผนที่ตามข้อมูล
-//     TrendMap(dataByYear, parseInt(selectedYearStart), parseInt(selectedYearEnd), selectedRegion);
-//   }
-// }, [isApplied, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince, dataByYear]);
-
-
-// // useEffect สำหรับการคำนวณใหม่เมื่อเลือก Region หรือ Province หลังจากกด Apply
-// useEffect(() => {
-//   if (selectedYearStart && selectedYearEnd && isApplied && selectedRegion && selectedProvince) {
-//     // คำนวณข้อมูลใหม่เมื่อเลือก Region หรือ Province
-//     const chartData = calculatemean(
-//       dataByYear,
-//       selectedYearStart,
-//       selectedYearEnd,
-//       selectedRegion,
-//       selectedProvince
-//     );
-
-//     if (chartData) {
-//       setSeasonalCycle(chartData.seasonalCycleData);
-//       setChartData(chartData.timeSeriesData);
-//     }
-
-//     // อัปเดตแผนที่ตามข้อมูล
-//     TrendMap(dataByYear, parseInt(selectedYearStart), parseInt(selectedYearEnd), selectedRegion);
-//   }
-// }, [selectedRegion, selectedProvince, selectedYearStart, selectedYearEnd, dataByYear, isApplied]);
-
-
-// // ฟังก์ชันสำหรับปุ่ม Apply
-// const handleApply = () => {
-//   setIsApplied(true); // เมื่อกด Apply จะทำให้ isApplied เป็น true
-// };
-
-//-----------------------------------------------------------------------------//
-
-// useEffect(() => {
-//   if (isApplied) {
-//     // กรองข้อมูลตามภูมิภาค (เฉพาะกรณีที่เลือกภูมิภาค)
-//     if (selectedRegion) {
-//       const yearData = dataByYear[selectedYearStart]; // ใช้ข้อมูลปีเริ่มต้นในการกรอง
-//       let filtered = filterByRegion(yearData, selectedRegion);
-
-//       // อัปเดตข้อมูลที่กรองแล้ว
-//       setFilteredData(filtered);
-
-//       // อัปเดตรายชื่อจังหวัดที่สามารถเลือกได้
-//       if (filtered.length > 0) {
-//         setProvinces(filtered.map((feature) => feature.properties.name));
-//       } else {
-//         setProvinces([]); // ถ้าไม่มีข้อมูล ให้เคลียร์รายชื่อจังหวัด
-//       }
-
-//       // รีเซ็ตจังหวัดที่เลือก
-//       setSelectedProvince('');
-//     }
-
-//     // ตรวจสอบว่าเลือกปีเริ่มต้นและปีสิ้นสุดแล้วหรือไม่
-//     if (selectedYearStart && selectedYearEnd) {
-//       // คำนวณค่า chartData ตามข้อมูลที่กรองแล้ว
-//       const chartData = calculatemean(dataByYear, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince);
-
-//       if (chartData) {
-//         // ตั้งค่า Seasonal Cycle และ Chart Data
-//         setSeasonalCycle(chartData.seasonalCycleData);
-//         setChartData(chartData.timeSeriesData);
-//       }
-
-//       // อัปเดตแผนที่ตามข้อมูล
-//       TrendMap(dataByYear, parseInt(selectedYearStart), parseInt(selectedYearEnd), selectedRegion);
-//     }
-
-//     // Reset isApplied หลังจากทำงานเสร็จ
-//     setIsApplied(false);
-//   }
-// }, [isApplied, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince, dataByYear]);
-
-
-
-
+  // รายการ dropdown (เตรียมรอไว้)
+  const dropdownOptions = [
+    { id: 1, label: "---" },
+    { id: 2, label: "TXx" },
+    { id: 3, label: "Tnn" },
+  ];
 
 //----------------------------------User Effect-------------------------------------------//
 //----------------------------------webpage UI AREA-------------------------------------------//
@@ -365,18 +262,18 @@ useEffect(() => {
       <h1 className="block-text">Multidimensional climate data visualization</h1>
     </div>
 
-    <div classname = "DashBoard-text">
-      <h1>DashBoard</h1>
+    {/* <div classname = "Time-period-text">
+      <h1>Select Time Period</h1>
 
-    </div>
+    </div> */}
 
 
-  <div style={{ padding: '20px' }}>
-  <h2 className="title-year">Select Time Period</h2>
+  <div style={{ padding: '20px', }}>
+  <h1 className="title-year">Select Time Period</h1>
 
   {/* Dropdown for Start Year Selection */}
       <div className="year-selector">
-        <label>Select Start Year:</label>
+        <label>Select Start Year</label>
         <select
           value={selectedYearStart}
           onChange={(e) => setSelectedYearStart(e.target.value)}
@@ -391,7 +288,7 @@ useEffect(() => {
         </select>
 
         {/* Dropdown for End Year Selection */}
-        <label>Select End Year:</label>
+        <label>Select End Year</label>
         <select
           value={selectedYearEnd}
           onChange={(e) => setSelectedYearEnd(e.target.value)}
@@ -405,11 +302,11 @@ useEffect(() => {
           ))}
         </select>
 
-        {!selectedYearStart || !selectedYearEnd ? (
+        {/* {!selectedYearStart || !selectedYearEnd ? (
           <p style={{ color: 'red' }}>
             Please select both a start year and an end year before applying.
           </p>
-        ) : null}
+        ) : null} */}
 
         {/* Apply Button */}
         <button
@@ -442,6 +339,24 @@ useEffect(() => {
 </button>
       </div>
 
+{/* Button select map */}
+<div className="map-buttons">
+  <button onClick={() => toggleViewMode("Heatmap")}>View Heatmap</button>
+  <button onClick={() => toggleViewMode("TrendMap")}>View TrendMap</button>
+</div>
+
+{/* การแสดงผลตาม viewMode */}
+{viewMode === "Heatmap" && heatmapData && (
+  console.log("Choropleth Map:", heatmapData) // แสดงข้อมูลใน console.log
+)}
+
+{viewMode === "TrendMap" && trendGeoData && (
+  console.log("TrendMap:", trendGeoData) // แสดงข้อมูลใน console.log
+)}
+{/* Button select map */}
+
+
+
 {/* Dropdown สำหรับเลือกภูมิภาค */}
 <div className="region-selector">
   <label>Select Region:</label>
@@ -452,7 +367,7 @@ useEffect(() => {
       setSelectedProvince(""); // รีเซ็ตจังหวัดเมื่อเลือกภูมิภาคใหม่
     }}
     value={selectedRegion}
-    style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+    // style={{ width: '200px', padding: '10px', fontSize: '20px' }}
   >
     <option value="All">All Regions</option>
     <option value="North_East_region">North East</option>
@@ -489,85 +404,56 @@ useEffect(() => {
   </select>
 </div>
 
-{/* Dropdown สำหรับเลือก Index */}
-<div className="index-selector">
-  <label>Select Data Index:</label>
-  <select
-    value={selectedIndex}
-    onChange={(e) => setSelectedIndex(e.target.value)}
-    style={{ width: '200px', padding: '10px', fontSize: '16px' }}
-  >
-    <option value="temperature">Temperature Mean</option>
-    <option value="tmin">Temperature Min</option>
-    <option value="tmax">Temperature Max</option>
-    {/* <option value="dtr">DTR (Diurnal Temperature Range)</option> */}
-    <option value="pre">Precipitation</option>
-  </select>
-</div>
+
 
     </div>
 
-    {/* แสดงข้อมูลสรุป
-    <div>
-      <p>Selected Year: {selectedYear}</p>
-      <p>Selected Region: {selectedRegion}</p>
-      <p>Selected Province: {selectedProvince || 'All'}</p>
-      <p>Number of provinces: {filteredData ? filteredData.length : 0}</p>
-    </div> */}
-
     <div className="content-container">
+
+    <h1>DashBoard</h1>
+  <div className="dashboard-box">
+
+  <div className="dropdown-container">
+
+    
+  {/* Dropdown สำหรับเลือก value */}
+  <div className="value-selector">
+    <label>Select value:</label>
+    <select
+      value={selectedValue}
+      onChange={(e) => setSelectedValue(e.target.value)}
+    >
+      <option value="temperature">Temperature Mean</option>
+      <option value="tmin">Temperature Min</option>
+      <option value="tmax">Temperature Max</option>
+      <option value="pre">Precipitation</option>
+    </select>
+  </div>
+
+  {/* Dropdown สำหรับเลือก Index */}
+<div className="index-selector">
+  <label>Select Index:</label>
+  <select
+    value={selectedIndex || 1} // ค่าเริ่มต้นเป็น 1 (---)
+    onChange={(e) => setSelectedIndex(parseInt(e.target.value, 10))} // แปลงค่าจาก string เป็น number
+  >
+    {dropdownOptions.map((option) => (
+      <option key={option.id} value={option.id}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+</div>
+
+</div>
+  {/* Dropdown สำหรับเลือก Index */}
+  
       {/* Time series chart */}
       <div className="time-series-chart">
-        <h3>Time Series Data</h3>
-        <Line
-  data={chartData}
-  options={{
-    responsive: true,
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top',
-      },
-      annotation: {
-        annotations: chartData?.options?.plugins?.annotation?.annotations || [],
-      },
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        title: {
-          display: true, // เปิดการแสดงข้อความ
-          text: 'Month and Year', // ข้อความบรรยายแกน x
-          font: {
-            size: 14, // ขนาดตัวอักษร
-            weight: 'bold', // น้ำหนักตัวอักษร
-          },
-        },
-      },
-      y: {
-        min: 10, // กำหนดค่าต่ำสุด
-        max: 40, // กำหนดค่าสูงสุด
-        ticks: {
-          stepSize: 5, // เพิ่มเส้นบอกค่าทุกๆ 5 องศา (optional)
-        },
-        title: {
-          display: true, // เปิดการแสดงข้อความ
-          text: 'Temperature (°C)', // ข้อความบรรยายแกน y
-          font: {
-            size: 14, // ขนาดตัวอักษร
-            weight: 'bold', // น้ำหนักตัวอักษร
-          },
-        },
-      },
-    },
-  }}
-/>
-      </div>
-    {/* Seasonal Cycle chart */}
-<div className="Seasonal-Cycle-chart">
-  <h3>Seasonal Cycle Data</h3>
+      {/* <div className="time-series-chart" style={{ width: '1500px', height: '700px', margin: '0 auto' }}> */}
+  <h3>Time Series Data</h3>
   <Line
-    data={seasonalCycle}
+    data={chartData}
     options={{
       responsive: true,
       plugins: {
@@ -575,13 +461,16 @@ useEffect(() => {
           display: true,
           position: 'top',
         },
+        annotation: {
+          annotations: chartData?.options?.plugins?.annotation?.annotations || [],
+        },
       },
       scales: {
         x: {
           beginAtZero: true,
           title: {
             display: true,
-            text: 'Months',
+            text: 'Month and Year',
             font: {
               size: 14,
               weight: 'bold',
@@ -589,15 +478,11 @@ useEffect(() => {
           },
         },
         y: {
-          min: 16,
-          max: 36,
-          ticks: {
-          stepSize: 2, // กำหนดระยะห่างระหว่างจุดให้ละเอียดขึ้น
-          callback: (value) => value.toFixed(1), // แสดงค่าทศนิยม 1 ตำแหน่ง
-          },
+          min: chartData?.options?.scales?.y?.min || 0,
+          max: chartData?.options?.scales?.y?.max || 100,
           title: {
             display: true,
-            text: 'Temperature (°C)',
+            text: `Value (${chartData?.options?.scales?.y?.title?.text || 'Unknown'})`,
             font: {
               size: 14,
               weight: 'bold',
@@ -608,7 +493,49 @@ useEffect(() => {
     }}
   />
 </div>
-      
+    {/* Seasonal Cycle chart */}
+  {showSeasonalCycle && (
+  <div className="Seasonal-Cycle-chart">
+    <h3>Seasonal Cycle Data</h3>
+    <Line
+      data={seasonalCycle}
+      options={{
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Months',
+              font: {
+                size: 14,
+                weight: 'bold',
+              },
+            },
+          },
+          y: {
+            min: seasonalCycle?.options?.scales?.y?.min || 0, // ใช้ค่า min แบบ auto
+            max: seasonalCycle?.options?.scales?.y?.max || 100, // ใช้ค่า max แบบ auto
+            title: {
+              display: true,
+              text: `Value (${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'})`,
+              font: {
+                size: 14,
+                weight: 'bold',
+              },
+            },
+          },
+        },
+      }}
+    />
+  </div>
+)}
 
       <div className="container">
         <div className="content">
@@ -620,20 +547,25 @@ useEffect(() => {
           </div>
           <div className="right-map">
             {/* แสดงแผนที่ใน MapComponent */}
-            {trendGeoData && trendGeoData.features && (
+            {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
   <MapComponent
-    key={`${selectedYearStart}-${selectedYearEnd}-${isApplied}`} // ใช้ key สำหรับการ re-render เมื่อปีเปลี่ยน
-    trendGeoData={trendGeoData} // ส่งข้อมูล GeoJSON ที่ถูกต้อง
+    key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${isApplied}`} // ใช้ key เพื่อ trigger การ re-render
+    geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} // ส่งข้อมูลตาม viewMode
     selectedRegion={selectedRegion}
     selectedProvinceData={selectedProvinceData} // ข้อมูล province ที่เลือก
     setSelectedProvinceData={setSelectedProvinceData}
     selectedProvince={selectedProvince}
+    viewMode={viewMode}
+    value={selectedValue}
   />
 )}
-          </div>
+  </div>
+  </div>
         </div>
-      </div>
-    </div>
+      
+    
+  </div>
+  </div>
   </div>
 );
 };
