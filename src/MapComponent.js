@@ -92,7 +92,9 @@ const calculateMinMax = (geoData, viewMode, value) => {
 
   const values = geoData.features
     .map((feature) =>
-      viewMode === "TrendMap" ? feature.properties.slope_value : feature.properties[value]
+      viewMode === "TrendMap" 
+        ? feature.properties.slope_value 
+        : feature.properties[value]
     )
     .filter((val) => val !== undefined && val !== null);
 
@@ -100,14 +102,33 @@ const calculateMinMax = (geoData, viewMode, value) => {
   const rawMax = Math.max(...values);
 
   if (viewMode === "Heatmap") {
-    // สำหรับ Heatmap ใช้ min และ max ตามช่วงจริงของข้อมูล
     return { min: rawMin, max: rawMax };
   }
 
-  // สำหรับ TrendMap ปรับ min และ max ให้สมมาตรรอบ 0
   const range = Math.max(Math.abs(rawMin), Math.abs(rawMax));
   return { min: -range, max: range };
 };
+// const calculateMinMax = (geoData, viewMode, value) => {
+//   if (!geoData || !geoData.features) return { min: 0, max: 1 }; // ค่าเริ่มต้นสำหรับ Heatmap
+
+//   const values = geoData.features
+//     .map((feature) =>
+//       viewMode === "TrendMap" ? feature.properties.slope_value : feature.properties[value]
+//     )
+//     .filter((val) => val !== undefined && val !== null);
+
+//   const rawMin = Math.min(...values);
+//   const rawMax = Math.max(...values);
+
+//   if (viewMode === "Heatmap") {
+//     // สำหรับ Heatmap ใช้ min และ max ตามช่วงจริงของข้อมูล
+//     return { min: rawMin, max: rawMax };
+//   }
+
+//   // สำหรับ TrendMap ปรับ min และ max ให้สมมาตรรอบ 0
+//   const range = Math.max(Math.abs(rawMin), Math.abs(rawMax));
+//   return { min: -range, max: range };
+// };
 
 // // ฟังก์ชันกำหนดสไตล์
 const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, value) => {
@@ -138,8 +159,8 @@ const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, va
 // ฟังก์ชันแสดงข้อมูลใน popup
 const onEachFeature = (feature, layer, viewMode, value) => {
   const valueText = viewMode === "TrendMap"
-    ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null 
-      ? feature.properties.slope_value.toFixed(2) 
+    ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
+      ? feature.properties.slope_value.toFixed(2)
       : 'N/A'
     : feature.properties[value] !== undefined && feature.properties[value] !== null
       ? feature.properties[value].toFixed(2)
@@ -153,6 +174,23 @@ const onEachFeature = (feature, layer, viewMode, value) => {
      <b>${label}:</b> ${valueText}`
   );
 };
+// const onEachFeature = (feature, layer, viewMode, value) => {
+//   const valueText = viewMode === "TrendMap"
+//     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null 
+//       ? feature.properties.slope_value.toFixed(2) 
+//       : 'N/A'
+//     : feature.properties[value] !== undefined && feature.properties[value] !== null
+//       ? feature.properties[value].toFixed(2)
+//       : 'N/A';
+
+//   const label = viewMode === "TrendMap" ? "Slope Value" : value.charAt(0).toUpperCase() + value.slice(1);
+
+//   layer.bindPopup(
+//     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
+//      <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
+//      <b>${label}:</b> ${valueText}`
+//   );
+// };
 
 const ColorBar = ({ viewMode, steps = 10, min, max }) => {
   const colorScale = viewMode === "Heatmap" ? turboColor : coolwarmColor;
@@ -206,6 +244,12 @@ const MapComponent = ({ geoData, selectedRegion, selectedProvince, viewMode, val
       ? geoData
       : { type: 'FeatureCollection', features: [] }; // ค่าเริ่มต้นถ้าไม่มีข้อมูล
 
+          // Log ข้อมูล GeoJSON
+  console.log("Current GeoJSON Data (heatmap/trend):", geoData);
+  // console.log("ViewMode:", viewMode);
+  // console.log("Selected Region:", selectedRegion);
+  // console.log("Selected Province:", selectedProvince);
+  // console.log("Value:", value);
   return (
     <div className="map-container">
       <MapContainer
@@ -229,6 +273,43 @@ const MapComponent = ({ geoData, selectedRegion, selectedProvince, viewMode, val
 };
 
 export default MapComponent;
+
+
+
+
+// const MapComponent = ({ geoData, selectedRegion, selectedProvince, viewMode, value }) => {
+//   // คำนวณ Min และ Max สำหรับการไล่ระดับสี
+//   const { min, max } = calculateMinMax(geoData, viewMode, value);
+
+//   // ตรวจสอบข้อมูล GeoJSON ก่อนแสดงผล
+//   const displayedGeoData =
+//     geoData && geoData.features
+//       ? geoData
+//       : { type: 'FeatureCollection', features: [] }; // ค่าเริ่มต้นถ้าไม่มีข้อมูล
+
+//   return (
+//     <div className="map-container">
+//       <MapContainer
+//   center={[13.7563, 100.5018]}
+//   zoom={6} // ใช้ค่า zoom เป็นทศนิยม
+//   style={{ height: "1200px", width: "1150px" }}
+// >
+//   <LayersControl position="topright">
+//     <LayersControl.Overlay checked name={viewMode === "TrendMap" ? "Slope Value Map" : "Heatmap"}>
+//       <GeoJSON
+//         data={displayedGeoData}
+//         style={(feature) => style(feature, selectedRegion, selectedProvince, viewMode, min, max, value)}
+//         onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value)}
+//       />
+//     </LayersControl.Overlay>
+//   </LayersControl>
+// </MapContainer>
+//       <ColorBar viewMode={viewMode} min={min} max={max} />
+//     </div>
+//   );
+// };
+
+// export default MapComponent;
 
 
 

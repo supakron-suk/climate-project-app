@@ -154,7 +154,7 @@ const calculateYAxisBounds = (data) => {
   const validData = data.filter((value) => typeof value === "number" && !isNaN(value)); // กรองค่าที่ valid
   const min = Math.min(...validData);
   const max = Math.max(...validData);
-  const padding = (max - min) * 0.1; // เพิ่ม padding 10% ให้กราฟดูสวยงาม
+  const padding = (max - min) * 0.2; // เพิ่ม padding 10% ให้กราฟดูสวยงาม
   return {
     min: min - padding > 0 ? min - padding : 0, // ไม่ให้ต่ำกว่าศูนย์ถ้าเป็นข้อมูลบวก
     max: max + padding,
@@ -272,61 +272,16 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
 };
 
 return { seasonalCycleData, timeSeriesData };
-//   const timeSeriesData = {
-//   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-//     const year = startYear + Math.floor(i / 12); 
-//     const month = i % 12; 
-//     return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`; 
-//   }),
-//   datasets: [
-//     {
-//       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
-//       data: result, 
-//       borderColor: 'rgba(75,192,192,1)', 
-//       backgroundColor: 'rgba(75,192,192,0.2)', 
-//       fill: true, 
-//       tension: 0.4, 
-//     },
-//     {
-//       label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
-//       data: Array(result.length).fill(null).concat(overallMean), 
-//       borderColor: 'black', 
-//       borderWidth: 2, 
-//       borderDash: [5, 5], 
-//       pointBackgroundColor: 'black', 
-//       pointRadius: 6, 
-//       fill: false, 
-//       tension: 0.4, 
-//     },
-//   ],
-//   options: {
-//     responsive: true,
-//     plugins: {
-//       annotation: {
-//         annotations: yearBoundaries, 
-//       },
-//     },
-//     scales: {
-//       y: {
-//         title: {
-//           display: true,
-//           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
-//         },
-//       },
-//     },
-//   },
+
+};
+
+
+
+
+
+// export const filterByMonth = (data, month) => {
+//   if (!month) {
+//     return data; 
+//   }
+//   return data.filter(feature => feature.properties.month === parseInt(month));
 // };
-
-//   return { seasonalCycleData, timeSeriesData }; 
-};
-
-
-
-
-
-export const filterByMonth = (data, month) => {
-  if (!month) {
-    return data; 
-  }
-  return data.filter(feature => feature.properties.month === parseInt(month));
-};

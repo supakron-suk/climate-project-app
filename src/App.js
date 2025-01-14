@@ -64,6 +64,7 @@ function App() {
   const [selectedRegion, setSelectedRegion] = useState('All');
   const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
   const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
+  const [filteredYearData, setFilteredYearData] = useState(null);  // เก็บข้อมูลของช่วงปีที่เลือก
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
   const [selectedProvinceData, setSelectedProvinceData] = useState(null);
   //const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
@@ -71,19 +72,6 @@ function App() {
   const [selectedData, setSelectedData] = useState([]);
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
-
-//   const [dataByYear, setDataByYear] = useState({
-//   "1901": data1901,
-//   "1902": data1902,
-//   "1903": data1903,
-//   "1904": data1904,
-//   "1905": data1905,
-//   "1906": data1906,
-//   "1907": data1907,
-//   "1908": data1908,
-//   "1909": data1909,
-//   "1910": data1910,
-// });
 
 const [dataByYear, setDataByYear] = useState({
   "1901": data_index_1901,
@@ -156,23 +144,31 @@ const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
   const toggleViewMode = (mode) => {
     setViewMode(mode);
   };
+
+const handleValueChange = (e) => {
+    setSelectedValue(e.target.value);
+    setIsApplied(true); // Trigger useEffect
+  };
 //----------------------------------User Effect-------------------------------------------//
+//Useeffect--1
+// เก็บข้อมูลปีและภูมิภาคเมื่อกด Apply
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
-    // คำนวณค่า chartData ตามข้อมูลที่กรองแล้ว
-    const chartData = calculatemean(dataByYear, 
-      selectedYearStart, 
-      selectedYearEnd, 
-      selectedRegion, 
-      selectedProvince,
-      selectedValue);
+    const selectedYears = Object.keys(dataByYear)
+      .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
+      .map((year) => ({
+        year,
+        data: filterByRegion(dataByYear[year], selectedRegion),
+      }));
 
-    if (chartData) {
-      setSeasonalCycle(chartData.seasonalCycleData);
-      setChartData(chartData.timeSeriesData);
-    }
+    setFilteredYearData(selectedYears);
 
-    // อัปเดตแผนที่ตามข้อมูลด้วย TrendMap
+    const provinces = new Set();
+    selectedYears.forEach(({ data }) =>
+      data.forEach((feature) => provinces.add(feature.properties.name))
+    );
+    setProvinces(Array.from(provinces));
+
     const generatedGeoJSON = TrendMap(
       dataByYear,
       parseInt(selectedYearStart),
@@ -181,51 +177,72 @@ useEffect(() => {
       selectedProvince,
       selectedValue
     );
+    if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
 
-    if (generatedGeoJSON) {
-      setTrendGeoData(generatedGeoJSON); // เก็บข้อมูลใน state
-    }
-
-    // คำนวณค่าเฉลี่ยสำหรับ Heatmap
     const averageData = Heatmap(
       dataByYear,
       parseInt(selectedYearStart),
       parseInt(selectedYearEnd),
       selectedRegion,
       selectedProvince,
-      selectedValue 
+      selectedValue
     );
+    if (averageData) setHeatmapData(averageData);
 
-    if (averageData) {
-      //console.log("Heatmap Average Data:", averageData); // ตรวจสอบผลลัพธ์ใน console
-      setHeatmapData(averageData); // เก็บข้อมูลใน state เพื่อใช้งานใน Heatmap
+    const chartData = calculatemean(
+      dataByYear,
+      selectedYearStart,
+      selectedYearEnd,
+      selectedRegion,
+      selectedProvince,
+      selectedValue
+    );
+    if (chartData) {
+      setSeasonalCycle(chartData.seasonalCycleData);
+      setChartData(chartData.timeSeriesData);
     }
 
-    // Reset isApplied หลังจากทำงานเสร็จ
     setIsApplied(false);
   }
-}, [isApplied, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince, selectedValue, dataByYear]);
+}, [isApplied]);
+
 
 useEffect(() => {
-  if (selectedRegion && selectedYearStart) {
-    // กรองข้อมูลตามภูมิภาค
-    const yearData = dataByYear[selectedYearStart]; // ใช้ข้อมูลปีเริ่มต้นในการกรอง
-    let filtered = filterByRegion(yearData, selectedRegion);
+  if (filteredYearData && selectedValue) {
+    const generatedGeoJSON = TrendMap(
+      dataByYear,
+      parseInt(selectedYearStart),
+      parseInt(selectedYearEnd),
+      selectedRegion,
+      selectedProvince,
+      selectedValue
+    );
+    if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
 
-    // อัปเดตข้อมูลที่กรองแล้ว
-    setFilteredData(filtered);
+    const averageData = Heatmap(
+      dataByYear,
+      parseInt(selectedYearStart),
+      parseInt(selectedYearEnd),
+      selectedRegion,
+      selectedProvince,
+      selectedValue
+    );
+    if (averageData) setHeatmapData(averageData);
 
-    // อัปเดตรายชื่อจังหวัดที่สามารถเลือกได้
-    if (filtered.length > 0) {
-      setProvinces(filtered.map((feature) => feature.properties.name));
-    } else {
-      setProvinces([]); // ถ้าไม่มีข้อมูล ให้เคลียร์รายชื่อจังหวัด
+    const chartData = calculatemean(
+      dataByYear,
+      selectedYearStart,
+      selectedYearEnd,
+      selectedRegion,
+      selectedProvince,
+      selectedValue
+    );
+    if (chartData) {
+      setSeasonalCycle(chartData.seasonalCycleData);
+      setChartData(chartData.timeSeriesData);
     }
-
-    // รีเซ็ตจังหวัดที่เลือก
-    setSelectedProvince('');
   }
-}, [selectedRegion, selectedYearStart, dataByYear, selectedValue ]);
+}, [selectedValue, selectedRegion, filteredYearData]);
 
 //---------------------------------- Index Use Effect------------------------------------//
 useEffect(() => {
@@ -239,12 +256,6 @@ useEffect(() => {
     }
   }
 }, [selectedIndex]);
-// useEffect(() => {
-//     if (selectedIndex !== null) {
-//       console.log(`Selected Index: ${selectedIndex}`);
-//       // เพิ่ม logic อื่นๆ ได้ เช่น fetch ข้อมูลตาม index ที่เลือก
-//     }
-//   }, [selectedIndex]); // ทำงานเมื่อ selectedIndex เปลี่ยน
 
   // รายการ dropdown (เตรียมรอไว้)
   const dropdownOptions = [
@@ -346,13 +357,13 @@ useEffect(() => {
 </div>
 
 {/* การแสดงผลตาม viewMode */}
-{viewMode === "Heatmap" && heatmapData && (
-  console.log("Choropleth Map:", heatmapData) // แสดงข้อมูลใน console.log
+{/* {viewMode === "Heatmap" && heatmapData && (
+  console.log("Choropleth Map:", heatmapData) 
 )}
 
 {viewMode === "TrendMap" && trendGeoData && (
-  console.log("TrendMap:", trendGeoData) // แสดงข้อมูลใน console.log
-)}
+  console.log("TrendMap:", trendGeoData) 
+)} */}
 {/* Button select map */}
 
 
@@ -415,13 +426,14 @@ useEffect(() => {
 
   <div className="dropdown-container">
 
-    
+   
   {/* Dropdown สำหรับเลือก value */}
   <div className="value-selector">
     <label>Select value:</label>
     <select
       value={selectedValue}
-      onChange={(e) => setSelectedValue(e.target.value)}
+      // onChange={(e) => setSelectedValue(e.target.value)}
+      onChange={handleValueChange}
     >
       <option value="temperature">Temperature Mean</option>
       <option value="tmin">Temperature Min</option>
@@ -546,20 +558,20 @@ useEffect(() => {
             <div id="seasonalcyclePlot" style={{ width: '100%', height: '650px' }}></div>
           </div>
           <div className="right-map">
-            {/* แสดงแผนที่ใน MapComponent */}
-            {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
-  <MapComponent
-    key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${isApplied}`} // ใช้ key เพื่อ trigger การ re-render
-    geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} // ส่งข้อมูลตาม viewMode
-    selectedRegion={selectedRegion}
-    selectedProvinceData={selectedProvinceData} // ข้อมูล province ที่เลือก
-    setSelectedProvinceData={setSelectedProvinceData}
-    selectedProvince={selectedProvince}
-    viewMode={viewMode}
-    value={selectedValue}
-  />
-)}
-  </div>
+  {/* แสดงแผนที่ใน MapComponent */}
+  {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
+    <MapComponent
+      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} // ใช้ key เพื่อ trigger การ re-render
+      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} // ส่งข้อมูลตาม viewMode
+      selectedRegion={selectedRegion}
+      selectedProvinceData={selectedProvinceData} 
+      setSelectedProvinceData={setSelectedProvinceData}
+      selectedProvince={selectedProvince}
+      viewMode={viewMode}
+      value={selectedValue}
+    />
+  )}
+</div>
   </div>
         </div>
       
@@ -570,3 +582,54 @@ useEffect(() => {
 );
 };
 export default App;
+
+
+
+// useEffect(() => {
+//   if (isApplied && selectedYearStart && selectedYearEnd) {
+//     // คำนวณค่า chartData ตามข้อมูลที่กรองแล้ว
+//     const chartData = calculatemean(dataByYear, 
+//       selectedYearStart, 
+//       selectedYearEnd, 
+//       selectedRegion, 
+//       selectedProvince,
+//       selectedValue);
+
+//     if (chartData) {
+//       setSeasonalCycle(chartData.seasonalCycleData);
+//       setChartData(chartData.timeSeriesData);
+//     }
+
+//     // อัปเดตแผนที่ตามข้อมูลด้วย TrendMap
+//     const generatedGeoJSON = TrendMap(
+//       dataByYear,
+//       parseInt(selectedYearStart),
+//       parseInt(selectedYearEnd),
+//       selectedRegion,
+//       selectedProvince,
+//       selectedValue
+//     );
+
+//     if (generatedGeoJSON) {
+//       setTrendGeoData(generatedGeoJSON); // เก็บข้อมูลใน state
+//     }
+
+//     // คำนวณค่าเฉลี่ยสำหรับ Heatmap
+//     const averageData = Heatmap(
+//       dataByYear,
+//       parseInt(selectedYearStart),
+//       parseInt(selectedYearEnd),
+//       selectedRegion,
+//       selectedProvince,
+//       selectedValue 
+//     );
+
+//     if (averageData) {
+//       //console.log("Heatmap Average Data:", averageData); // ตรวจสอบผลลัพธ์ใน console
+//       setHeatmapData(averageData); // เก็บข้อมูลใน state เพื่อใช้งานใน Heatmap
+//     }
+
+//     // Reset isApplied หลังจากทำงานเสร็จ
+//     setIsApplied(false);
+//   }
+// }, [isApplied, selectedYearStart, selectedYearEnd, selectedRegion, selectedProvince, selectedValue, dataByYear]);
