@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapContainer,TileLayer, GeoJSON, LayersControl } from 'react-leaflet';
 
-// ฟังก์ชันไล่ระดับสี Turbo สำหรับ Heatmap
+// ฟังก์ชันไล่ระดับสี Turbo สำหรับ Choroplet map
 const turboColor = [
   [0, "#000099"],
   [0.1, "#0020ff"], 
@@ -45,10 +45,10 @@ const interpolateColor = (value, min, max, scale) => {
   const clampedRatio = Math.max(0, Math.min(1, ratio));
 
   // Find two closest scale points
-  const scaledIndex = clampedRatio * (scale.length - 1);
-  const lowerIndex = Math.floor(scaledIndex);
-  const upperIndex = Math.min(lowerIndex + 1, scale.length - 1);
-  const t = scaledIndex - lowerIndex;
+  const scaledIndex = clampedRatio * (scale.length - 1); // คำนวณตำแหน่งของสี
+  const lowerIndex = Math.floor(scaledIndex);              // หา index ของสีที่ต่ำกว่า
+  const upperIndex = Math.min(lowerIndex + 1, scale.length - 1); // หา index ของสีที่สูงกว่า
+  const t = scaledIndex - lowerIndex;   // ระยะห่างระหว่างสีที่ต่ำกว่าและสูงกว่า
 
   if (!scale[lowerIndex] || !scale[upperIndex]) {
     console.warn("Color scale index out of bounds", { lowerIndex, upperIndex, scale });
@@ -81,8 +81,11 @@ const getColor = (value, viewMode, min, max) => {
     console.warn(`Invalid scale for viewMode: ${viewMode}`);
     return "#ccc";
   }
-
-  return interpolateColor(value, min, max, scale);
+  
+  const color = interpolateColor(value, min, max, scale);
+  console.log("Value:", value, "Min:", min, "Max:", max, "Color:", color); // ตรวจสอบสีที่ได้
+  return color;
+  // return interpolateColor(value, min, max, scale);
 };
 
 
@@ -108,27 +111,6 @@ const calculateMinMax = (geoData, viewMode, value) => {
   const range = Math.max(Math.abs(rawMin), Math.abs(rawMax));
   return { min: -range, max: range };
 };
-// const calculateMinMax = (geoData, viewMode, value) => {
-//   if (!geoData || !geoData.features) return { min: 0, max: 1 }; // ค่าเริ่มต้นสำหรับ Heatmap
-
-//   const values = geoData.features
-//     .map((feature) =>
-//       viewMode === "TrendMap" ? feature.properties.slope_value : feature.properties[value]
-//     )
-//     .filter((val) => val !== undefined && val !== null);
-
-//   const rawMin = Math.min(...values);
-//   const rawMax = Math.max(...values);
-
-//   if (viewMode === "Heatmap") {
-//     // สำหรับ Heatmap ใช้ min และ max ตามช่วงจริงของข้อมูล
-//     return { min: rawMin, max: rawMax };
-//   }
-
-//   // สำหรับ TrendMap ปรับ min และ max ให้สมมาตรรอบ 0
-//   const range = Math.max(Math.abs(rawMin), Math.abs(rawMax));
-//   return { min: -range, max: range };
-// };
 
 // // ฟังก์ชันกำหนดสไตล์
 const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, value) => {
@@ -174,23 +156,6 @@ const onEachFeature = (feature, layer, viewMode, value) => {
      <b>${label}:</b> ${valueText}`
   );
 };
-// const onEachFeature = (feature, layer, viewMode, value) => {
-//   const valueText = viewMode === "TrendMap"
-//     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null 
-//       ? feature.properties.slope_value.toFixed(2) 
-//       : 'N/A'
-//     : feature.properties[value] !== undefined && feature.properties[value] !== null
-//       ? feature.properties[value].toFixed(2)
-//       : 'N/A';
-
-//   const label = viewMode === "TrendMap" ? "Slope Value" : value.charAt(0).toUpperCase() + value.slice(1);
-
-//   layer.bindPopup(
-//     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
-//      <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
-//      <b>${label}:</b> ${valueText}`
-//   );
-// };
 
 const ColorBar = ({ viewMode, steps = 10, min, max }) => {
   const colorScale = viewMode === "Heatmap" ? turboColor : coolwarmColor;

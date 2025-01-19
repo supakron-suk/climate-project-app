@@ -25,20 +25,9 @@ import { dummyTimeSeriesData,
        } from './JS/Graph';
 import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap } from './JS/Heatmap.js';
+import { cal_index } from './JS/Index.js';
 
-//-------------------------IMPORT DATA YEAR-----------------------------------//
-// import data1901 from './Geo-data/Year-Dataset/data_polygon_1901.json';
-// import data1902 from './Geo-data/Year-Dataset/data_polygon_1902.json';
-// import data1903 from './Geo-data/Year-Dataset/data_polygon_1903.json';
-// import data1904 from './Geo-data/Year-Dataset/data_polygon_1904.json';
-// import data1905 from './Geo-data/Year-Dataset/data_polygon_1905.json';
-// import data1906 from './Geo-data/Year-Dataset/data_polygon_1906.json';
-// import data1907 from './Geo-data/Year-Dataset/data_polygon_1907.json';
-// import data1908 from './Geo-data/Year-Dataset/data_polygon_1908.json';
-// import data1909 from './Geo-data/Year-Dataset/data_polygon_1909.json';
-// import data1910 from './Geo-data/Year-Dataset/data_polygon_1910.json';
-
-//----------------------- IMPROT DATA FULL INDEX -----------------------------//
+//----------------------- DATA CRU -----------------------------//
 import data_index_1901 from './Geo-data/Year-Dataset/data_index_polygon_1901.json';
 import data_index_1902 from './Geo-data/Year-Dataset/data_index_polygon_1902.json';
 import data_index_1903 from './Geo-data/Year-Dataset/data_index_polygon_1903.json';
@@ -51,10 +40,17 @@ import data_index_1909 from './Geo-data/Year-Dataset/data_index_polygon_1909.jso
 import data_index_1910 from './Geo-data/Year-Dataset/data_index_polygon_1910.json';
 //import data_index_1960 from './Geo-data/Year-Dataset/test_1960.json';
 
+//----------------------- DATA ERRA -----------------------------//
+import erra_data_1960 from './Geo-data/Era-Dataset/era_data_polygon_1960.json';
+import erra_data_1961 from './Geo-data/Era-Dataset/era_data_polygon_1961.json';
+import erra_data_1962 from './Geo-data/Era-Dataset/era_data_polygon_1962.json'; 
+import erra_data_1963 from './Geo-data/Era-Dataset/era_data_polygon_1963.json';
+import erra_data_1964 from './Geo-data/Era-Dataset/era_data_polygon_1964.json';
+import erra_data_1965 from './Geo-data/Era-Dataset/era_data_polygon_1965.json';
 
 //----------------------------------------------------------------------------//
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
-import { isCompositeComponent } from 'react-dom/test-utils';
+// import { isCompositeComponent } from 'react-dom/test-utils';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
 //------------------------IMPORT FUCTION-------------------------------------//
 
@@ -84,6 +80,7 @@ const [dataByYear, setDataByYear] = useState({
   "1908": data_index_1908,
   "1909": data_index_1909,
   "1910": data_index_1910,
+  "1960": erra_data_1960,
 });
 
 const [selectedYearStart, setSelectedYearStart] = useState('');
@@ -145,10 +142,27 @@ const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
     setViewMode(mode);
   };
 
-const handleValueChange = (e) => {
-    setSelectedValue(e.target.value);
+
+  const handleValueChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedValue(newValue);
     setIsApplied(true); // Trigger useEffect
+    
+    // เรียก cal_index เมื่อ dropdown เปลี่ยนค่า
+    cal_index(
+      dataByYear,
+      parseInt(selectedYearStart), // แปลงเป็นตัวเลข
+      parseInt(selectedYearEnd),
+      selectedRegion,
+      selectedProvince,
+      newValue // ส่งค่าที่เลือกจาก dropdown
+    );
   };
+
+// const handleValueChange = (e) => {
+//     setSelectedValue(e.target.value);
+//     setIsApplied(true); // Trigger useEffect
+//   };
 //----------------------------------User Effect-------------------------------------------//
 //Useeffect--1
 // เก็บข้อมูลปีและภูมิภาคเมื่อกด Apply
@@ -264,6 +278,8 @@ useEffect(() => {
     { id: 3, label: "Tnn" },
   ];
 
+ 
+
 //----------------------------------User Effect-------------------------------------------//
 //----------------------------------webpage UI AREA-------------------------------------------//
 
@@ -312,12 +328,6 @@ useEffect(() => {
             </option>
           ))}
         </select>
-
-        {/* {!selectedYearStart || !selectedYearEnd ? (
-          <p style={{ color: 'red' }}>
-            Please select both a start year and an end year before applying.
-          </p>
-        ) : null} */}
 
         {/* Apply Button */}
         <button
