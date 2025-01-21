@@ -83,7 +83,7 @@ const getColor = (value, viewMode, min, max) => {
   }
   
   const color = interpolateColor(value, min, max, scale);
-  console.log("Value:", value, "Min:", min, "Max:", max, "Color:", color); // ตรวจสอบสีที่ได้
+  //console.log("Value:", value, "Min:", min, "Max:", max, "Color:", color); // ตรวจสอบสีที่ได้
   return color;
   // return interpolateColor(value, min, max, scale);
 };

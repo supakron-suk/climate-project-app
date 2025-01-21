@@ -35,12 +35,11 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   // `dataByYear` เป็นข้อมูล GeoJSON แยกตามปี
   // `startYear` และ `endYear` เป็นปีเริ่มต้นและสิ้นสุดที่ต้องการคำนวณ
   // `region` เป็นพื้นที่ที่ต้องการกรองข้อมูล (หรือ 'All' เพื่อคำนวณทุกพื้นที่)
-
+  
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year."); // ตรวจสอบเงื่อนไขว่าปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด
     return null; // หยุดทำงานหากเงื่อนไขไม่ถูกต้อง
   }
-
   const monthlyAverages = Array(12 * (endYear - startYear + 1)).fill(0); 
   // สร้างอาร์เรย์เก็บผลรวมค่าอุณหภูมิรายเดือนในแต่ละปี
   const monthlyCounts = Array(12 * (endYear - startYear + 1)).fill(0); 
@@ -226,9 +225,10 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
 
   const timeSeriesData = {
   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-    const year = startYear + Math.floor(i / 12);
-    const month = i % 12;
-    return `${new Date(year, month).toLocaleString('en-US', { month: 'short' })} ${year}`;
+    const year = parseInt(startYear) + Math.floor(i / 12);  // คำนวณปีจาก index โดยตรง
+    console.log("start year", startYear, "End year: ", endYear)
+    console.log("year in time series", year); // ดูปีที่คำนวณและแก้ไขแล้ว
+    return `${year}`;  // แสดงปีที่แก้ไขแล้ว
   }),
   datasets: [
     {
@@ -270,6 +270,9 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
     },
   },
 };
+
+
+
 
 return { seasonalCycleData, timeSeriesData };
 

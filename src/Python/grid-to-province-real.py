@@ -46,6 +46,8 @@ for year in range(start_year, end_year + 1):
                             "pre": float(f"{average_data['pre']:.2f}"),
                             "tmin": float(f"{average_data['tmin']:.2f}"),
                             "tmax": float(f"{average_data['tmax']:.2f}"),
+                            "txx": float(f"{average_data['txx']:.2f}"),  # เพิ่ม TXx
+                            "tnn": float(f"{average_data['tnn']:.2f}"),  # เพิ่ม TNn
                         }
                     }
                     geojson_data["features"].append(feature)
@@ -62,6 +64,7 @@ for year in range(start_year, end_year + 1):
     with open(output_file, 'w') as f:
         json.dump(geojson_data, f, indent=2)
     print(f"Finished Year {year}. Results saved to {output_file}")
+
 
 #--------------------------------------------------------
 # import geopandas as gpd
@@ -130,7 +133,7 @@ for year in range(start_year, end_year + 1):
 #     with open(output_file, 'w') as f:
 #         json.dump(geojson_data, f, indent=2)
 #     print(f"Finished Year {year}. Results saved to {output_file}")
-
+#----------------------------------------------------------------------------------------------------------
 
 # import geopandas as gpd
 # import numpy as np

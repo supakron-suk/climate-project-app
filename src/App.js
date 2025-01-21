@@ -56,6 +56,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 //------------------------FUNCTION APP-------------------------------- -----//
 function App() {
+  const [selectedDataset, setSelectedDataset] = useState('CRU_dataset');
+
   //const [timeSeriesData, setTimeSeriesData] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState('All');
   const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
@@ -163,6 +165,48 @@ const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
 //     setSelectedValue(e.target.value);
 //     setIsApplied(true); // Trigger useEffect
 //   };
+
+// ฟังก์ชันเปลี่ยน dataset
+// ฟังก์ชันเปลี่ยน dataset
+const handleDatasetChange = (e) => {
+  const selected = e.target.value;
+  setSelectedDataset(selected);
+
+  // อัปเดต dataByYear ตาม dataset ที่เลือก
+  if (selected === 'CRU_dataset') {
+    setDataByYear({
+      "1901": data_index_1901,
+      "1902": data_index_1902,
+      "1903": data_index_1903,
+      "1904": data_index_1904,
+      "1905": data_index_1905,
+      "1906": data_index_1906,
+      "1907": data_index_1907,
+      "1908": data_index_1908,
+      "1909": data_index_1909,
+      "1910": data_index_1910,
+    });
+  } else if (selected === 'ERA_dataset') {
+    setDataByYear({
+      "1960": erra_data_1960,
+      "1961": erra_data_1961,
+      "1962": erra_data_1962,
+      "1963": erra_data_1963,
+      "1964": erra_data_1964,
+      "1965": erra_data_1965,
+    });
+  }
+
+  // Reset ค่าอื่นๆ (กราฟและแผนที่)
+  setSelectedYearStart('');
+  setSelectedYearEnd('');
+  setFilteredYearData(null);
+  setTrendGeoData(null);
+  setHeatmapData(null);
+  setSeasonalCycle({ labels: [], datasets: [] });
+  setChartData({ labels: [], datasets: [] });
+  setIsApplied(false);
+};
 //----------------------------------User Effect-------------------------------------------//
 //Useeffect--1
 // เก็บข้อมูลปีและภูมิภาคเมื่อกด Apply
@@ -280,7 +324,7 @@ useEffect(() => {
 
  
 
-//----------------------------------User Effect-------------------------------------------//
+//----------------------------------User Effect-----------------------------------------------//
 //----------------------------------webpage UI AREA-------------------------------------------//
 
   return (
@@ -289,11 +333,46 @@ useEffect(() => {
       <h1 className="block-text">Multidimensional climate data visualization</h1>
     </div>
 
+     {/* Introduction Section */}
+    <div className="introduction-header" style={{ fontSize: '30px', lineHeight: '1.6' }}>
+     <h2>Dashboard for Visualizing Climate Data Across Time and Area</h2>
+      </div> 
+
+    <div className="introduction" style={{ padding: '20px', textAlign: 'justify' }}>
+      <p style={{ fontSize: '30px', lineHeight: '1.6' }}>
+        Thailand's climate varies and fluctuates across different times of the year, 
+        often presenting intriguing patterns worth exploring. 
+        This dashboard aims to provide users with a clear and interactive way to understand climate data and trends 
+        within specific regions and time periods. 
+        Through the use of dynamic graphs and spatial visualizations, 
+        users can gain insights into regional climate behavior and make 
+        informed observations about environmental changes over time.
+      </p>
+      <p style={{ fontSize: '30px', lineHeight: '1.6' }}>
+        The datasets utilized in this visualization are sourced from the CRU dataset provided by 
+        the University of East Anglia (UEA) and the ERA5 dataset from the European Centre for Medium-Range Weather Forecasts (ECMWF). 
+        Both datasets serve as reliable references, and we have tailored their data to be presented in various 
+        formats suitable for visualizing climate conditions across Thailand.
+      </p>
+    </div>
+
     {/* <div classname = "Time-period-text">
       <h1>Select Time Period</h1>
 
     </div> */}
 
+      {/* Dropdown เลือก Dataset */}
+    <div className="dataset-selector" style={{ padding: '20px' }}>
+      <label>Select Dataset:</label>
+      <select
+        value={selectedDataset}
+        onChange={handleDatasetChange}
+        style={{ width: '200px', padding: '10px', margin: '10px' }}
+      >
+        <option value="CRU_dataset">CRU Dataset</option>
+        <option value="ERA_dataset">ERA Dataset</option>
+      </select>
+    </div>
 
   <div style={{ padding: '20px', }}>
   <h1 className="title-year">Select Time Period</h1>
@@ -475,45 +554,49 @@ useEffect(() => {
       {/* <div className="time-series-chart" style={{ width: '1500px', height: '700px', margin: '0 auto' }}> */}
   <h3>Time Series Data</h3>
   <Line
-    data={chartData}
-    options={{
-      responsive: true,
-      plugins: {
-        legend: {
+  data={chartData}
+  options={{
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+      annotation: {
+        annotations: chartData?.options?.plugins?.annotation?.annotations || [],
+      },
+    },
+    scales: {
+      x: {
+        title: {
           display: true,
-          position: 'top',
-        },
-        annotation: {
-          annotations: chartData?.options?.plugins?.annotation?.annotations || [],
-        },
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Month and Year',
-            font: {
-              size: 14,
-              weight: 'bold',
-            },
+          text: 'Year', // เปลี่ยนเป็น "Year"
+          font: {
+            size: 14,
+            weight: 'bold',
           },
         },
-        y: {
-          min: chartData?.options?.scales?.y?.min || 0,
-          max: chartData?.options?.scales?.y?.max || 100,
-          title: {
-            display: true,
-            text: `Value (${chartData?.options?.scales?.y?.title?.text || 'Unknown'})`,
-            font: {
-              size: 14,
-              weight: 'bold',
-            },
+        ticks: {
+          autoSkip: true, // ข้าม label ที่ไม่สำคัญ
+          maxTicksLimit: 10, // จำกัดจำนวน label ที่จะแสดง
+        },
+      },
+      y: {
+        min: chartData?.options?.scales?.y?.min || 0,
+        max: chartData?.options?.scales?.y?.max || 100,
+        title: {
+          display: true,
+          text: `Value (${chartData?.options?.scales?.y?.title?.text || 'Unknown'})`,
+          font: {
+            size: 14,
+            weight: 'bold',
           },
         },
       },
-    }}
-  />
+    },
+  }}
+/>
+
 </div>
     {/* Seasonal Cycle chart */}
   {showSeasonalCycle && (

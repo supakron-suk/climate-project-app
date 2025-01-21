@@ -1,5 +1,6 @@
 # gridcal.py
 import numpy as np
+
 def calculate_weighted_temperature(province_name, shapefile, data):
     province_coord = shapefile[shapefile['NAME_1'] == province_name]
     
@@ -10,11 +11,11 @@ def calculate_weighted_temperature(province_name, shapefile, data):
     grid_in_province = data[data.geometry.intersects(province_coord.geometry.union_all())]
     province_area = province_coord.geometry.union_all().area
 
-    # total_weighted_temp = 0
-    # total_weighted_dtr = 0
     total_weighted_pre = 0
     total_weighted_tmin = 0
     total_weighted_tmax = 0
+    total_weighted_txx = 0  # เพิ่มตัวแปรสำหรับ TXx
+    total_weighted_tnn = 0  # เพิ่มตัวแปรสำหรับ TNn
     total_percentage = 0
 
     for idx, grid in grid_in_province.iterrows():
@@ -22,18 +23,18 @@ def calculate_weighted_temperature(province_name, shapefile, data):
         intersection_percentage_of_province = (intersection_area / province_area) * 100
         
         # อ่านค่าของแต่ละตัวแปร
-        # temperature_value = np.nan_to_num(grid['temperature'], nan=0.0)
-        # dtr_value = np.nan_to_num(grid['dtr'], nan=0.0)
         pre_value = np.nan_to_num(grid['pre'], nan=0.0)
         tmin_value = np.nan_to_num(grid['tmin'], nan=0.0)
         tmax_value = np.nan_to_num(grid['tmax'], nan=0.0)
+        txx_value = np.nan_to_num(grid['txx'], nan=0.0)  # เพิ่มค่า TXx
+        tnn_value = np.nan_to_num(grid['tnn'], nan=0.0)  # เพิ่มค่า TNn
 
         # คำนวณค่าเฉลี่ยถ่วงน้ำหนักสำหรับแต่ละตัวแปร
-        # total_weighted_temp += temperature_value * intersection_percentage_of_province
-        # total_weighted_dtr += dtr_value * intersection_percentage_of_province
         total_weighted_pre += pre_value * intersection_percentage_of_province
         total_weighted_tmin += tmin_value * intersection_percentage_of_province
         total_weighted_tmax += tmax_value * intersection_percentage_of_province
+        total_weighted_txx += txx_value * intersection_percentage_of_province  # ถ่วงน้ำหนักค่า TXx
+        total_weighted_tnn += tnn_value * intersection_percentage_of_province  # ถ่วงน้ำหนักค่า TNn
         total_percentage += intersection_percentage_of_province
 
     if total_percentage == 0:
@@ -41,14 +42,15 @@ def calculate_weighted_temperature(province_name, shapefile, data):
     
     # คำนวณค่าเฉลี่ยถ่วงน้ำหนัก
     average_data = {
-        # "temperature": total_weighted_temp / total_percentage,
-        # "dtr": total_weighted_dtr / total_percentage,
         "pre": total_weighted_pre / total_percentage,
         "tmin": total_weighted_tmin / total_percentage,
         "tmax": total_weighted_tmax / total_percentage,
+        "txx": total_weighted_txx / total_percentage,  # เพิ่ม TXx
+        "tnn": total_weighted_tnn / total_percentage,  # เพิ่ม TNn
     }
 
     return average_data, province_coord.geometry
+
 
 # # gridcal.py
 # import numpy as np
