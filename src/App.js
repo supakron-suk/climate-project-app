@@ -161,6 +161,11 @@ const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
     );
   };
 
+  const handleIndexChange = (e) => {
+    const newValue = e.target.value;
+     setSelectedValue(newValue);
+    setIsApplied(true); // Trigger useEffect
+  }
 // const handleValueChange = (e) => {
 //     setSelectedValue(e.target.value);
 //     setIsApplied(true); // Trigger useEffect
@@ -304,23 +309,12 @@ useEffect(() => {
 
 //---------------------------------- Index Use Effect------------------------------------//
 useEffect(() => {
-  if (selectedIndex !== null) {
-    console.log(`Selected Index: ${selectedIndex}`);
-    // ถ้าค่า selectedIndex ไม่ใช่ "---" (id: 1) ให้ซ่อนกราฟ Seasonal Cycle
-    if (selectedIndex === 1) {
-      setShowSeasonalCycle(true); // แสดงกราฟ Seasonal Cycle
+    if (selectedValue === 'txx' || selectedValue === 'tnn') {
+      setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle เมื่อเลือก txx หรือ tnn
     } else {
-      setShowSeasonalCycle(false); // ซ่อนกราฟ Seasonal Cycle
+      setShowSeasonalCycle(true); // แสดงกราฟ seasonal cycle เมื่อเลือก --- หรือค่าอื่น
     }
-  }
-}, [selectedIndex]);
-
-  // รายการ dropdown (เตรียมรอไว้)
-  const dropdownOptions = [
-    { id: 1, label: "---" },
-    { id: 2, label: "TXx" },
-    { id: 3, label: "Tnn" },
-  ];
+  }, [selectedValue]); // ติดตามการเปลี่ยนแปลงของ selectedValue
 
  
 
@@ -535,20 +529,34 @@ useEffect(() => {
 <div className="index-selector">
   <label>Select Index:</label>
   <select
-    value={selectedIndex || 1} // ค่าเริ่มต้นเป็น 1 (---)
-    onChange={(e) => setSelectedIndex(parseInt(e.target.value, 10))} // แปลงค่าจาก string เป็น number
+    value={selectedValue} 
+    onChange={handleValueChange} // แปลงค่าจาก string เป็น number
   >
-    {dropdownOptions.map((option) => (
-      <option key={option.id} value={option.id}>
-        {option.label}
-      </option>
-    ))}
+    <option value="---">---</option>
+    <option value="txx">TXx</option>
+    <option value="tnn">Tnn</option>
   </select>
 </div>
 
 </div>
   {/* Dropdown สำหรับเลือก Index */}
   
+   
+    <div className="right-map">
+  {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
+    <MapComponent
+      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
+      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
+      selectedRegion={selectedRegion}
+      selectedProvinceData={selectedProvinceData} 
+      setSelectedProvinceData={setSelectedProvinceData}
+      selectedProvince={selectedProvince}
+      viewMode={viewMode}
+      value={selectedValue}
+    />
+  )}
+</div>
+
       {/* Time series chart */}
       <div className="time-series-chart">
       {/* <div className="time-series-chart" style={{ width: '1500px', height: '700px', margin: '0 auto' }}> */}
@@ -642,20 +650,12 @@ useEffect(() => {
   </div>
 )}
 
-      <div className="container">
-        <div className="content">
-          <div className="time-series-chart">
-            <div id="timeSeriesPlot" style={{ width: '100%', height: '650px' }}></div>
-          </div>
-          <div classname="Seasonal-Cycle-chart">
-            <div id="seasonalcyclePlot" style={{ width: '100%', height: '650px' }}></div>
-          </div>
-          <div className="right-map">
-  {/* แสดงแผนที่ใน MapComponent */}
+
+  {/* <div className="right-map">
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
     <MapComponent
-      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} // ใช้ key เพื่อ trigger การ re-render
-      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} // ส่งข้อมูลตาม viewMode
+      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
+      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
       selectedRegion={selectedRegion}
       selectedProvinceData={selectedProvinceData} 
       setSelectedProvinceData={setSelectedProvinceData}
@@ -664,7 +664,30 @@ useEffect(() => {
       value={selectedValue}
     />
   )}
-</div>
+</div> */}
+
+      <div className="container">
+        <div className="content">
+          <div className="time-series-chart">
+            <div id="timeSeriesPlot" style={{ width: '100%', height: '650px' }}></div>
+          </div>
+          <div classname="Seasonal-Cycle-chart">
+            <div id="seasonalcyclePlot" style={{ width: '100%', height: '650px' }}></div>
+          </div>
+          {/* <div className="right-map">
+  {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
+    <MapComponent
+      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
+      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
+      selectedRegion={selectedRegion}
+      selectedProvinceData={selectedProvinceData} 
+      setSelectedProvinceData={setSelectedProvinceData}
+      selectedProvince={selectedProvince}
+      viewMode={viewMode}
+      value={selectedValue}
+    />
+  )}
+</div> */}
   </div>
         </div>
       

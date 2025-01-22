@@ -59,7 +59,7 @@
 }
 
 
-/*----------------------Dashboard box-----------------------------*/
+/* ----------------------Dashboard box----------------------------- */
 .dashboard-box {
   width: 100%; 
   max-width: 2700px; 
@@ -102,12 +102,13 @@
 }
 
 .right-map {
+  position: absolute; 
   display: flex;
   justify-content: flex-start; 
   align-items: flex-start; 
-  margin-left: -150px; 
+  left: 1610px; 
   margin-right: 20px; 
-  margin-top: -350px;
+  margin-top: 1100px;
   height: 100%;
 }
 
@@ -202,45 +203,6 @@
   font-size: 14px;
   text-align: center;
 }
-/* .color-bar-horizontal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 10px 0;
-  position: relative;
-  width: 350px;
-  right: -400px;
-}
-
-.gradient-bar {
-  display: flex;
-  height: 20px;
-  width: 300%;
-  border: 1px solid #000;
-  position: relative;
-}
-
-.color-segment {
-  height: 100%;
-}
-
-.labels {
-  position: relative;
-  width: 100%;
-  margin-top: 5px;
-}
-
-.labels span {
-  position: absolute;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-.title {
-  margin-top: 10px;
-  font-size: 14px;
-  text-align: center;
-} */
 
 /*-----------------------dropdown region--------------------------------------*/
 .region-selector {

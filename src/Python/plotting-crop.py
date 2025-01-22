@@ -302,39 +302,46 @@
     
     # แสดงสัดส่วนของกริดที่ตัดกันบนแผนที่
     # กำหนดตำแหน่งของข้อความบนกริด
-import xarray as xr
-import pandas as pd
+import geopandas as gpd
 import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
+import seaborn as sns
 
-# โหลดข้อมูล NetCDF
-ds = xr.open_dataset('src/dataset-nc/cru_ts4.08.1901.2023.tmp.dat.nc')
+# โหลดข้อมูล GeoJSON
+data = gpd.read_file('src/Geo-data/Era-Dataset/era_data_polygon_1960.json')
+shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
-# เลือกข้อมูลอุณหภูมิและช่วงเวลาในปี 2001
-year = 2001
-temp = ds.sel(lon=slice(96, 106), lat=slice(4, 21), time=str(year))
+# สร้าง plot
+fig, ax = plt.subplots(3, 2, figsize=(15, 15))  # 3 แถว 2 คอลัมน์สำหรับ plot
 
-# แปลงข้อมูลเวลา
-time_values = temp['time'].values
-time_dates = pd.to_datetime(time_values)
+# ค่าใน properties ที่เราต้องการแสดงผล
+columns = ['tmax', 'tmin', 'pre', 'txx', 'tnn']
 
-# ตั้งค่าพื้นที่พล็อต
-fig, axes = plt.subplots(3, 4, figsize=(20, 15), subplot_kw={'projection': ccrs.PlateCarree()})
-axes = axes.flatten()
+# สีสำหรับอุณหภูมิ (Jet/Turbo) และน้ำฝน (Blues/YlGnBu)
+colormaps = {
+    'tmax': 'turbo',
+    'tmin': 'turbo',
+    'pre': 'Blues',
+    'txx': 'turbo',
+    'tnn': 'turbo'
+}
 
-# Loop สำหรับแต่ละเดือน
-for i, time in enumerate(time_dates):
-    ax = axes[i]
-    month_data = temp.sel(time=time)['tmp']  # เลือกข้อมูลอุณหภูมิของเดือนนั้น
+# ทำการ plot ทุกค่า
+for i, column in enumerate(columns):
+    row = i // 2  # แถว
+    col = i % 2   # คอลัมน์
     
-    # Plot แผนที่
-    month_data.plot(ax=ax, cmap='turbo', transform=ccrs.PlateCarree(), cbar_kwargs={'label': '°C'})
-    ax.set_title(f"Month: {time.strftime('%B %Y')}", fontsize=12)
+    # แสดงผลข้อมูลพื้นที่
+    data.plot(column=column, cmap=colormaps[column], linewidth=0.5, ax=ax[row, col], edgecolor='black', legend=True)
     
-    # เพิ่มรายละเอียดแผนที่
-    ax.set_extent([96, 106, 4, 21], crs=ccrs.PlateCarree())  # กำหนดขอบเขตพิกัด
+    # แสดงพรมแดนของประเทศไทย
+    shapefile.geometry.boundary.plot(ax=ax[row, col], color='black', linewidth=1)
+    
+    # ปรับแต่งการแสดงผลเพิ่มเติม
+    ax[row, col].set_title(f'{column} map Thailand')
+    ax[row, col].set_xlabel('Longitude')
+    ax[row, col].set_ylabel('Latitude')
 
-# จัด Layout
+# ปรับแต่งการแสดงผลทั้งหมด
 plt.tight_layout()
 plt.show()
+

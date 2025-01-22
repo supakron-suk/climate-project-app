@@ -226,8 +226,8 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
   const timeSeriesData = {
   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
     const year = parseInt(startYear) + Math.floor(i / 12);  // คำนวณปีจาก index โดยตรง
-    console.log("start year", startYear, "End year: ", endYear)
-    console.log("year in time series", year); // ดูปีที่คำนวณและแก้ไขแล้ว
+    //console.log("start year", startYear, "End year: ", endYear)
+    //console.log("year in time series", year); // ดูปีที่คำนวณและแก้ไขแล้ว
     return `${year}`;  // แสดงปีที่แก้ไขแล้ว
   }),
   datasets: [
