@@ -48,6 +48,7 @@ for year in range(start_year, end_year + 1):
                             "tmax": float(f"{average_data['tmax']:.2f}"),
                             "txx": float(f"{average_data['txx']:.2f}"),  # เพิ่ม TXx
                             "tnn": float(f"{average_data['tnn']:.2f}"),  # เพิ่ม TNn
+                            "rx1day": float(f"{average_data['rx1day']:.2f}"),  # เพิ่ม RX1d
                         }
                     }
                     geojson_data["features"].append(feature)

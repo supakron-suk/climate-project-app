@@ -302,46 +302,108 @@
     
     # แสดงสัดส่วนของกริดที่ตัดกันบนแผนที่
     # กำหนดตำแหน่งของข้อความบนกริด
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# import matplotlib.colors as mcolors
+# import numpy as np
+
+# # โหลดข้อมูล GeoJSON
+# data = gpd.read_file('src/Geo-data/Era-Dataset/era_data_polygon_1960.json')
+# shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
+
+# # กำหนดคอลัมน์ที่ต้องการ plot (ตัวอย่าง: tmin)
+# column = 'tmax'
+
+# # สีสำหรับการแสดงผล (เลือก colormap)
+# colormap = 'turbo'
+
+# # กำหนดช่วงค่าที่ต้องการใน color bar (30 ถึง 17)
+# vmin, vmax = 17, 30
+# norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+
+# # สร้าง plot
+# fig, ax = plt.subplots(1, 1, figsize=(10, 8))  # สร้าง subplot แค่ 1 รูป
+
+# # แสดงผลข้อมูลพื้นที่
+# data.plot(column=column, cmap=colormap, linewidth=0.5, ax=ax, edgecolor='black', legend=False, norm=norm)
+
+# # เพิ่ม color bar
+# sm = plt.cm.ScalarMappable(cmap=colormap, norm=norm)
+# cbar = fig.colorbar(sm, ax=ax, orientation="vertical", ticks=np.arange(17, 31, 1))  # เพิ่มช่วง 17 ถึง 30
+# cbar.ax.set_ylabel('Value (°C)', fontsize=9)  # ชื่อแกนของ color bar
+
+# # แสดงพรมแดนของประเทศไทย
+# shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=0.5)
+
+# # ปรับแต่งการแสดงผลเพิ่มเติม
+# ax.set_title(f'{column.capitalize()} Map Thailand', fontsize=12)
+# ax.set_xlabel('Longitude', fontsize=9)
+# ax.set_ylabel('Latitude', fontsize=9)
+
+# # แสดงค่าเฉลี่ยของคอลัมน์ใน properties
+# avg_value = data[column].mean()
+# avg_text = f"Avg {column}: {avg_value:.2f}°C"
+# ax.text(0.5, -0.1, avg_text, transform=ax.transAxes, fontsize=10, ha='center', va='center')
+
+# # แสดงผล
+# plt.tight_layout()
+# plt.show()
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import matplotlib.colors as mcolors
+import numpy as np
 
 # โหลดข้อมูล GeoJSON
 data = gpd.read_file('src/Geo-data/Era-Dataset/era_data_polygon_1960.json')
 shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
-# สร้าง plot
-fig, ax = plt.subplots(3, 2, figsize=(15, 15))  # 3 แถว 2 คอลัมน์สำหรับ plot
+# กำหนดคอลัมน์ที่ต้องการ plot
+columns = ['tmin', 'tmax', 'pre', 'txx', 'tnn']  
+colormaps = {'tmin': 'turbo', 'tmax': 'turbo', 'pre': 'Blues', 'txx': 'turbo', 'tnn': 'turbo'}  
 
-# ค่าใน properties ที่เราต้องการแสดงผล
-columns = ['tmax', 'tmin', 'pre', 'txx', 'tnn']
+# กำหนดช่วง color bar ที่ต้องการ (ใช้เหมือนกันสำหรับทุก subplot)
+vmin, vmax = 17, 30
+pre_vmin, pre_vmax = data['pre'].min(), data['pre'].max()  # คำนวณช่วงของ pre
 
-# สีสำหรับอุณหภูมิ (Jet/Turbo) และน้ำฝน (Blues/YlGnBu)
-colormaps = {
-    'tmax': 'turbo',
-    'tmin': 'turbo',
-    'pre': 'Blues',
-    'txx': 'turbo',
-    'tnn': 'turbo'
-}
+# สร้าง subplot (1 แถว x จำนวนคอลัมน์)
+fig, axes = plt.subplots(1, len(columns), figsize=(18, 6))  # กำหนด subplot ตามจำนวนคอลัมน์
+fig.suptitle('All Value in Properties in 1960 Year', fontsize=16)  # Header ของ plot
 
-# ทำการ plot ทุกค่า
+# Loop สำหรับสร้าง plot แต่ละค่า
 for i, column in enumerate(columns):
-    row = i // 2  # แถว
-    col = i % 2   # คอลัมน์
-    
-    # แสดงผลข้อมูลพื้นที่
-    data.plot(column=column, cmap=colormaps[column], linewidth=0.5, ax=ax[row, col], edgecolor='black', legend=True)
-    
-    # แสดงพรมแดนของประเทศไทย
-    shapefile.geometry.boundary.plot(ax=ax[row, col], color='black', linewidth=1)
-    
-    # ปรับแต่งการแสดงผลเพิ่มเติม
-    ax[row, col].set_title(f'{column} map Thailand')
-    ax[row, col].set_xlabel('Longitude')
-    ax[row, col].set_ylabel('Latitude')
+    ax = axes[i]  # เลือก subplot
 
-# ปรับแต่งการแสดงผลทั้งหมด
-plt.tight_layout()
+    # สร้าง normalize สำหรับค่าแต่ละคอลัมน์
+    if column == 'pre':
+        norm = mcolors.Normalize(vmin=pre_vmin, vmax=pre_vmax)  # กำหนดช่วงของ pre
+    else:
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+
+    # แสดงผลข้อมูลพื้นที่
+    data.plot(column=column, cmap=colormaps.get(column, 'turbo'), linewidth=0.5, ax=ax, edgecolor='black', legend=False, norm=norm)
+
+    # เพิ่ม color bar
+    sm = plt.cm.ScalarMappable(cmap=colormaps.get(column, 'turbo'), norm=norm)
+    cbar = fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.08, pad=0.04, ticks=np.linspace(norm.vmin, norm.vmax, 6))
+    cbar.ax.set_ylabel('Value', fontsize=7)  # ชื่อแกนของ color bar
+    cbar.ax.tick_params(labelsize=6)  # ปรับขนาดตัวเลขของ color bar
+
+    # แสดงพรมแดนของประเทศไทย
+    shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=0.5)
+
+    # ปรับแต่งการแสดงผลเพิ่มเติม
+    ax.set_title(f'{column.capitalize()} Value', fontsize=10)
+    ax.set_xlabel('Longitude', fontsize=7)
+    ax.set_ylabel('Latitude', fontsize=7)
+    ax.tick_params(axis='both', which='major', labelsize=6)
+
+# ปรับ layout ให้ subplot ไม่ทับกัน
+plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
+
+
+
+
+
+
 

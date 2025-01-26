@@ -15,7 +15,8 @@ def calculate_weighted_temperature(province_name, shapefile, data):
     total_weighted_tmin = 0
     total_weighted_tmax = 0
     total_weighted_txx = 0  # เพิ่มตัวแปรสำหรับ TXx
-    total_weighted_tnn = 0  # เพิ่มตัวแปรสำหรับ TNn
+    total_weighted_tnn = 0# เพิ่มตัวแปรสำหรับ TNn
+    total_weighted_rx1day = 0  # เพิ่มตัวแปรสำหรับ RX1d
     total_percentage = 0
 
     for idx, grid in grid_in_province.iterrows():
@@ -28,6 +29,8 @@ def calculate_weighted_temperature(province_name, shapefile, data):
         tmax_value = np.nan_to_num(grid['tmax'], nan=0.0)
         txx_value = np.nan_to_num(grid['txx'], nan=0.0)  # เพิ่มค่า TXx
         tnn_value = np.nan_to_num(grid['tnn'], nan=0.0)  # เพิ่มค่า TNn
+        rx1day_value = np.nan_to_num(grid['rx1day'], nan=0.0)  # เพิ่มค่า RX1d
+
 
         # คำนวณค่าเฉลี่ยถ่วงน้ำหนักสำหรับแต่ละตัวแปร
         total_weighted_pre += pre_value * intersection_percentage_of_province
@@ -35,6 +38,7 @@ def calculate_weighted_temperature(province_name, shapefile, data):
         total_weighted_tmax += tmax_value * intersection_percentage_of_province
         total_weighted_txx += txx_value * intersection_percentage_of_province  # ถ่วงน้ำหนักค่า TXx
         total_weighted_tnn += tnn_value * intersection_percentage_of_province  # ถ่วงน้ำหนักค่า TNn
+        total_weighted_rx1day += rx1day_value * intersection_percentage_of_province  # ถ่วงน้ำหนักค่า RX1d
         total_percentage += intersection_percentage_of_province
 
     if total_percentage == 0:
@@ -47,6 +51,7 @@ def calculate_weighted_temperature(province_name, shapefile, data):
         "tmax": total_weighted_tmax / total_percentage,
         "txx": total_weighted_txx / total_percentage,  # เพิ่ม TXx
         "tnn": total_weighted_tnn / total_percentage,  # เพิ่ม TNn
+        "rx1day": total_weighted_rx1day / total_percentage,  # เพิ่ม RX1d"
     }
 
     return average_data, province_coord.geometry

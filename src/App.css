@@ -122,16 +122,14 @@
   padding-left: 60px;
 }
 
-.value-selector,
-.index-selector {
+.value-selector{
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* จัด label และ dropdown ชิดซ้าย */
 }
 
-.value-selector select,
-.index-selector select {
-  width: 650px; /* เพิ่มความกว้าง */
+.value-selector select{
+  width: 1285px; /* เพิ่มความกว้าง */
   padding: 15px; /* เพิ่มความสูงโดยการเพิ่ม padding */
   font-size: 20px; /* เพิ่มขนาดตัวอักษร */
   border: 1px solid #ccc;
@@ -141,8 +139,7 @@
   text-align: left; /* จัดข้อความใน dropdown ชิดซ้าย */
 }
 
-.value-selector label,
-.index-selector label {
+.value-selector label{
   font-size: 24px; /* เพิ่มขนาดตัวอักษรของ label */
   margin: 5px ;
   font-weight: bold; /* เพิ่มความหนาของตัวอักษร */
@@ -176,9 +173,10 @@
 
 .gradient-bar {
   display: flex;
-  height: 20px;
-  width: 100%;
+  height: 30px;
+  width: 110%;
   border: 1px solid #000;
+  margin-left: 10%;
 }
 
 .color-segment {
@@ -188,6 +186,7 @@
 .labels {
   position: relative;
   width: 100%;
+  left: 50px;
   display: flex;
   justify-content: space-between;
   margin-top: 5px;
@@ -199,9 +198,11 @@
 }
 
 .title {
-  margin-top: 10px;
-  font-size: 14px;
+  margin-top: 25px;
+  margin-right: -80px;
+  font-size: 20px;
   text-align: center;
+  font-weight: bold;
 }
 
 /*-----------------------dropdown region--------------------------------------*/
@@ -308,7 +309,7 @@
 
 .map-buttons {
   position: absolute; /* ให้อยู่บนสุดของแผนที่ */
-  top: 730px; /* ระยะจากขอบบน */
+  top: 1410px; /* ระยะจากขอบบน */
   left: 1660px; /* ระยะจากขอบซ้าย */
   z-index: 1000; /* ให้ปุ่มอยู่ด้านหน้า */
   display: flex;

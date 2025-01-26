@@ -150,15 +150,6 @@ const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
     setSelectedValue(newValue);
     setIsApplied(true); // Trigger useEffect
     
-    // เรียก cal_index เมื่อ dropdown เปลี่ยนค่า
-    cal_index(
-      dataByYear,
-      parseInt(selectedYearStart), // แปลงเป็นตัวเลข
-      parseInt(selectedYearEnd),
-      selectedRegion,
-      selectedProvince,
-      newValue // ส่งค่าที่เลือกจาก dropdown
-    );
   };
 
   const handleIndexChange = (e) => {
@@ -435,8 +426,8 @@ useEffect(() => {
 
 {/* Button select map */}
 <div className="map-buttons">
-  <button onClick={() => toggleViewMode("Heatmap")}>View Heatmap</button>
-  <button onClick={() => toggleViewMode("TrendMap")}>View TrendMap</button>
+  <button onClick={() => toggleViewMode("Heatmap")}>choropleth Map</button>
+  <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
 </div>
 
 {/* การแสดงผลตาม viewMode */}
@@ -510,12 +501,34 @@ useEffect(() => {
   <div className="dropdown-container">
 
    
-  {/* Dropdown สำหรับเลือก value */}
   <div className="value-selector">
+  <label>Select Data:</label>
+  <select
+    value={selectedValue}
+    onChange={handleValueChange}
+  >
+    {/* กลุ่ม Raw Values */}
+    <optgroup label="Raw Data">
+      <option value="temperature">Temperature Mean</option>
+      <option value="tmin">Temperature Min</option>
+      <option value="tmax">Temperature Max</option>
+      <option value="pre">Precipitation</option>
+    </optgroup>
+
+    {/* กลุ่ม Index */}
+    <optgroup label="Index Data">
+      <option value="txx">TXx</option>
+      <option value="tnn">Tnn</option>
+      {/* <option value="rx1day">rx1day</option> */}
+    </optgroup>
+  </select>
+</div>
+ 
+  {/* Dropdown สำหรับเลือก value */}
+  {/* <div className="value-selector">
     <label>Select value:</label>
     <select
       value={selectedValue}
-      // onChange={(e) => setSelectedValue(e.target.value)}
       onChange={handleValueChange}
     >
       <option value="temperature">Temperature Mean</option>
@@ -523,20 +536,20 @@ useEffect(() => {
       <option value="tmax">Temperature Max</option>
       <option value="pre">Precipitation</option>
     </select>
-  </div>
+  </div> */}
 
   {/* Dropdown สำหรับเลือก Index */}
-<div className="index-selector">
+{/* <div className="index-selector">
   <label>Select Index:</label>
   <select
     value={selectedValue} 
-    onChange={handleValueChange} // แปลงค่าจาก string เป็น number
+    onChange={handleValueChange} 
   >
     <option value="---">---</option>
     <option value="txx">TXx</option>
     <option value="tnn">Tnn</option>
   </select>
-</div>
+</div> */}
 
 </div>
   {/* Dropdown สำหรับเลือก Index */}

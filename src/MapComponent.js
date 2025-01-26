@@ -185,7 +185,7 @@ const ColorBar = ({ viewMode, steps = 10, min, max }) => {
               position: "absolute",
               left: `${(index / (labels.length - 1)) * 100}%`,
               transform: "translateX(-50%)",
-              fontSize: "12px",
+              fontSize: "17px",
             }}
           >
             {label}
@@ -193,7 +193,7 @@ const ColorBar = ({ viewMode, steps = 10, min, max }) => {
         ))}
       </div>
       <div className="title">
-        {viewMode === "Heatmap" ? "Heat Values" : "Slope Values"}
+        {viewMode === "Heatmap" ? "Data Values" : "Trend Values"}
       </div>
     </div>
   );

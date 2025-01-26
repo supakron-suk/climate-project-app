@@ -187,7 +187,7 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
     {
       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
       data: seasonalMeans,
-      borderColor: 'rgba(75,192,192,1)',
+      borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
       tension: 0.4,
@@ -234,7 +234,7 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
     {
       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
       data: result,
-      borderColor: 'rgba(75,192,192,1)',
+      borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
       tension: 0.4,

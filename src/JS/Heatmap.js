@@ -28,7 +28,7 @@ export const Heatmap = (dataByYear, startYear, endYear, region, province, value)
 
     filteredFeatures.forEach((feature) => {
       const { name, region } = feature.properties;
-      const { temperature, dtr, pre, tmin, tmax, tnn, txx} = feature.properties;
+      const { temperature, dtr, pre, tmin, tmax, tnn, txx, rx1day} = feature.properties;
       console.log(`Year: ${year}, Province: ${name}, Value: ${value}, Pre: ${pre}, TXX: ${txx}, TNN: ${tnn}`);
       const geometry = feature.geometry;
 
@@ -43,6 +43,7 @@ export const Heatmap = (dataByYear, startYear, endYear, region, province, value)
           tmax: 0,
           tnn: 0,
           txx: 0,
+          rx1day: 0,
           count: 0,
         };
       }
@@ -69,6 +70,9 @@ export const Heatmap = (dataByYear, startYear, endYear, region, province, value)
       if (value === 'tnn' && typeof tnn === 'number') {
         groupedData[name].tnn += tnn;
       }
+      if (value === 'rx1day' && typeof rx1day === 'number') {
+        groupedData[name].rx1day += rx1day;
+      }
       groupedData[name].count++; 
     });
   }
@@ -77,7 +81,7 @@ export const Heatmap = (dataByYear, startYear, endYear, region, province, value)
     type: "FeatureCollection",
     features: Object.keys(groupedData).map((area) => {
       const data = groupedData[area];
-      const { temperature, dtr, pre, tmin, tmax, tnn, txx, count } = data;
+      const { temperature, dtr, pre, tmin, tmax, tnn, txx, rx1day, count } = data;
 
       return {
         type: "Feature",
