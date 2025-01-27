@@ -223,17 +223,33 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
 
   const timeSeriesBounds = calculateYAxisBounds(result);
 
+  //----------------------------------------------------//
+  // สร้างข้อมูลรายปีจากรายเดือน
+const annualData = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
+  const startIndex = i * 12; // index ของเดือนแรกในปีนั้น
+  const endIndex = startIndex + 12; // index ของเดือนสุดท้ายในปีนั้น
+  const yearlyValues = result.slice(startIndex, endIndex); // ข้อมูล 12 เดือนในปีนั้น
+  const yearlyAverage = yearlyValues.reduce((sum, val) => sum + val, 0) / yearlyValues.length; // ค่าเฉลี่ยรายปี
+  return yearlyAverage;
+});
+
+// สร้าง Labels รายปี
+const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
+  const year = parseInt(startYear, 10) + i; // แปลง startYear เป็นตัวเลขก่อนการคำนวณ
+  return `${year}`; // แสดงปีในรูปแบบตัวเลข
+});
+
+// คำนวณ bounds ใหม่สำหรับข้อมูลรายปี
+const annualBounds = calculateYAxisBounds(annualData);
+
+  //----------------------------------------------------//
+
   const timeSeriesData = {
-  labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-    const year = parseInt(startYear) + Math.floor(i / 12);  // คำนวณปีจาก index โดยตรง
-    //console.log("start year", startYear, "End year: ", endYear)
-    //console.log("year in time series", year); // ดูปีที่คำนวณและแก้ไขแล้ว
-    return `${year}`;  // แสดงปีที่แก้ไขแล้ว
-  }),
+  labels: annualLabels, // ใช้ labels รายปีแทน
   datasets: [
     {
       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: result,
+      data: annualData, // ใช้ข้อมูลรายปีแทน
       borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
@@ -241,7 +257,7 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
     },
     {
       label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: Array(result.length).fill(null).concat(overallMean),
+      data: Array(annualData.length).fill(overallMean), // ค่า mean เดียวกันในทุกปี
       borderColor: 'black',
       borderWidth: 2,
       borderDash: [5, 5],
@@ -264,12 +280,59 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
           display: true,
           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
         },
-        min: timeSeriesBounds.min, // ตั้งค่า min อัตโนมัติ
-        max: timeSeriesBounds.max, // ตั้งค่า max อัตโนมัติ
+        min: annualBounds.min, // ตั้งค่า min อัตโนมัติจากข้อมูลรายปี
+        max: annualBounds.max, // ตั้งค่า max อัตโนมัติจากข้อมูลรายปี
       },
     },
   },
 };
+//   const timeSeriesData = {
+//   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
+//     const year = parseInt(startYear) + Math.floor(i / 12);  // คำนวณปีจาก index โดยตรง
+//     //console.log("start year", startYear, "End year: ", endYear)
+//     //console.log("year in time series", year); // ดูปีที่คำนวณและแก้ไขแล้ว
+//     return `${year}`;  // แสดงปีที่แก้ไขแล้ว
+//   }),
+//   datasets: [
+//     {
+//       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
+//       data: result,
+//       borderColor: 'black',
+//       backgroundColor: 'rgba(75,192,192,0.2)',
+//       fill: true,
+//       tension: 0.4,
+//     },
+//     {
+//       label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
+//       data: Array(result.length).fill(null).concat(overallMean),
+//       borderColor: 'black',
+//       borderWidth: 2,
+//       borderDash: [5, 5],
+//       pointBackgroundColor: 'black',
+//       pointRadius: 6,
+//       fill: false,
+//       tension: 0.4,
+//     },
+//   ],
+//   options: {
+//     responsive: true,
+//     plugins: {
+//       annotation: {
+//         annotations: yearBoundaries,
+//       },
+//     },
+//     scales: {
+//       y: {
+//         title: {
+//           display: true,
+//           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
+//         },
+//         min: timeSeriesBounds.min, // ตั้งค่า min อัตโนมัติ
+//         max: timeSeriesBounds.max, // ตั้งค่า max อัตโนมัติ
+//       },
+//     },
+//   },
+// };
 
 
 
