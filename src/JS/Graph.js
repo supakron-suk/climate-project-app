@@ -30,7 +30,7 @@ export const dummySeasonalCycleData = {
 };
 
 //---------------------------------------- Seasonal Cycle Graph---------------------------------------------//
-export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex) => {
+export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize) => {
   // ฟังก์ชันหลักสำหรับคำนวณค่าเฉลี่ยอุณหภูมิ
   // `dataByYear` เป็นข้อมูล GeoJSON แยกตามปี
   // `startYear` และ `endYear` เป็นปีเริ่มต้นและสิ้นสุดที่ต้องการคำนวณ
@@ -143,9 +143,13 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   
 
   const indexLabels = {
-  temperature: { label: 'Average Temperature', unit: '°C' },
-  precipitation: { label: 'Average Precipitation', unit: 'mm' },
-  humidity: { label: 'Average Humidity', unit: '%' },
+   temperature: { label: 'Value', unit: '°C' },
+    tmin: { label: 'Value', unit: '°C' },
+    tmax: { label: 'Value', unit: '°C' },
+    txx: { label: 'Value', unit: '°C' },
+    tnn: { label: 'Value', unit: '°C' },
+    pre: { label: 'Value', unit: 'mm' },
+    rx1day: { label: 'Value', unit: 'mm' },
   // เพิ่ม index อื่น ๆ ตามที่คุณมีในข้อมูล
 };
 
@@ -201,27 +205,18 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
           display: true,
           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
         },
-        min: seasonalBounds.min, // ตั้งค่า min อัตโนมัติ
-        max: seasonalBounds.max, // ตั้งค่า max อัตโนมัติ
+        min: seasonalBounds.min,
+        max: seasonalBounds.max,
+        ticks: {
+          callback: function(value) {
+            return Number(value.toFixed(0)); // ตัดทศนิยมออก
+          },
+        },
       },
     },
   },
 };
 
-  const yearBoundaries = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
-    const midYearIndex = i * 12 + 11; 
-    return {
-      type: "line",
-      scaleID: "x",
-      value: midYearIndex,
-      borderColor: "rgba(255, 0, 0, 0.5)", 
-      borderWidth: 2, 
-      borderDash: [10, 5], 
-      label: { enabled: true, content: `${startYear + i}` }, 
-    };
-  });
-
-  const timeSeriesBounds = calculateYAxisBounds(result);
 
   //----------------------------------------------------//
   // สร้างข้อมูลรายปีจากรายเดือน
@@ -242,26 +237,75 @@ const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
 // คำนวณ bounds ใหม่สำหรับข้อมูลรายปี
 const annualBounds = calculateYAxisBounds(annualData);
 
+// คำนวณค่าเฉลี่ยสะสมรายปี (Cumulative Moving Average)
+const cumulativeMovingAverage = (data) => {
+  const averages = [];
+  let sum = 0;
+  data.forEach((value, index) => {
+    sum += value;
+    averages.push(sum / (index + 1));
+  });
+  return averages;
+};
+
+// คำนวณค่าเฉลี่ยสะสมรายปี
+const annualCumulativeAverage = cumulativeMovingAverage(annualData);
+
+const gaussianFilter = (data, kernelSize = 21) => {
+  const sigma = kernelSize / 6;
+  
+  // สร้าง Gaussian Kernel และ Normalize
+  const kernel = Array.from({ length: kernelSize }, (_, i) => {
+    const x = i - Math.floor(kernelSize / 2);
+    return Math.exp(-(x ** 2) / (2 * sigma ** 2));
+  });
+
+  // Normalize Kernel (ทำให้ผลรวมเป็น 1)
+  const sumKernel = kernel.reduce((sum, val) => sum + val, 0);
+  const normalizedKernel = kernel.map(val => val / sumKernel);
+
+  // Apply Gaussian Filter
+  return data.map((_, i) => {
+    let sum = 0;
+    let weightSum = 0;
+
+    for (let j = 0; j < kernelSize; j++) {
+      const index = i + j - Math.floor(kernelSize / 2);
+      if (index >= 0 && index < data.length) {
+        sum += data[index] * normalizedKernel[j];
+        weightSum += normalizedKernel[j];
+      }
+    }
+
+    return sum / weightSum; // Normalize ค่า output
+  });
+};
+
+// คำนวณค่าเฉลี่ย Gaussian Moving Average 21 ปี
+const annualGaussianAverage = gaussianFilter(annualData, kernelSize);
+
+
+
   //----------------------------------------------------//
 
   const timeSeriesData = {
-  labels: annualLabels, // ใช้ labels รายปีแทน
+  labels: annualLabels,
   datasets: [
     {
-      label: `${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: annualData, // ใช้ข้อมูลรายปีแทน
+      label: `Annual Average`,
+      data: annualData,
       borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
       tension: 0.4,
     },
     {
-      label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
-      data: Array(annualData.length).fill(overallMean), // ค่า mean เดียวกันในทุกปี
-      borderColor: 'black',
+      label: `moving average`,
+      data: annualGaussianAverage,
+      borderColor: 'purple',
       borderWidth: 2,
       borderDash: [5, 5],
-      pointBackgroundColor: 'black',
+      pointBackgroundColor: 'purple',
       pointRadius: 6,
       fill: false,
       tension: 0.4,
@@ -269,74 +313,45 @@ const annualBounds = calculateYAxisBounds(annualData);
   ],
   options: {
     responsive: true,
-    plugins: {
-      annotation: {
-        annotations: yearBoundaries,
-      },
-    },
     scales: {
+      x: {
+        ticks: {
+          font: {
+            size: 25,
+          },
+          color: 'black',
+        },
+        title: {
+          display: true,
+          text: 'Year',
+          font: {
+            size: 28,
+          },
+        },
+      },
       y: {
+        ticks: {
+          callback: function(value) {
+            return Number(value.toFixed(0)); // ตัดทศนิยมออก
+          },
+          font: {
+            size: 25,
+          },
+          color: 'black',
+        },
         title: {
           display: true,
           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
+          font: {
+            size: 28,
+          },
         },
-        min: annualBounds.min, // ตั้งค่า min อัตโนมัติจากข้อมูลรายปี
-        max: annualBounds.max, // ตั้งค่า max อัตโนมัติจากข้อมูลรายปี
+        min: annualBounds.min,
+        max: annualBounds.max,
       },
     },
   },
 };
-//   const timeSeriesData = {
-//   labels: Array.from({ length: (endYear - startYear + 1) * 12 }, (_, i) => {
-//     const year = parseInt(startYear) + Math.floor(i / 12);  // คำนวณปีจาก index โดยตรง
-//     //console.log("start year", startYear, "End year: ", endYear)
-//     //console.log("year in time series", year); // ดูปีที่คำนวณและแก้ไขแล้ว
-//     return `${year}`;  // แสดงปีที่แก้ไขแล้ว
-//   }),
-//   datasets: [
-//     {
-//       label: `${selectedIndexLabel} (${selectedIndexUnit})`,
-//       data: result,
-//       borderColor: 'black',
-//       backgroundColor: 'rgba(75,192,192,0.2)',
-//       fill: true,
-//       tension: 0.4,
-//     },
-//     {
-//       label: `Overall Mean ${selectedIndexLabel} (${selectedIndexUnit})`,
-//       data: Array(result.length).fill(null).concat(overallMean),
-//       borderColor: 'black',
-//       borderWidth: 2,
-//       borderDash: [5, 5],
-//       pointBackgroundColor: 'black',
-//       pointRadius: 6,
-//       fill: false,
-//       tension: 0.4,
-//     },
-//   ],
-//   options: {
-//     responsive: true,
-//     plugins: {
-//       annotation: {
-//         annotations: yearBoundaries,
-//       },
-//     },
-//     scales: {
-//       y: {
-//         title: {
-//           display: true,
-//           text: `${selectedIndexLabel} (${selectedIndexUnit})`,
-//         },
-//         min: timeSeriesBounds.min, // ตั้งค่า min อัตโนมัติ
-//         max: timeSeriesBounds.max, // ตั้งค่า max อัตโนมัติ
-//       },
-//     },
-//   },
-// };
-
-
-
-
 return { seasonalCycleData, timeSeriesData };
 
 };

@@ -92,6 +92,7 @@
   height: 650px; 
   margin: 0 auto; 
   margin-left: 50px;
+  margin-top: -50px;
 }
 
 .Seasonal-Cycle-chart{
@@ -108,9 +109,71 @@
   align-items: flex-start; 
   left: 1610px; 
   margin-right: 20px; 
-  margin-top: 1100px;
+  margin-top: 1060px;
   height: 100%;
 }
+
+/*---------------User Select Value Legend Bar----------------*/
+/* Legend Bar Controls */
+.legend-bar-container {
+  display: flex;
+  justify-content: space-between; /* จัดให้อยู่คนละด้าน */
+  align-items: center;
+  width: 100%; /* ใช้พื้นที่เต็ม */
+  padding: 10px 20px; /* เพิ่ม Padding รอบ */
+}
+
+.legend-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* ระยะห่างระหว่าง Label และ Input */
+}
+
+.legend-bar-min {
+  position: relative;
+  left: 1300px;  
+  top: 1310px;
+}
+
+.legend-bar-max {
+  position: relative;
+  left: -30px;  
+  top: 1310px;  /* เลื่อน Max ไปทางซ้าย 50px */
+}
+
+.legend-bar-input {
+  padding: 7px;
+  width: 50px;
+  height: 40px;
+  text-align: center;
+  border: 3px solid #ccc;
+  border-radius: 5px;
+  font-size: 20px;
+}
+
+/*---------------User Select Value Legend Bar----------------*/
+
+/*--------------------- Kernel Input -------------------------*/
+.kernel-input {
+  position: absolute;
+  top: 1252px;  /* ระยะห่างจากด้านบน */
+  left: 1550px; /* ระยะห่างจากด้านซ้าย */
+  width: 120px;
+  height: 40px;
+  font-size: 20px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 2px solid #007bff;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* เมื่อโฟกัสที่ input */
+.kernel-input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 8px rgba(0, 91, 187, 0.5);
+}
+
 
 /*-------------Variable, Index Selector---------------*/
 .dropdown-container {
@@ -143,6 +206,35 @@
   font-size: 24px; /* เพิ่มขนาดตัวอักษรของ label */
   margin: 5px ;
   font-weight: bold; /* เพิ่มความหนาของตัวอักษร */
+}
+
+.map-buttons {
+  position: absolute; /* ให้อยู่บนสุดของแผนที่ */
+  top: 1450px; /* ระยะจากขอบบน */
+  left: 1660px; /* ระยะจากขอบซ้าย */
+  z-index: 1000; /* ให้ปุ่มอยู่ด้านหน้า */
+  display: flex;
+  flex-direction: row; /* เรียงปุ่มในแนวตั้ง */
+  gap: 5px; /* ระยะห่างระหว่างปุ่ม */
+}
+
+.map-buttons button {
+  padding: 10px 15px; /* ขนาดปุ่ม */
+  font-size: 14px; /* ขนาดตัวอักษร */
+  background-color: #007bff; /* สีพื้นหลังของปุ่ม */
+  color: white; /* สีตัวอักษร */
+  border: none; /* ไม่มีเส้นขอบ */
+  border-radius: 5px; /* มุมมน */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
+}
+
+.map-buttons button:hover {
+  background-color: #0056b3; /* สีเมื่อ hover */
+}
+
+.map-container {
+  position: relative; /* ทำให้ปุ่มสามารถแสดงในตำแหน่งสัมพันธ์กับแผนที่ได้ */
 }
 
 
@@ -240,6 +332,33 @@
   margin-left: 50px;
 } */
 
+/*------------------Dataset Selector---------------------------*/
+/* Container สำหรับ dropdown */
+.dataset-selector {
+  padding: 20px;
+}
+
+/* สไตล์สำหรับ select dropdown */
+.dataset-selector select {
+  width: 250px; /* กำหนดความกว้าง */
+  padding: 12px; /* เพิ่มพื้นที่ภายใน */
+  margin: 10px; /* ระยะรอบนอก */
+  font-size: 18px; /* ขนาดตัวอักษร */
+  border: 2px solid #ccc; /* เสริมขอบ */
+  border-radius: 5px; /* ทำขอบมุมโค้ง */
+  background-color: #fff; /* สีพื้นหลัง */
+  color: #333; /* สีตัวอักษร */
+  cursor: pointer; /* เปลี่ยน cursor เมื่อ hover */
+}
+
+/* สไตล์สำหรับแต่ละ option */
+.dataset-selector select option {
+  font-size: 16px; /* ขนาดตัวอักษรใน option */
+  color: #333; /* สีตัวอักษร */
+}
+
+
+
 /*--------------------------year selector------------------*/
 .year-selector {
   text-align: center;
@@ -306,88 +425,5 @@
 
 
 /* -----------------Select map Button----------------- */
-
-.map-buttons {
-  position: absolute; /* ให้อยู่บนสุดของแผนที่ */
-  top: 1410px; /* ระยะจากขอบบน */
-  left: 1660px; /* ระยะจากขอบซ้าย */
-  z-index: 1000; /* ให้ปุ่มอยู่ด้านหน้า */
-  display: flex;
-  flex-direction: row; /* เรียงปุ่มในแนวตั้ง */
-  gap: 5px; /* ระยะห่างระหว่างปุ่ม */
-}
-
-.map-buttons button {
-  padding: 10px 15px; /* ขนาดปุ่ม */
-  font-size: 14px; /* ขนาดตัวอักษร */
-  background-color: #007bff; /* สีพื้นหลังของปุ่ม */
-  color: white; /* สีตัวอักษร */
-  border: none; /* ไม่มีเส้นขอบ */
-  border-radius: 5px; /* มุมมน */
-  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
-}
-
-.map-buttons button:hover {
-  background-color: #0056b3; /* สีเมื่อ hover */
-}
-
-.map-container {
-  position: relative; /* ทำให้ปุ่มสามารถแสดงในตำแหน่งสัมพันธ์กับแผนที่ได้ */
-}
-
-
-
-
-/*-------------Variable, Index Selector---------------*/
-/* .dropdown-container {
-  display: flex;
-  align-items: flex-start; 
-  justify-content: flex-start; 
-  gap: 30px; 
-  margin: 1px 0; 
-  padding-left: 60px;
-}
-
-.value-selector,
-.index-selector {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; 
-}
-
-.value-selector select,
-.index-selector select {
-  width: 650px; 
-  padding: 15px; 
-  font-size: 20px; 
-  border: 1px solid #ccc;
-  border-radius: 8px; 
-  background-color: #f9f9f9; 
-  color: #333; 
-  text-align: left; 
-}
-
-.value-selector label,
-.index-selector label {
-  font-size: 24px; 
-  margin: 5px ;
-  font-weight: bold; 
-} */
-
-
-/*-------------Variable, Index Selector---------------*/
-
-/* .dashboard-box {
-  width: 100%; 
-  max-width: 2700px; 
-  max-height: 1450px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 20px auto;
-} */
 
 

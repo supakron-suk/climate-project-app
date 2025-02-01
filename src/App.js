@@ -47,6 +47,16 @@ import erra_data_1962 from './Geo-data/Era-Dataset/era_data_polygon_1962.json';
 import erra_data_1963 from './Geo-data/Era-Dataset/era_data_polygon_1963.json';
 import erra_data_1964 from './Geo-data/Era-Dataset/era_data_polygon_1964.json';
 import erra_data_1965 from './Geo-data/Era-Dataset/era_data_polygon_1965.json';
+import erra_data_1966 from './Geo-data/Era-Dataset/era_data_polygon_1966.json';
+import erra_data_1967 from './Geo-data/Era-Dataset/era_data_polygon_1967.json';
+import erra_data_1968 from './Geo-data/Era-Dataset/era_data_polygon_1968.json';
+import erra_data_1969 from './Geo-data/Era-Dataset/era_data_polygon_1969.json';
+import erra_data_1970 from './Geo-data/Era-Dataset/era_data_polygon_1970.json';
+import erra_data_1971 from './Geo-data/Era-Dataset/era_data_polygon_1971.json';
+import erra_data_1972 from './Geo-data/Era-Dataset/era_data_polygon_1972.json';
+import erra_data_1973 from './Geo-data/Era-Dataset/era_data_polygon_1973.json';
+import erra_data_1974 from './Geo-data/Era-Dataset/era_data_polygon_1974.json';
+import erra_data_1975 from './Geo-data/Era-Dataset/era_data_polygon_1975.json';
 
 //----------------------------------------------------------------------------//
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
@@ -82,7 +92,6 @@ const [dataByYear, setDataByYear] = useState({
   "1908": data_index_1908,
   "1909": data_index_1909,
   "1910": data_index_1910,
-  "1960": erra_data_1960,
 });
 
 const [selectedYearStart, setSelectedYearStart] = useState('');
@@ -99,6 +108,12 @@ const [viewMode, setViewMode] = useState("Heatmap"); // "Heatmap" หรือ "
 //--------------------------------Select Index of Variable---------------------------//
 const [selectedIndex, setSelectedIndex] = useState(null);
 const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
+
+//-------------------------------User Select Min/Max Legend Bar-----------------------//
+const [legendMin, setLegendMin] = useState(null);
+const [legendMax, setLegendMax] = useState(null);
+//-------------------------------User Select Min/Max Legend Bar-----------------------//
+const [kernelSize, setKernelSize] = useState(null);
 
 
 
@@ -152,11 +167,6 @@ const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
     
   };
 
-  const handleIndexChange = (e) => {
-    const newValue = e.target.value;
-     setSelectedValue(newValue);
-    setIsApplied(true); // Trigger useEffect
-  }
 // const handleValueChange = (e) => {
 //     setSelectedValue(e.target.value);
 //     setIsApplied(true); // Trigger useEffect
@@ -190,6 +200,16 @@ const handleDatasetChange = (e) => {
       "1963": erra_data_1963,
       "1964": erra_data_1964,
       "1965": erra_data_1965,
+      "1966": erra_data_1966,
+      "1967": erra_data_1967,
+      "1968": erra_data_1968,
+      "1969": erra_data_1969,
+      "1970": erra_data_1970,
+      "1971": erra_data_1971,
+      "1972": erra_data_1972,
+      "1973": erra_data_1973,
+      "1974": erra_data_1974,
+      "1975": erra_data_1975,
     });
   }
 
@@ -249,7 +269,8 @@ useEffect(() => {
       selectedYearEnd,
       selectedRegion,
       selectedProvince,
-      selectedValue
+      selectedValue,
+      kernelSize
     );
     if (chartData) {
       setSeasonalCycle(chartData.seasonalCycleData);
@@ -289,18 +310,19 @@ useEffect(() => {
       selectedYearEnd,
       selectedRegion,
       selectedProvince,
-      selectedValue
+      selectedValue,
+      kernelSize
     );
     if (chartData) {
       setSeasonalCycle(chartData.seasonalCycleData);
       setChartData(chartData.timeSeriesData);
     }
   }
-}, [selectedValue, selectedRegion, filteredYearData]);
+}, [selectedValue,  filteredYearData, kernelSize]);
 
 //---------------------------------- Index Use Effect------------------------------------//
 useEffect(() => {
-    if (selectedValue === 'txx' || selectedValue === 'tnn') {
+    if (selectedValue === 'txx' || selectedValue === 'tnn' || selectedValue === 'rx1day') {
       setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle เมื่อเลือก txx หรือ tnn
     } else {
       setShowSeasonalCycle(true); // แสดงกราฟ seasonal cycle เมื่อเลือก --- หรือค่าอื่น
@@ -347,17 +369,14 @@ useEffect(() => {
     </div> */}
 
       {/* Dropdown เลือก Dataset */}
-    <div className="dataset-selector" style={{ padding: '20px' }}>
-      <label>Select Dataset:</label>
-      <select
-        value={selectedDataset}
-        onChange={handleDatasetChange}
-        style={{ width: '200px', padding: '10px', margin: '10px' }}
-      >
-        <option value="CRU_dataset">CRU Dataset</option>
-        <option value="ERA_dataset">ERA Dataset</option>
-      </select>
-    </div>
+<div className="dataset-selector">
+  <label>Select Dataset:</label>
+  <select value={selectedDataset} onChange={handleDatasetChange}>
+    <option value="CRU_dataset">CRU Dataset</option>
+    <option value="ERA_dataset">ERA Dataset</option>
+  </select>
+</div>
+
 
   <div style={{ padding: '20px', }}>
   <h1 className="title-year">Select Time Period</h1>
@@ -519,41 +538,65 @@ useEffect(() => {
     <optgroup label="Index Data">
       <option value="txx">TXx</option>
       <option value="tnn">Tnn</option>
+      <option value="rx1day">rx1day</option>
       {/* <option value="rx1day">rx1day</option> */}
     </optgroup>
   </select>
 </div>
  
-  {/* Dropdown สำหรับเลือก value */}
-  {/* <div className="value-selector">
-    <label>Select value:</label>
-    <select
-      value={selectedValue}
-      onChange={handleValueChange}
-    >
-      <option value="temperature">Temperature Mean</option>
-      <option value="tmin">Temperature Min</option>
-      <option value="tmax">Temperature Max</option>
-      <option value="pre">Precipitation</option>
-    </select>
-  </div> */}
-
-  {/* Dropdown สำหรับเลือก Index */}
-{/* <div className="index-selector">
-  <label>Select Index:</label>
-  <select
-    value={selectedValue} 
-    onChange={handleValueChange} 
-  >
-    <option value="---">---</option>
-    <option value="txx">TXx</option>
-    <option value="tnn">Tnn</option>
-  </select>
-</div> */}
 
 </div>
-  {/* Dropdown สำหรับเลือก Index */}
   
+  {/* User Select Legend Bar */}
+<div className="legend-bar-container">
+  {/* Box สำหรับ Min */}
+  <div className="legend-bar-item legend-bar-min">
+    <label>Min:</label>
+    <input
+  type="text"
+  value={legendMin ?? ""}  // ถ้า null ให้แสดงเป็น ""
+  onChange={(e) => {
+    const value = e.target.value;
+    if (/^-?\d*\.?\d*$/.test(value)) {
+      setLegendMin(value === "" ? null : Number(value)); // ถ้าเป็น "" ให้เซ็ตเป็น null
+    }
+  }}
+  className="legend-bar-input"
+/>
+
+  </div>
+  {/* Box สำหรับ Max */}
+  <div className="legend-bar-item legend-bar-max">
+    <label>Max:</label>
+    <input
+  type="text"
+  value={legendMax ?? ""}
+  onChange={(e) => {
+    const value = e.target.value;
+    if (/^-?\d*\.?\d*$/.test(value)) {
+      setLegendMax(value === "" ? null : Number(value));
+    }
+  }}
+  className="legend-bar-input"
+/>
+
+  </div>
+</div>
+
+{/* User Select Legend Bar */}
+
+
+<input 
+  type="number" 
+  value={kernelSize} 
+  onChange={(e) => setKernelSize(Number(e.target.value))} 
+  min={1} 
+  max={50} 
+  className="kernel-input"
+/>
+
+
+
    
     <div className="right-map">
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
@@ -566,63 +609,79 @@ useEffect(() => {
       selectedProvince={selectedProvince}
       viewMode={viewMode}
       value={selectedValue}
+      legendMin={legendMin} // ส่งค่า Min
+    legendMax={legendMax} // ส่งค่า Max
     />
   )}
 </div>
 
-      {/* Time series chart */}
-      <div className="time-series-chart">
-      {/* <div className="time-series-chart" style={{ width: '1500px', height: '700px', margin: '0 auto' }}> */}
-  <h3>Time Series Data</h3>
-  <Line
-  data={chartData}
-  options={{
-    responsive: true,
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top',
-      },
-      annotation: {
-        annotations: chartData?.options?.plugins?.annotation?.annotations || [],
-      },
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Year', // เปลี่ยนเป็น "Year"
-          font: {
-            size: 14,
-            weight: 'bold',
-          },
-        },
-        ticks: {
-          autoSkip: true, // ข้าม label ที่ไม่สำคัญ
-          maxTicksLimit: 10, // จำกัดจำนวน label ที่จะแสดง
-        },
-      },
-      y: {
-        min: chartData?.options?.scales?.y?.min || 0,
-        max: chartData?.options?.scales?.y?.max || 100,
-        title: {
-          display: true,
-          text: `Value (${chartData?.options?.scales?.y?.title?.text || 'Unknown'})`,
-          font: {
-            size: 14,
-            weight: 'bold',
-          },
-        },
-      },
-    },
-  }}
-/>
 
+
+      {/* Time series chart */}
+<div className="time-series-chart">
+  <h3>Time Series</h3>
+  <Line
+    data={chartData}
+    options={{
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        annotation: {
+          annotations: chartData?.options?.plugins?.annotation?.annotations || [],
+        },
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Year',
+            font: {
+              size: 18,
+              weight: 'bold',
+            },
+          },
+          ticks: {
+            font: {
+              size: 18,
+              weight: 'bold',
+            },
+            autoSkip: true,
+            maxTicksLimit: 10,
+          },
+        },
+        y: {
+          min: chartData?.options?.scales?.y?.min || 0,
+          max: chartData?.options?.scales?.y?.max || 100,
+          title: {
+            display: true,
+            text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
+            font: {
+              size: 18,
+              weight: 'bold',
+            },
+          },
+          ticks: {
+            font: {
+              size: 16,
+              weight: 'bold',
+            },
+            callback: function(value) {
+              return `${Number(value.toFixed(0))} ${chartData?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
+            },
+          },
+        },
+      },
+    }}
+  />
 </div>
-    {/* Seasonal Cycle chart */}
-  {showSeasonalCycle && (
+
+{/* Seasonal Cycle chart */}
+{showSeasonalCycle && (
   <div className="Seasonal-Cycle-chart">
-    <h3>Seasonal Cycle Data</h3>
+    <h3>Seasonal Cycle</h3>
     <Line
       data={seasonalCycle}
       options={{
@@ -640,20 +699,35 @@ useEffect(() => {
               display: true,
               text: 'Months',
               font: {
+                size: 18,
+                weight: 'bold',
+              },
+            },
+            ticks: {
+              font: {
                 size: 14,
                 weight: 'bold',
               },
             },
           },
           y: {
-            min: seasonalCycle?.options?.scales?.y?.min || 0, // ใช้ค่า min แบบ auto
-            max: seasonalCycle?.options?.scales?.y?.max || 100, // ใช้ค่า max แบบ auto
+            min: seasonalCycle?.options?.scales?.y?.min || 0,
+            max: seasonalCycle?.options?.scales?.y?.max || 100,
             title: {
               display: true,
-              text: `Value (${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'})`,
+              text: `${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'}`,
               font: {
-                size: 14,
+                size: 18,
                 weight: 'bold',
+              },
+            },
+            ticks: {
+              font: {
+                size: 16,
+                weight: 'bold',
+              },
+              callback: function(value) {
+                return `${Number(value.toFixed(0))} ${seasonalCycle?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
               },
             },
           },
@@ -664,20 +738,6 @@ useEffect(() => {
 )}
 
 
-  {/* <div className="right-map">
-  {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
-    <MapComponent
-      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
-      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
-      selectedRegion={selectedRegion}
-      selectedProvinceData={selectedProvinceData} 
-      setSelectedProvinceData={setSelectedProvinceData}
-      selectedProvince={selectedProvince}
-      viewMode={viewMode}
-      value={selectedValue}
-    />
-  )}
-</div> */}
 
       <div className="container">
         <div className="content">
