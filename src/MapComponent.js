@@ -2,19 +2,19 @@ import React from 'react';
 import { MapContainer,TileLayer, GeoJSON, LayersControl } from 'react-leaflet';
 import mapbackgroud from "./Geo-data/thailand-Geo.json";
 
-// ฟังก์ชันไล่ระดับสี Turbo สำหรับ Choroplet map
-const turboColor = [
-  [0, "#000099"],
-  [0.1, "#0020ff"], 
-  [0.2, "#0040ff"], 
-  [0.3, "#0080ff"],
-  [0.4, "#00c0ff"], 
-  [0.5, "#00ff80"], 
-  [0.6, "#00ff00"], 
-  [0.7, "#80ff00"],
-  [0.8, "#c0ff00"], 
-  [0.9, "#ffc000"], 
-  [1, "#ff0000"]
+// ฟังก์ชันไล่ระดับสี real value สำหรับ Choroplet map
+const tempColor = [
+  [0, "#FFFFCC"],   // สีเหลืองอ่อนสุดๆ สำหรับอุณหภูมิต่ำสุด
+  [0.1, "#FFF2AE"], // สีเหลืองอ่อน
+  [0.2, "#FFE680"], // สีเหลืองอ่อน
+  [0.3, "#FFD966"], // สีเหลือง
+  [0.4, "#FFCC4D"], // สีเหลือง
+  [0.5, "#FFB84D"], // สีส้มอ่อน
+  [0.6, "#FFA64D"], // สีส้มอ่อน
+  [0.7, "#FF8C4D"], // สีส้ม
+  [0.8, "#FF704D"], // สีส้ม
+  [0.9, "#FF4D4D"], // สีแดงอ่อน
+  [1, "#E31A1C"]
 ];
 
 // ฟังก์ชันไล่ระดับสี Coolwarm สำหรับ TrendMap
@@ -31,19 +31,34 @@ const coolwarmColor = [
   [0.5, "#67001f"],
 ];
 
-const turboColor_reverse = [
-  [1, "#ff0000"],
-  [0.9, "#ffc000"],
-  [0.8, "#c0ff00"],
-  [0.7, "#80ff00"],
-  [0.6, "#00ff00"],
-  [0.5, "#00ff80"],
-  [0.4, "#00c0ff"],
-  [0.3, "#0080ff"],
-  [0.2, "#0040ff"],
-  [0.1, "#0020ff"],
-  [0, "#000099"]
+// const rain_Color = [
+//   [1, "#00008B"],   // สีน้ำเงินเข้ม สำหรับปริมาณน้ำฝนสูงสุด
+//   [0.9, "#0000CD"], // สีน้ำเงิน
+//   [0.8, "#1E90FF"], // สีฟ้าเข้ม
+//   [0.7, "#00BFFF"], // สีฟ้า
+//   [0.6, "#87CEEB"], // สีฟ้าอ่อน
+//   [0.5, "#ADD8E6"], // สีฟ้าอ่อนมาก
+//   [0.4, "#B0E0E6"], // สีฟ้าอ่อนมาก
+//   [0.3, "#AFEEEE"], // สีฟ้าอ่อนอมเขียว
+//   [0.2, "#E0FFFF"], // สีฟ้าอ่อนสุดๆ
+//   [0.1, "#F0FFFF"], // สีฟ้าอ่อนสุดๆ
+//   [0, "#FFFFFF"] 
+// ];
+
+const rain_Color = [
+  [0, "#FFFFFF"],   // สีน้ำเงินเข้ม สำหรับปริมาณน้ำฝนน้อยที่สุด
+  [0.1, "#F0FFFF"], // สีน้ำเงิน
+  [0.2, "#E0FFFF"], // สีฟ้าเข้ม
+  [0.3, "#AFEEEE"], // สีฟ้า
+  [0.4, "#B0E0E6"], // สีฟ้าอ่อน
+  [0.5, "#ADD8E6"], // สีฟ้าอ่อนมาก
+  [0.6, "#87CEEB"], // สีฟ้าอ่อนมาก
+  [0.7, "#00BFFF"], // สีฟ้าอ่อนอมเขียว
+  [0.8, "#1E90FF"], // สีฟ้าอ่อนสุดๆ
+  [0.9, "#0000CD"], // สีฟ้าอ่อนสุดๆ
+  [1, "#00008B"]    // สีขาว สำหรับปริมาณน้ำฝนสูงสุด 
 ];
+
 
 // ฟังก์ชันไล่ระดับสี Coolwarm สำหรับ TrendMap
 const coolwarmColor_reverse = [
@@ -60,7 +75,7 @@ const coolwarmColor_reverse = [
 ];
 
 
-// ฟังก์ชันไล่ระดับสีที่ใช้ Turbo หรือ Coolwarm
+// ฟังก์ชันไล่ระดับสีที่ใช้ real value หรือ Coolwarm
 const interpolateColor = (value, min, max, scale) => {
   if (value === undefined || value === null) return "#ccc";
   if (min === max) return scale[0]?.[1] || "#ccc";
@@ -104,11 +119,11 @@ const interpolateColor = (value, min, max, scale) => {
 const getColorScale = (selectedValue) => {
   if (selectedValue === "pre" || selectedValue === "rx1day") {
     return {
-      turbo: turboColor_reverse,
+      temp_color: rain_Color,
       coolwarm: coolwarmColor_reverse
     };
   }
-  return { turbo: turboColor, coolwarm: coolwarmColor };
+  return { temp_color: tempColor, coolwarm: coolwarmColor };
 };
 
 
@@ -116,10 +131,10 @@ const getColorScale = (selectedValue) => {
 const getColor = (value, viewMode, min, max, selectedValue) => {
   const isReverse = selectedValue === "pre" || selectedValue === "rx1day";
   
-  const turbo = isReverse ? turboColor_reverse : turboColor;
+  const temp_color = isReverse ? rain_Color : tempColor;
   const coolwarm = isReverse ? coolwarmColor_reverse : coolwarmColor;
   
-  const scale = viewMode === "Heatmap" ? turbo : coolwarm;
+  const scale = viewMode === "Heatmap" ? temp_color : coolwarm;
 
   if (!scale || !Array.isArray(scale) || scale.length === 0) {
     console.warn(`Invalid scale for viewMode: ${viewMode}`);
@@ -129,48 +144,7 @@ const getColor = (value, viewMode, min, max, selectedValue) => {
   return interpolateColor(value, min, max, scale);
 };
 
-// const getColor = (value, viewMode, min, max, selectedValue) => {
-//   const isReverse = selectedValue === "pre" || selectedValue === "rx1day";
-  
-//   const turbo = isReverse ? turboColor_reverse : turboColor;
-//   const coolwarm = isReverse ? coolwarmColor_reverse : coolwarmColor;
-  
-//   const scale = viewMode === "Heatmap" ? turbo : coolwarm;
 
-//   if (!scale || !Array.isArray(scale) || scale.length === 0) {
-//     console.warn(`Invalid scale for viewMode: ${viewMode}`);
-//     return "#ccc";
-//   }
-
-//   return interpolateColor(value, min, max, scale);
-// };
-
-
-// const getColor = (value, viewMode, min, max, selectedValue) => {
-//   const { turbo, coolwarm } = getColorScale(selectedValue);
-//   const scale = viewMode === "Heatmap" ? turbo : coolwarm;
-
-//   if (!scale || !Array.isArray(scale) || scale.length === 0) {
-//     console.warn(`Invalid scale for viewMode: ${viewMode}`);
-//     return "#ccc";
-//   }
-  
-//   return interpolateColor(value, min, max, scale);
-// };
-
-// const getColor = (value, viewMode, min, max) => {
-//   const scale = viewMode === "Heatmap" ? turboColor : coolwarmColor;
-
-//   if (!scale || !Array.isArray(scale) || scale.length === 0) {
-//     console.warn(`Invalid scale for viewMode: ${viewMode}`);
-//     return "#ccc";
-//   }
-  
-//   const color = interpolateColor(value, min, max, scale);
-//   //console.log("Value:", value, "Min:", min, "Max:", max, "Color:", color); // ตรวจสอบสีที่ได้
-//   return color;
-//   // return interpolateColor(value, min, max, scale);
-// };
 
 
 // // ฟังก์ชันคำนวณ Min และ Max ของข้อมูล
@@ -268,8 +242,8 @@ const onEachFeature = (feature, layer, viewMode, value) => {
 };
 
 const ColorBar = ({ viewMode, selectedValue, steps = 10, min, max }) => {
-  const { turbo, coolwarm } = getColorScale(selectedValue);
-  const colorScale = viewMode === "Heatmap" ? turbo : coolwarm;
+  const { temp_color, coolwarm } = getColorScale(selectedValue);
+  const colorScale = viewMode === "Heatmap" ? temp_color : coolwarm;
 
   const stepSize = (max - min) / (steps - 1);
   const labels = Array.from({ length: steps }, (_, i) => (min + i * stepSize).toFixed(2));
@@ -310,47 +284,6 @@ const ColorBar = ({ viewMode, selectedValue, steps = 10, min, max }) => {
   );
 };
 
-// const ColorBar = ({ viewMode, steps = 10, min, max }) => {
-//   const colorScale = viewMode === "Heatmap" ? turboColor : coolwarmColor;
-
-//   const stepSize = (max - min) / (steps - 1);
-//   const labels = Array.from({ length: steps }, (_, i) => (min + i * stepSize).toFixed(2));
-
-//   return (
-//     <div className="color-bar-horizontal">
-//       <div className="gradient-bar">
-//         {colorScale.map((scale, index) => (
-//           <div
-//             key={index}
-//             className="color-segment"
-//             style={{
-//               backgroundColor: scale[1],
-//               flex: 1,
-//             }}
-//           />
-//         ))}
-//       </div>
-//       <div className="labels">
-//         {labels.map((label, index) => (
-//           <span
-//             key={index}
-//             style={{
-//               position: "absolute",
-//               left: `${(index / (labels.length - 1)) * 100}%`,
-//               transform: "translateX(-50%)",
-//               fontSize: "17px",
-//             }}
-//           >
-//             {label}
-//           </span>
-//         ))}
-//       </div>
-//       <div className="title">
-//         {viewMode === "Heatmap" ? "Data Values" : "Trend Values"}
-//       </div>
-//     </div>
-//   );
-// };
 
 
 const MapComponent = ({

@@ -237,23 +237,11 @@ const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
 // คำนวณ bounds ใหม่สำหรับข้อมูลรายปี
 const annualBounds = calculateYAxisBounds(annualData);
 
-// คำนวณค่าเฉลี่ยสะสมรายปี (Cumulative Moving Average)
-const cumulativeMovingAverage = (data) => {
-  const averages = [];
-  let sum = 0;
-  data.forEach((value, index) => {
-    sum += value;
-    averages.push(sum / (index + 1));
-  });
-  return averages;
-};
 
-// คำนวณค่าเฉลี่ยสะสมรายปี
-const annualCumulativeAverage = cumulativeMovingAverage(annualData);
-
-const gaussianFilter = (data, kernelSize = 21) => {
+// Gaussian Filter พร้อม Padding
+const gaussianFilterWithPadding = (data, kernelSize = 21, paddingType = 'reflect') => {
   const sigma = kernelSize / 6;
-  
+
   // สร้าง Gaussian Kernel และ Normalize
   const kernel = Array.from({ length: kernelSize }, (_, i) => {
     const x = i - Math.floor(kernelSize / 2);
@@ -264,25 +252,110 @@ const gaussianFilter = (data, kernelSize = 21) => {
   const sumKernel = kernel.reduce((sum, val) => sum + val, 0);
   const normalizedKernel = kernel.map(val => val / sumKernel);
 
-  // Apply Gaussian Filter
+  // **Padding Data**
+  let paddedData;
+  const padSize = Math.floor(kernelSize / 2);
+
+  if (paddingType === 'reflect') {
+    paddedData = [
+      ...data.slice(1, padSize + 1).reverse(), 
+      ...data,
+      ...data.slice(-padSize - 1, -1).reverse() 
+    ];
+  } else if (paddingType === 'edge') {
+    paddedData = [
+      ...Array(padSize).fill(data[0]), 
+      ...data,
+      ...Array(padSize).fill(data[data.length - 1]) 
+    ];
+  } else {
+    paddedData = [
+      ...Array(padSize).fill(0), 
+      ...data,
+      ...Array(padSize).fill(0)  
+    ];
+  }
+
+  // Apply Gaussian Filter บนข้อมูลที่มี padding
   return data.map((_, i) => {
     let sum = 0;
     let weightSum = 0;
 
     for (let j = 0; j < kernelSize; j++) {
-      const index = i + j - Math.floor(kernelSize / 2);
-      if (index >= 0 && index < data.length) {
-        sum += data[index] * normalizedKernel[j];
-        weightSum += normalizedKernel[j];
-      }
+      const index = i + j;
+      sum += paddedData[index] * normalizedKernel[j];
+      weightSum += normalizedKernel[j];
     }
 
-    return sum / weightSum; // Normalize ค่า output
+    return sum / weightSum;
   });
 };
 
-// คำนวณค่าเฉลี่ย Gaussian Moving Average 21 ปี
-const annualGaussianAverage = gaussianFilter(annualData, kernelSize);
+// คำนวณ Gaussian Filter แบบมี Padding
+const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 'reflect');
+
+// const annualData = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
+//   const startIndex = i * 12; // index ของเดือนแรกในปีนั้น
+//   const endIndex = startIndex + 12; // index ของเดือนสุดท้ายในปีนั้น
+//   const yearlyValues = result.slice(startIndex, endIndex); // ข้อมูล 12 เดือนในปีนั้น
+//   const yearlyAverage = yearlyValues.reduce((sum, val) => sum + val, 0) / yearlyValues.length; // ค่าเฉลี่ยรายปี
+//   return yearlyAverage;
+// });
+
+// // สร้าง Labels รายปี
+// const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
+//   const year = parseInt(startYear, 10) + i; // แปลง startYear เป็นตัวเลขก่อนการคำนวณ
+//   return `${year}`; // แสดงปีในรูปแบบตัวเลข
+// });
+
+// // คำนวณ bounds ใหม่สำหรับข้อมูลรายปี
+// const annualBounds = calculateYAxisBounds(annualData);
+
+// // คำนวณค่าเฉลี่ยสะสมรายปี (Cumulative Moving Average)
+// const cumulativeMovingAverage = (data) => {
+//   const averages = [];
+//   let sum = 0;
+//   data.forEach((value, index) => {
+//     sum += value;
+//     averages.push(sum / (index + 1));
+//   });
+//   return averages;
+// };
+
+// // คำนวณค่าเฉลี่ยสะสมรายปี
+// const annualCumulativeAverage = cumulativeMovingAverage(annualData);
+
+// const gaussianFilter = (data, kernelSize = 21) => {
+//   const sigma = kernelSize / 6;
+  
+//   // สร้าง Gaussian Kernel และ Normalize
+//   const kernel = Array.from({ length: kernelSize }, (_, i) => {
+//     const x = i - Math.floor(kernelSize / 2);
+//     return Math.exp(-(x ** 2) / (2 * sigma ** 2));
+//   });
+
+//   // Normalize Kernel (ทำให้ผลรวมเป็น 1)
+//   const sumKernel = kernel.reduce((sum, val) => sum + val, 0);
+//   const normalizedKernel = kernel.map(val => val / sumKernel);
+
+//   // Apply Gaussian Filter
+//   return data.map((_, i) => {
+//     let sum = 0;
+//     let weightSum = 0;
+
+//     for (let j = 0; j < kernelSize; j++) {
+//       const index = i + j - Math.floor(kernelSize / 2);
+//       if (index >= 0 && index < data.length) {
+//         sum += data[index] * normalizedKernel[j];
+//         weightSum += normalizedKernel[j];
+//       }
+//     }
+
+//     return sum / weightSum; 
+//   });
+// };
+
+// const annualGaussianAverage = gaussianFilter(annualData, kernelSize);
 
 
 

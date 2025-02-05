@@ -115,6 +115,7 @@ const [legendMax, setLegendMax] = useState(null);
 //-------------------------------User Select Min/Max Legend Bar-----------------------//
 const [kernelSize, setKernelSize] = useState(null);
 
+const [isSidebarOpen, setSidebarOpen] = useState(true);
 
 
 //------------------------FUNCTION APP-------------------------------------//
@@ -341,11 +342,11 @@ useEffect(() => {
     </div>
 
      {/* Introduction Section */}
-    <div className="introduction-header" style={{ fontSize: '30px', lineHeight: '1.6' }}>
+    {/* <div className="introduction-header" style={{ fontSize: '30px', lineHeight: '1.6' }}>
      <h2>Dashboard for Visualizing Climate Data Across Time and Area</h2>
-      </div> 
+      </div>  */}
 
-    <div className="introduction" style={{ padding: '20px', textAlign: 'justify' }}>
+    {/* <div className="introduction" style={{ padding: '20px', textAlign: 'justify' }}>
       <p style={{ fontSize: '30px', lineHeight: '1.6' }}>
         Thailand's climate varies and fluctuates across different times of the year, 
         often presenting intriguing patterns worth exploring. 
@@ -361,109 +362,92 @@ useEffect(() => {
         Both datasets serve as reliable references, and we have tailored their data to be presented in various 
         formats suitable for visualizing climate conditions across Thailand.
       </p>
-    </div>
-
-    {/* <div classname = "Time-period-text">
-      <h1>Select Time Period</h1>
-
     </div> */}
 
-      {/* Dropdown เลือก Dataset */}
+    <div>
+    {/* sidebar */}
+      <div className={`left-sidebar ${isSidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <h2>Select Data</h2>
+          <h3>   </h3>
+        </div>
+        <div className="sidebar-content">
+
+          {/* Apply Button */}
+          <button
+            onClick={() => {
+              if (!selectedYearStart || !selectedYearEnd) {
+                alert('กรุณาเลือกปีเริ่มต้นและปีสิ้นสุด');
+                return;
+              }
+
+              if (selectedYearStart > selectedYearEnd) {
+                alert('ปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด');
+                return;
+              }
+
+              setIsApplied(true); // Trigger useEffect
+            }}
+            disabled={!selectedYearStart || !selectedYearEnd}
+            className="apply_button"
+          >
+            Apply
+          </button>
+
+          {/* Dropdown เลือก Dataset */}
 <div className="dataset-selector">
-  <label>Select Dataset:</label>
+  <label>Select Dataset</label>
   <select value={selectedDataset} onChange={handleDatasetChange}>
     <option value="CRU_dataset">CRU Dataset</option>
     <option value="ERA_dataset">ERA Dataset</option>
   </select>
 </div>
 
+{/* Dropdown for Start Year Selection */}
+<div className="year-selector">
+  <label className="year-label">Select Time Period</label>
+  <div className="dropdown-container">
+    <div className="dropdown-item">
+      <label classname="start-year-label">Start Year</label>
+      <select
+        value={selectedYearStart}
+        onChange={(e) => setSelectedYearStart(e.target.value)}
+      >
+        <option value="">start year</option>
+        {Object.keys(dataByYear).map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
+    </div>
 
-  <div style={{ padding: '20px', }}>
-  <h1 className="title-year">Select Time Period</h1>
-
-  {/* Dropdown for Start Year Selection */}
-      <div className="year-selector">
-        <label>Select Start Year</label>
-        <select
-          value={selectedYearStart}
-          onChange={(e) => setSelectedYearStart(e.target.value)}
-          style={{ width: '200px', padding: '10px', margin: '10px' }}
-        >
-          <option value="">-- select start year --</option>
-          {Object.keys(dataByYear).map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-
-        {/* Dropdown for End Year Selection */}
-        <label>Select End Year</label>
-        <select
-          value={selectedYearEnd}
-          onChange={(e) => setSelectedYearEnd(e.target.value)}
-          style={{ width: '200px', padding: '10px', margin: '10px' }}
-        >
-          <option value="">-- select end year --</option>
-          {Object.keys(dataByYear).map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-
-        {/* Apply Button */}
-        <button
-  onClick={() => {
-    if (!selectedYearStart || !selectedYearEnd) {
-      alert('กรุณาเลือกปีเริ่มต้นและปีสิ้นสุด');
-      return;
-    }
-
-    if (selectedYearStart > selectedYearEnd) {
-      alert('ปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด');
-      return;
-    }
-
-    setIsApplied(true); // Trigger useEffect
-  }}
-  disabled={!selectedYearStart || !selectedYearEnd}
-  style={{
-    padding: '10px 20px',
-    margin: '10px',
-    backgroundColor: !selectedYearStart || !selectedYearEnd ? '#ccc' : '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    fontSize: '16px',
-    cursor: !selectedYearStart || !selectedYearEnd ? 'not-allowed' : 'pointer',
-  }}
->
-  Apply
-</button>
-      </div>
-
-{/* Button select map */}
-<div className="map-buttons">
-  <button onClick={() => toggleViewMode("Heatmap")}>choropleth Map</button>
-  <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
+    {/* Dropdown for End Year Selection */}
+    <div className="dropdown-item">
+      <label>End Year</label>
+      <select
+        value={selectedYearEnd}
+        onChange={(e) => setSelectedYearEnd(e.target.value)}
+      >
+        <option value="">end year</option>
+        {Object.keys(dataByYear).map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
 </div>
 
-{/* การแสดงผลตาม viewMode */}
-{/* {viewMode === "Heatmap" && heatmapData && (
-  console.log("Choropleth Map:", heatmapData) 
-)}
 
-{viewMode === "TrendMap" && trendGeoData && (
-  console.log("TrendMap:", trendGeoData) 
-)} */}
-{/* Button select map */}
+       
 
 
+ <label className="area-label">Select Area</label>
 
-{/* Dropdown สำหรับเลือกภูมิภาค */}
-<div className="region-selector">
-  <label>Select Region:</label>
+  <div className="region-selector">
+  <label>Select Region</label>
   <select
     onChange={(e) => {
       const region = e.target.value;
@@ -483,16 +467,15 @@ useEffect(() => {
   </select>
 </div>
 
-{/* Dropdown สำหรับเลือกจังหวัด */}
 <div className="province-selector">
-  <label>Select Province:</label>
+  <label>Select Province</label>
   <select
     onChange={(e) => {
       const provinceName = e.target.value;
       setSelectedProvince(provinceName); // อัปเดตจังหวัดที่เลือก
     }}
     value={selectedProvince}
-    style={{ width: '200px', padding: '10px', fontSize: '16px' }}
+    style={{ width: '300px', padding: '10px', fontSize: '16px' }}
     disabled={filteredProvinces.length === 0} // ปิดการใช้งานถ้าไม่มีจังหวัดให้เลือก
   >
     <option value="">All Provinces</option>
@@ -507,19 +490,25 @@ useEffect(() => {
     )}
   </select>
 </div>
+</div>
+
+        </div>
+      </div>
+
+      {/* ปุ่มเปิด-ปิด Sidebar */}
+      <button className={`side-button ${isSidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(!isSidebarOpen)}>
+</button>
 
 
 
-    </div>
+
 
     <div className="content-container">
-
-    <h1>DashBoard</h1>
+    {/* <h1>DashBoard</h1> */}
   <div className="dashboard-box">
-
-  <div className="dropdown-container">
-
-   
+    <div className='dashboard-content'>
+ 
   <div className="value-selector">
   <label>Select Data:</label>
   <select
@@ -595,7 +584,11 @@ useEffect(() => {
   className="kernel-input"
 />
 
-
+{/* Button select map */}
+<div className="map-buttons">
+  <button onClick={() => toggleViewMode("Heatmap")}>choropleth Map</button>
+  <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
+</div>
 
    
     <div className="right-map">
@@ -617,87 +610,29 @@ useEffect(() => {
 
 
 
-      {/* Time series chart */}
-<div className="time-series-chart">
-  <h3>Time Series</h3>
-  <Line
-    data={chartData}
-    options={{
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-        },
-        annotation: {
-          annotations: chartData?.options?.plugins?.annotation?.annotations || [],
-        },
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Year',
-            font: {
-              size: 18,
-              weight: 'bold',
-            },
-          },
-          ticks: {
-            font: {
-              size: 18,
-              weight: 'bold',
-            },
-            autoSkip: true,
-            maxTicksLimit: 10,
-          },
-        },
-        y: {
-          min: chartData?.options?.scales?.y?.min || 0,
-          max: chartData?.options?.scales?.y?.max || 100,
-          title: {
-            display: true,
-            text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
-            font: {
-              size: 18,
-              weight: 'bold',
-            },
-          },
-          ticks: {
-            font: {
-              size: 16,
-              weight: 'bold',
-            },
-            callback: function(value) {
-              return `${Number(value.toFixed(0))} ${chartData?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
-            },
-          },
-        },
-      },
-    }}
-  />
-</div>
-
-{/* Seasonal Cycle chart */}
-{showSeasonalCycle && (
-  <div className="Seasonal-Cycle-chart">
-    <h3>Seasonal Cycle</h3>
+        {/* Time series chart */}
+  <div className="time-series-chart">
+    <h3>Time Series</h3>
     <Line
-      data={seasonalCycle}
+      data={chartData}
       options={{
         responsive: true,
+        maintainAspectRatio: false,  // อนุญาตให้กำหนดขนาดเอง ไม่บังคับอัตราส่วนเดิม
+        devicePixelRatio: 2, // เพิ่มความคมชัดของ Canvas
         plugins: {
           legend: {
             display: true,
             position: 'top',
           },
+          annotation: {
+            annotations: chartData?.options?.plugins?.annotation?.annotations || [],
+          },
         },
         scales: {
           x: {
-            beginAtZero: true,
             title: {
               display: true,
-              text: 'Months',
+              text: 'Year',
               font: {
                 size: 18,
                 weight: 'bold',
@@ -705,17 +640,19 @@ useEffect(() => {
             },
             ticks: {
               font: {
-                size: 14,
+                size: 18,
                 weight: 'bold',
               },
+              autoSkip: true,
+              maxTicksLimit: 10,
             },
           },
           y: {
-            min: seasonalCycle?.options?.scales?.y?.min || 0,
-            max: seasonalCycle?.options?.scales?.y?.max || 100,
+            min: chartData?.options?.scales?.y?.min || 0,
+            max: chartData?.options?.scales?.y?.max || 100,
             title: {
               display: true,
-              text: `${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'}`,
+              text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
               font: {
                 size: 18,
                 weight: 'bold',
@@ -727,7 +664,7 @@ useEffect(() => {
                 weight: 'bold',
               },
               callback: function(value) {
-                return `${Number(value.toFixed(0))} ${seasonalCycle?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
+                return `${Number(value.toFixed(0))} ${chartData?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
               },
             },
           },
@@ -735,37 +672,70 @@ useEffect(() => {
       }}
     />
   </div>
-)}
 
-
-
-      <div className="container">
-        <div className="content">
-          <div className="time-series-chart">
-            <div id="timeSeriesPlot" style={{ width: '100%', height: '650px' }}></div>
-          </div>
-          <div classname="Seasonal-Cycle-chart">
-            <div id="seasonalcyclePlot" style={{ width: '100%', height: '650px' }}></div>
-          </div>
-          {/* <div className="right-map">
-  {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
-    <MapComponent
-      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
-      geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
-      selectedRegion={selectedRegion}
-      selectedProvinceData={selectedProvinceData} 
-      setSelectedProvinceData={setSelectedProvinceData}
-      selectedProvince={selectedProvince}
-      viewMode={viewMode}
-      value={selectedValue}
-    />
+  {/* Seasonal Cycle chart */}
+  {showSeasonalCycle && (
+    <div className="Seasonal-Cycle-chart">
+      <h3>Seasonal Cycle</h3>
+      <Line
+        data={seasonalCycle}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Months',
+                font: {
+                  size: 18,
+                  weight: 'bold',
+                },
+              },
+              ticks: {
+                font: {
+                  size: 14,
+                  weight: 'bold',
+                },
+              },
+            },
+            y: {
+              min: seasonalCycle?.options?.scales?.y?.min || 0,
+              max: seasonalCycle?.options?.scales?.y?.max || 100,
+              title: {
+                display: true,
+                text: `${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'}`,
+                font: {
+                  size: 18,
+                  weight: 'bold',
+                },
+              },
+              ticks: {
+                font: {
+                  size: 16,
+                  weight: 'bold',
+                },
+                callback: function(value) {
+                  return `${Number(value.toFixed(0))} ${seasonalCycle?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
+                },
+              },
+            },
+          },
+        }}
+      />
+    </div>
   )}
-</div> */}
-  </div>
-        </div>
+
+</div>
+
       
     
-  </div>
   </div>
   </div>
 );

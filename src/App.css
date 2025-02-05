@@ -8,14 +8,179 @@
 
 .header-text {
   background: linear-gradient(to right, #062b74 0%, #062b74 70%, #17abe3 100%);
- /* ไล่สีจากน้ำเงินไปฟ้าน้ำทะเล */
-  height: 50px; /* กำหนดความสูงของบล็อก */
-  width: 100%; /* กำหนดให้บล็อกกว้างเต็มหน้า */
-  display: flex; /* ใช้ Flexbox จัดข้อความ */
-  justify-content: center; /* จัดข้อความให้อยู่กึ่งกลางแนวนอน */
-  align-items: center; /* จัดข้อความให้อยู่กึ่งกลางแนวตั้ง */
-  margin-bottom: 20px; /* เพิ่มระยะห่างด้านล่างระหว่างบล็อกกับเนื้อหาอื่น */
+  height: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start; /* จัดข้อความไปทางซ้าย */
+  align-items: center;
+  margin-bottom: 10px;
+  padding-left: 20px; /* เพิ่มระยะห่างจากขอบซ้าย */
+  position: fixed; /* ทำให้บล็อกติดกับหัวเว็บ */
+  top: 0; /* ติดกับขอบบนสุด */
+  left: 0;
+  z-index: 1000; /* ป้องกันไม่ให้ถูกเลเยอร์อื่นบัง */
 }
+
+/* สไตล์สำหรับ h1 ข้อความ */
+.block-text {
+  font-size: 2px; /* ปรับขนาดตัวอักษร */
+  color: white; /* กำหนดสีตัวอักษร */
+  letter-spacing: 1px; /* ขยายช่องไฟให้ดูอ่านง่าย */
+}
+
+
+/*-------------------side bar config-------------------------*/
+/* สไตล์สำหรับ sidebar ด้านซ้าย */
+.left-sidebar {
+  width: 360px;
+  height: 550px;
+  background-color: #ffffff;
+  color: #000;
+  padding: 20px;
+  padding-bottom: 120px;
+  border: 2px solid #000;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+
+  position: absolute;
+  top: 48px;
+  left: -360px;
+  transition: left 0.3s ease-in-out;
+  overflow-y: auto;
+  max-height: 700px;
+
+}
+
+/* แสดง Sidebar เมื่อเปิด */
+.left-sidebar.open {
+  left: 0;
+}
+
+
+/* ปรับแต่ง scrollbar ให้ดูสวยขึ้น */
+.left-sidebar::-webkit-scrollbar {
+  width: 10px; /* กำหนดความกว้างของ scrollbar */
+}
+
+.left-sidebar::-webkit-scrollbar-thumb {
+  background: #888; /* สีของ scrollbar */
+  border-radius: 4px; /* ทำมุมโค้ง */
+}
+
+.left-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555; /* สีเข้มขึ้นเมื่อ hover */
+}
+
+
+
+/* สไตล์สำหรับหัวข้อ sidebar */
+/* สไตล์สำหรับ h2 ใน sidebar */
+.sidebar-header h2 {
+  position: absolute;
+  right: 140px;
+  top: 50px;
+  margin: 0;
+  
+  font-size: 40px; 
+  font-weight: normal; 
+  font-family: "Poppins", sans-serif; 
+  white-space: nowrap; 
+  letter-spacing: 2px; 
+  color: #444; 
+}
+
+.sidebar-header h3 {
+  position: absolute;
+  bottom: -150px;
+}
+
+/* สไตล์สำหรับเนื้อหาใน sidebar */
+.sidebar-content {
+  margin-top: 20px;
+}
+
+
+.apply_button {
+  padding: 15px 25px; /* ขยายขนาดปุ่ม */
+  margin: 20px auto; /* จัดให้อยู่กึ่งกลางและเพิ่มระยะห่าง */
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px; /* มุมโค้งมน */
+  font-size: 18px; /* ขยายขนาดตัวอักษร */
+  font-weight: bold; /* ตัวหนา */
+  cursor: pointer;
+  width: 90%; /* ทำให้ปุ่มกว้างเกือบเต็มพื้นที่ */
+  display: block; /* ให้ปุ่มอยู่เป็นบล็อกเดียว */
+  text-align: center; /* จัดข้อความกึ่งกลาง */
+  transition: all 0.3s ease-in-out; /* เพิ่มเอฟเฟกต์เวลา hover */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
+
+  position: absolute; /* ตำแหน่งแบบ absolute */
+  bottom: 10px; 
+  left: 50%; 
+  transform: translateX(-50%);
+  margin-bottom: -100px; 
+
+}
+
+/* เมื่อปุ่มถูกปิดการใช้งาน (Disabled) */
+.apply_button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* เอฟเฟกต์ Hover */
+.apply_button:hover:not(:disabled) {
+  background-color: #45a049;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+
+/* ปุ่มเปิด-ปิด Sidebar */
+.side-button {
+  position: absolute;
+  top: 60%;
+  left: 43px; /* ซ่อนข้างนอกตอน Sidebar ปิด */
+  transform: translateY(-50%);
+  width: 20px;
+  height: 50px;
+  background-color: #062b74;
+  color: white;
+  border: none;
+  border-radius: 0 5px 5px 0; /* โค้งด้านขวา */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: left 0.3s ease-in-out;
+}
+
+/* เมื่อ Sidebar เปิด */
+.side-button.open {
+  left: 402px; /* ปุ่มเลื่อนมาติดขอบด้านนอกของ Sidebar */
+}
+
+/* ไอคอนในปุ่ม */
+.side-button::after {
+  content: "▶"; /* สามเหลี่ยมไปทางขวา */
+  font-size: 18px;
+}
+
+/* เปลี่ยนไอคอนเมื่อ Sidebar เปิด */
+.side-button.open::after {
+  content: "◀"; /* สามเหลี่ยมไปทางซ้าย */
+
+}
+
+/* สไตล์ปุ่ม Apply */
+
+
+
+/*-------------------side bar config-------------------------*/
+
 
 .block-text {
   color: white; /* สีข้อความ */
@@ -60,19 +225,42 @@
 
 
 /* ----------------------Dashboard box----------------------------- */
+
+.content-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
 .dashboard-box {
-  width: 100%; 
-  max-width: 2700px; 
-  max-height: 1500px;
+  width: 1100px; 
+  height: 1000;
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 20px;
   background-color: #f9f9f9;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute; 
+  margin-top: px;
+  margin-right: -45px;
+
+   overflow: auto;
 }
 
-.time-series-chart {
+/* ใช้ Flexbox เพื่อให้แผนที่และกราฟอยู่ใน dashboard */
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* .time-series-chart {
   flex: 1;
   margin-right: 100px;
 }
@@ -80,24 +268,24 @@
 .Seasonal-Cycle-chart {
   width: 100%; 
   height: 650px; 
-}
+} */
 
-.Seasonal-Cycle-chart canvas {
+.time-series-chart canvas, .seasonal-cycle-chart canvas {
   width: 100% !important; 
-  height: auto !important; 
+  height: 100% !important;
 }
 
 .time-series-chart {
-  width: 1500px; 
-  height: 650px; 
+  width: 650px; 
+  height: 350px; 
   margin: 0 auto; 
-  margin-left: 50px;
-  margin-top: -50px;
+  margin-left: 15px;
+  margin-top: -90px;
 }
 
 .Seasonal-Cycle-chart{
-  width: 1300px; 
-  height: 700px; 
+  width: 650px; 
+  height: 300px; 
   margin: 0 auto; 
   margin-left: 50px;
 }
@@ -156,8 +344,8 @@
 /*--------------------- Kernel Input -------------------------*/
 .kernel-input {
   position: absolute;
-  top: 1252px;  /* ระยะห่างจากด้านบน */
-  left: 1550px; /* ระยะห่างจากด้านซ้าย */
+  top: 65px;  
+  left: 1550px; 
   width: 120px;
   height: 40px;
   font-size: 20px;
@@ -192,18 +380,22 @@
 }
 
 .value-selector select{
-  width: 1285px; /* เพิ่มความกว้าง */
-  padding: 15px; /* เพิ่มความสูงโดยการเพิ่ม padding */
-  font-size: 20px; /* เพิ่มขนาดตัวอักษร */
+  width: 150%; /* เพิ่มความกว้าง */
+  padding: 5px; /* เพิ่มความสูงโดยการเพิ่ม padding */
+  font-size: 13px; /* เพิ่มขนาดตัวอักษร */
   border: 1px solid #ccc;
   border-radius: 8px; /* มุมมน */
   background-color: #f9f9f9; /* สีพื้นหลัง */
   color: #333; /* สีข้อความ */
   text-align: left; /* จัดข้อความใน dropdown ชิดซ้าย */
+  position: relative;
+  margin-left: 0px;
+  left: -420px;
+  margin-top: -15px;
 }
 
 .value-selector label{
-  font-size: 24px; /* เพิ่มขนาดตัวอักษรของ label */
+  font-size: 15px; /* เพิ่มขนาดตัวอักษรของ label */
   margin: 5px ;
   font-weight: bold; /* เพิ่มความหนาของตัวอักษร */
 }
@@ -298,24 +490,7 @@
 }
 
 /*-----------------------dropdown region--------------------------------------*/
-.region-selector {
-  display: flex;
-  align-items: center; /* จัดกึ่งกลางในแนวตั้ง */
-  margin-bottom: 20px; /* ระยะห่างด้านล่าง */
-}
 
-/* สไตล์สำหรับ label */
-.region-selector label {
-  margin-right: 10px; /* ระยะห่างด้านขวา */
-  font-size: 16px; /* ขนาดตัวอักษร */
-}
-
-/* สไตล์สำหรับ select */
-.region-selector select {
-  width: 200px;
-  padding: 10px;
-  font-size: 16px;
-}
 /*-------------------------------------------------------------*/
 
 /* .time-series-chart {
@@ -336,19 +511,36 @@
 /* Container สำหรับ dropdown */
 .dataset-selector {
   padding: 20px;
+  display: flex;
+  flex-direction: column; /* จัดเรียงแนวตั้ง */
+  align-items: flex-start; /* จัด label ให้อยู่ชิดซ้าย */
+}
+
+.dataset-selector label {
+  position: relative;
+  font-size: 30px;  
+  bottom: -90px;
+  margin-bottom: 30px;
+  margin-left: -10px;
 }
 
 /* สไตล์สำหรับ select dropdown */
 .dataset-selector select {
-  width: 250px; /* กำหนดความกว้าง */
-  padding: 12px; /* เพิ่มพื้นที่ภายใน */
+  width: 300px; /* คงความกว้างไว้ */
+  height: 35px; /* ลดความสูงลง */
+  padding: 8px 10px; /* ลด padding เพื่อลดความหนา */
   margin: 10px; /* ระยะรอบนอก */
-  font-size: 18px; /* ขนาดตัวอักษร */
+  font-size: 16px; /* ลดขนาดตัวอักษรลงเล็กน้อย */
   border: 2px solid #ccc; /* เสริมขอบ */
-  border-radius: 5px; /* ทำขอบมุมโค้ง */
+  border-radius: 3px; /* ทำขอบมุมโค้งเล็กลง */
   background-color: #fff; /* สีพื้นหลัง */
   color: #333; /* สีตัวอักษร */
   cursor: pointer; /* เปลี่ยน cursor เมื่อ hover */
+
+  position: relative;
+  margin-top: 100px;
+  margin-bottom: 20px;
+  margin-left: -10px;
 }
 
 /* สไตล์สำหรับแต่ละ option */
@@ -357,31 +549,118 @@
   color: #333; /* สีตัวอักษร */
 }
 
+.dataset-selector select:hover {
+  border-color: #17abe3;
+  background-color: #f0f8ff; /* สีอ่อนเวลา hover */
+}
+
 
 
 /*--------------------------year selector------------------*/
+/* สไตล์สำหรับ year-selector */
 .year-selector {
   text-align: center;
-  font-size: 30px; /* เพิ่มขนาดฟอนต์สำหรับ label */
-  margin-bottom: 20px; /* เพิ่มระยะห่างระหว่าง dropdown */
+  font-size: 20px;
+  margin-bottom: 50px;
 }
 
-.year-selector select {
-  width: 300px; /* เพิ่มความกว้าง dropdown */
-  padding: 15px; /* เพิ่มพื้นที่ภายใน dropdown */
-  font-size: 18px; /* เพิ่มขนาดตัวอักษรใน dropdown */
-  border: 1px solid #ccc; /* ขอบของ dropdown */
-  border-radius: 8px; /* มุมมนของ dropdown */
-  background-color: #f9f9f9; /* สีพื้นหลัง dropdown */
-  color: #333; /* สีของข้อความ */
-  cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
+.year-label {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 30px;
+  margin-left: -150px;
 }
 
-.year-selector select option {
-  font-size: 18px; /* เพิ่มขนาดตัวอักษรสำหรับตัวเลือกใน dropdown */
+/* สไตล์สำหรับ container ของ dropdown */
+.dropdown-container {
+  display: flex; 
+  justify-content: center; 
+  gap: 30px; 
+  margin-left: -95px;
 }
+
+/* สไตล์สำหรับแต่ละ dropdown */
+.dropdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* จัดให้ label และ select อยู่กึ่งกลาง */
+}
+
+.dropdown-item label {
+  margin-bottom: 5px; /* ระยะห่างระหว่าง label และ select */
+}
+
+.dropdown-item select {
+  width: 150px; 
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+
+.dropdown-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px; 
+}
+
+.dropdown-container label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.dropdown-container select {
+  width: 150px; 
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+}
+
 
 /*-------------Region, Province Selector---------------*/
+
+.area-label {
+  font-size: 25px; 
+  color: #000000; 
+  margin-bottom: 30px;  
+  text-align: center;
+  position: relative;
+  margin-left: 0px; 
+}
+
+.region-selector {
+  display: flex;
+  align-items: center; /* จัดกึ่งกลางในแนวตั้ง */
+  margin-bottom: 20px; /* ระยะห่างด้านล่าง */
+}
+
+/* สไตล์สำหรับ label */
+.region-selector label {
+  margin-right: 240px; /* ระยะห่างด้านขวา */
+  font-size: 16px; /* ขนาดตัวอักษร */
+  margin-bottom: 10px;
+}
+
+/* สไตล์สำหรับ select */
+.region-selector select {
+  width: 250px;
+  padding: 10px;
+  font-size: 16px;
+  margin-right: 90px;
+  border: 1px solid #ccc; /* ขอบของ dropdown */
+  border-radius: 8px; /* มุมมนของ dropdown */
+  background-color: #f9f9f9; /* สีพื้นหลังของ dropdown */
+  color: #333; /* สีข้อความ */
+  cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
+  text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+}
+
 .region-selector,
 .province-selector {
   display: flex;
@@ -390,14 +669,14 @@
   margin: 20px 0; /* เพิ่มระยะห่างระหว่าง dropdown */
 }
 
-.region-selector label,
+
 .province-selector label {
-  font-size: 18px; /* ขนาดตัวอักษรสำหรับ label */
-  font-weight: bold; /* ตัวหนา */
+  font-size: 16px; /* ขนาดตัวอักษรสำหรับ label */
   margin-bottom: 10px; /* ระยะห่างระหว่าง label และ select */
+  margin-left: -230px;
 }
 
-.region-selector select,
+
 .province-selector select {
   width: 250px; /* กำหนดความกว้าง dropdown */
   padding: 12px; /* เพิ่มพื้นที่ภายใน dropdown */
@@ -408,6 +687,7 @@
   color: #333; /* สีข้อความ */
   cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
   text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+  margin-left: -50px;
 }
 
 .region-selector select:disabled,
@@ -418,12 +698,31 @@
 
 .region-selector option,
 .province-selector option {
-  font-size: 20px; /* ขนาดตัวอักษรสำหรับตัวเลือก */
-  text-align: left; /* จัดข้อความตัวเลือกให้อยู่ด้านซ้าย */
+  font-size: 20px; 
+  text-align: left; 
 }
 /*-------------Region, Province Selector---------------*/
 
 
 /* -----------------Select map Button----------------- */
 
+
+/* ปุ่ม toggle */
+/* .sidebar-toggle {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  background-color: #000;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 1000;
+  transition: left 0.3s ease-in-out;
+}  */
+
+/* .sidebar-toggle.open {
+  left: 370px; 
+} */
 
