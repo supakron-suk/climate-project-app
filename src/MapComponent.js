@@ -270,7 +270,7 @@ const ColorBar = ({ viewMode, selectedValue, steps = 10, min, max }) => {
               position: "absolute",
               left: `${(index / (labels.length - 1)) * 100}%`,
               transform: "translateX(-50%)",
-              fontSize: "17px",
+              fontSize: "11px",
             }}
           >
             {label}
@@ -307,11 +307,12 @@ const MapComponent = ({
       : { type: "FeatureCollection", features: [] };
 
   return (
+    <div className='map-box'> 
     <div className="map-container">
       <MapContainer
         center={[13.7563, 100.5018]}
-        zoom={6}
-        style={{ height: "1200px", width: "1150px" }}
+        zoom={5}
+        style={{ height: "700px", width: "600px" }}
       >
         <LayersControl position="topright">
           {/* Backgroud layer */}
@@ -344,7 +345,7 @@ const MapComponent = ({
           </LayersControl.Overlay>
         </LayersControl>
       </MapContainer>
-
+      </div>
       <ColorBar
         viewMode={viewMode}
         selectedValue={value}
@@ -356,6 +357,7 @@ const MapComponent = ({
 };
 
 export default MapComponent;
+
 
 // const MapComponent = ({
 //   geoData,

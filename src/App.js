@@ -67,6 +67,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 //------------------------FUNCTION APP-------------------------------- -----//
 function App() {
   const [selectedDataset, setSelectedDataset] = useState('CRU_dataset');
+  
 
   //const [timeSeriesData, setTimeSeriesData] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState('All');
@@ -117,6 +118,19 @@ const [kernelSize, setKernelSize] = useState(null);
 
 const [isSidebarOpen, setSidebarOpen] = useState(true);
 
+const [variableOptions, setVariableOptions] = useState([
+    { label: "Temperature Mean", value: "temperature", group: "Raw Data" },
+    { label: "Temperature Min", value: "tmin", group: "Raw Data" },
+    { label: "Temperature Max", value: "tmax", group: "Raw Data" },
+    { label: "Precipitation", value: "pre", group: "Raw Data" },
+  ]);
+
+
+//-----------------------------------------Label Output Dashboard---------------------------//
+const [labelYearStart, setlabelYearStart] = useState(null);
+const [labelYearEnd, setlabelYearEnd] = useState(null);
+const [labelRegion, setlabelRegion] = useState("");
+
 
 //------------------------FUNCTION APP-------------------------------------//
 
@@ -164,7 +178,7 @@ const [isSidebarOpen, setSidebarOpen] = useState(true);
   const handleValueChange = (e) => {
     const newValue = e.target.value;
     setSelectedValue(newValue);
-    setIsApplied(true); // Trigger useEffect
+    // setIsApplied(true); 
     
   };
 
@@ -193,6 +207,13 @@ const handleDatasetChange = (e) => {
       "1909": data_index_1909,
       "1910": data_index_1910,
     });
+
+     setVariableOptions([
+        { label: "Temperature Mean", value: "temperature", group: "Raw Data" },
+        { label: "Temperature Min", value: "tmin", group: "Raw Data" },
+        { label: "Temperature Max", value: "tmax", group: "Raw Data" },
+        { label: "Precipitation", value: "pre", group: "Raw Data" },
+      ]);
   } else if (selected === 'ERA_dataset') {
     setDataByYear({
       "1960": erra_data_1960,
@@ -212,6 +233,16 @@ const handleDatasetChange = (e) => {
       "1974": erra_data_1974,
       "1975": erra_data_1975,
     });
+
+    setVariableOptions([
+        { label: "Temperature Min", value: "tmin", group: "Raw Data" },
+        { label: "Temperature Max", value: "tmax", group: "Raw Data" },
+        { label: "Precipitation", value: "pre", group: "Raw Data" },
+        { label: "TXx", value: "txx", group: "Index Data" },
+        { label: "Tnn", value: "tnn", group: "Index Data" },
+        { label: "Rx1day", value: "rx1day", group: "Index Data" },
+      
+    ]);
   }
 
   // Reset ค่าอื่นๆ (กราฟและแผนที่)
@@ -224,6 +255,11 @@ const handleDatasetChange = (e) => {
   setChartData({ labels: [], datasets: [] });
   setIsApplied(false);
 };
+
+
+//---------------------- value change when change dataset
+
+
 //----------------------------------User Effect-------------------------------------------//
 //Useeffect--1
 // เก็บข้อมูลปีและภูมิภาคเมื่อกด Apply
@@ -278,48 +314,52 @@ useEffect(() => {
       setChartData(chartData.timeSeriesData);
     }
 
+    setlabelYearStart(selectedYearStart);
+    setlabelYearEnd(selectedYearEnd);
+    setlabelRegion(selectedRegion);
+
     setIsApplied(false);
   }
 }, [isApplied]);
 
 
-useEffect(() => {
-  if (filteredYearData && selectedValue) {
-    const generatedGeoJSON = TrendMap(
-      dataByYear,
-      parseInt(selectedYearStart),
-      parseInt(selectedYearEnd),
-      selectedRegion,
-      selectedProvince,
-      selectedValue
-    );
-    if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
+// useEffect(() => {
+//   if (filteredYearData && selectedValue) {
+//     const generatedGeoJSON = TrendMap(
+//       dataByYear,
+//       parseInt(selectedYearStart),
+//       parseInt(selectedYearEnd),
+//       selectedRegion,
+//       selectedProvince,
+//       selectedValue
+//     );
+//     if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
 
-    const averageData = Heatmap(
-      dataByYear,
-      parseInt(selectedYearStart),
-      parseInt(selectedYearEnd),
-      selectedRegion,
-      selectedProvince,
-      selectedValue
-    );
-    if (averageData) setHeatmapData(averageData);
+//     const averageData = Heatmap(
+//       dataByYear,
+//       parseInt(selectedYearStart),
+//       parseInt(selectedYearEnd),
+//       selectedRegion,
+//       selectedProvince,
+//       selectedValue
+//     );
+//     if (averageData) setHeatmapData(averageData);
 
-    const chartData = calculatemean(
-      dataByYear,
-      selectedYearStart,
-      selectedYearEnd,
-      selectedRegion,
-      selectedProvince,
-      selectedValue,
-      kernelSize
-    );
-    if (chartData) {
-      setSeasonalCycle(chartData.seasonalCycleData);
-      setChartData(chartData.timeSeriesData);
-    }
-  }
-}, [selectedValue,  filteredYearData, kernelSize]);
+//     const chartData = calculatemean(
+//       dataByYear,
+//       selectedYearStart,
+//       selectedYearEnd,
+//       selectedRegion,
+//       selectedProvince,
+//       selectedValue,
+//       kernelSize
+//     );
+//     if (chartData) {
+//       setSeasonalCycle(chartData.seasonalCycleData);
+//       setChartData(chartData.timeSeriesData);
+//     }
+//   }
+// }, [selectedValue,  filteredYearData, kernelSize]);
 
 //---------------------------------- Index Use Effect------------------------------------//
 useEffect(() => {
@@ -341,10 +381,7 @@ useEffect(() => {
       <h1 className="block-text">Multidimensional climate data visualization</h1>
     </div>
 
-     {/* Introduction Section */}
-    {/* <div className="introduction-header" style={{ fontSize: '30px', lineHeight: '1.6' }}>
-     <h2>Dashboard for Visualizing Climate Data Across Time and Area</h2>
-      </div>  */}
+     
 
     {/* <div className="introduction" style={{ padding: '20px', textAlign: 'justify' }}>
       <p style={{ fontSize: '30px', lineHeight: '1.6' }}>
@@ -364,179 +401,150 @@ useEffect(() => {
       </p>
     </div> */}
 
-    <div>
     {/* sidebar */}
-      <div className={`left-sidebar ${isSidebarOpen ? "open" : ""}`}>
-        <div className="sidebar-header">
-          <h2>Select Data</h2>
-          <h3>   </h3>
-        </div>
-        <div className="sidebar-content">
+<div className={`left-sidebar ${isSidebarOpen ? "open" : ""}`}>
 
-          {/* Apply Button */}
-          <button
-            onClick={() => {
-              if (!selectedYearStart || !selectedYearEnd) {
-                alert('กรุณาเลือกปีเริ่มต้นและปีสิ้นสุด');
-                return;
-              }
+  <div className="sidebar-content">
 
-              if (selectedYearStart > selectedYearEnd) {
-                alert('ปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด');
-                return;
-              }
+    <div className="sidebar-header">
+    <h2>Access Data</h2>
+    </div>
 
-              setIsApplied(true); // Trigger useEffect
-            }}
-            disabled={!selectedYearStart || !selectedYearEnd}
-            className="apply_button"
+    {/* Dropdown เลือก Dataset */}
+    <div className="dataset-selector">
+      <label>Select Dataset</label>
+      <select value={selectedDataset} onChange={handleDatasetChange}>
+        <option value="CRU_dataset">CRU Dataset</option>
+        <option value="ERA_dataset">ERA Dataset</option>
+      </select>
+    </div>
+
+
+    {/* Dropdown for Start Year Selection */}
+    <div className="year-selector">
+      <label className="year-label">Select Time Period</label>
+      <div className="dropdown-container">
+        <div className="dropdown-item">
+          <label className="start-year-label">Start Year</label>
+          <select
+            value={selectedYearStart}
+            onChange={(e) => setSelectedYearStart(e.target.value)}
           >
-            Apply
-          </button>
+            <option value="">start year</option>
+            {Object.keys(dataByYear).map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {/* Dropdown เลือก Dataset */}
-<div className="dataset-selector">
-  <label>Select Dataset</label>
-  <select value={selectedDataset} onChange={handleDatasetChange}>
-    <option value="CRU_dataset">CRU Dataset</option>
-    <option value="ERA_dataset">ERA Dataset</option>
-  </select>
-</div>
-
-{/* Dropdown for Start Year Selection */}
-<div className="year-selector">
-  <label className="year-label">Select Time Period</label>
-  <div className="dropdown-container">
-    <div className="dropdown-item">
-      <label classname="start-year-label">Start Year</label>
-      <select
-        value={selectedYearStart}
-        onChange={(e) => setSelectedYearStart(e.target.value)}
-      >
-        <option value="">start year</option>
-        {Object.keys(dataByYear).map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Dropdown for End Year Selection */}
-    <div className="dropdown-item">
-      <label>End Year</label>
-      <select
-        value={selectedYearEnd}
-        onChange={(e) => setSelectedYearEnd(e.target.value)}
-      >
-        <option value="">end year</option>
-        {Object.keys(dataByYear).map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
-    </div>
-  </div>
-</div>
-
-
-       
-
-
- <label className="area-label">Select Area</label>
-
-  <div className="region-selector">
-  <label>Select Region</label>
-  <select
-    onChange={(e) => {
-      const region = e.target.value;
-      setSelectedRegion(region); // อัปเดตภูมิภาคที่เลือก
-      setSelectedProvince(""); // รีเซ็ตจังหวัดเมื่อเลือกภูมิภาคใหม่
-    }}
-    value={selectedRegion}
-    // style={{ width: '200px', padding: '10px', fontSize: '20px' }}
-  >
-    <option value="All">All Regions</option>
-    <option value="North_East_region">North East</option>
-    <option value="North_region">North</option>
-    <option value="South_region">South</option>
-    <option value="Middle_region">Middle</option>
-    <option value="East_region">East</option>
-    <option value="West_region">West</option>
-  </select>
-</div>
-
-<div className="province-selector">
-  <label>Select Province</label>
-  <select
-    onChange={(e) => {
-      const provinceName = e.target.value;
-      setSelectedProvince(provinceName); // อัปเดตจังหวัดที่เลือก
-    }}
-    value={selectedProvince}
-    style={{ width: '300px', padding: '10px', fontSize: '16px' }}
-    disabled={filteredProvinces.length === 0} // ปิดการใช้งานถ้าไม่มีจังหวัดให้เลือก
-  >
-    <option value="">All Provinces</option>
-    {filteredProvinces.length > 0 ? (
-      filteredProvinces.map((province, index) => (
-        <option key={index} value={province}>
-          {province}
-        </option>
-      ))
-    ) : (
-      <option value="">No Provinces Available</option>
-    )}
-  </select>
-</div>
-</div>
-
+        {/* Dropdown for End Year Selection */}
+        <div className="dropdown-item">
+          <label>End Year</label>
+          <select
+            value={selectedYearEnd}
+            onChange={(e) => setSelectedYearEnd(e.target.value)}
+          >
+            <option value="">end year</option>
+            {Object.keys(dataByYear).map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
+    </div>
 
-      {/* ปุ่มเปิด-ปิด Sidebar */}
-      <button className={`side-button ${isSidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(!isSidebarOpen)}>
-</button>
+    {/* Select Area */}
+    <label className="area-label">Select Area</label>
+    <div className="region-selector">
+      <label>Select Region</label>
+      <select
+        onChange={(e) => {
+          const region = e.target.value;
+          setSelectedRegion(region); 
+          setSelectedProvince(""); 
+        }}
+        value={selectedRegion}
+      >
+        <option value="All">Thailand</option>
+        <option value="North_East_region">North East</option>
+        <option value="North_region">North</option>
+        <option value="South_region">South</option>
+        <option value="Middle_region">Middle</option>
+        <option value="East_region">East</option>
+        <option value="West_region">West</option>
+      </select>
+    </div>
+
+    {/* Select Province */}
+    <div className="province-selector">
+      <label>Select Province</label>
+      <select
+        onChange={(e) => {
+          const provinceName = e.target.value;
+          setSelectedProvince(provinceName);
+        }}
+        value={selectedProvince}
+        disabled={filteredProvinces.length === 0}
+      >
+        <option value="">All Provinces</option>
+        {filteredProvinces.length > 0 ? (
+          filteredProvinces.map((province, index) => (
+            <option key={index} value={province}>
+              {province}
+            </option>
+          ))
+        ) : (
+          <option value="">No Provinces Available</option>
+        )}
+      </select>
+    </div>
+
+    <div className="kernel-size-container">
+  <label>Kernel Size</label>
+  <input
+    type="text"
+    value={kernelSize ?? ""} // ถ้า null ให้แสดงเป็น ""
+    onChange={(e) => {
+      const value = e.target.value;
+      if (/^\d*$/.test(value)) {  // ตรวจสอบว่าเป็นตัวเลขเท่านั้น
+        const num = Number(value);
+        if (num === 0 || (num % 2 === 1 && num >= 1 && num <= 50)) {
+          setKernelSize(num);
+        }
+      }
+    }}
+    className="kernel-input"
+  />
+</div>
 
 
-
-
-
-    <div className="content-container">
-    {/* <h1>DashBoard</h1> */}
-  <div className="dashboard-box">
-    <div className='dashboard-content'>
- 
-  <div className="value-selector">
-  <label>Select Data:</label>
+    <div className="value-selector">
+  <label>Variable</label>
   <select
     value={selectedValue}
     onChange={handleValueChange}
   >
     {/* กลุ่ม Raw Values */}
-    <optgroup label="Raw Data">
-      <option value="temperature">Temperature Mean</option>
-      <option value="tmin">Temperature Min</option>
-      <option value="tmax">Temperature Max</option>
-      <option value="pre">Precipitation</option>
-    </optgroup>
-
-    {/* กลุ่ม Index */}
-    <optgroup label="Index Data">
-      <option value="txx">TXx</option>
-      <option value="tnn">Tnn</option>
-      <option value="rx1day">rx1day</option>
-      {/* <option value="rx1day">rx1day</option> */}
-    </optgroup>
+    {["Raw Data", "Index Data"].map((group) => (
+            <optgroup key={group} label={group}>
+              {variableOptions
+                .filter((option) => option.group === group)
+                .map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+            </optgroup>
+          ))}
   </select>
 </div>
- 
 
-</div>
-  
-  {/* User Select Legend Bar */}
+
+{/* User Select Legend Bar */}
 <div className="legend-bar-container">
   {/* Box สำหรับ Min */}
   <div className="legend-bar-item legend-bar-min">
@@ -572,25 +580,67 @@ useEffect(() => {
   </div>
 </div>
 
-{/* User Select Legend Bar */}
+    {/* Apply Button */}
+      <button
+        onClick={() => {
+          if (!selectedYearStart || !selectedYearEnd) {
+            alert('กรุณาเลือกปีเริ่มต้นและปีสิ้นสุด');
+            return;
+          }
+
+          if (selectedYearStart > selectedYearEnd) {
+            alert('ปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด');
+            return;
+          }
+
+          setIsApplied(true);
+        }}
+        disabled={!selectedYearStart || !selectedYearEnd}
+        className="apply_button"
+      >
+        Apply
+      </button>
+  </div>
+</div>
 
 
-<input 
-  type="number" 
-  value={kernelSize} 
-  onChange={(e) => setKernelSize(Number(e.target.value))} 
-  min={1} 
-  max={50} 
-  className="kernel-input"
-/>
+      {/* ปุ่มเปิด-ปิด Sidebar */}
+      <button className={`side-button ${isSidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(!isSidebarOpen)}>
+</button>
 
+
+
+
+
+    <div className="content-container">
+    {/* <h1>DashBoard</h1> */}
+  <div className={`dashboard-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+
+   {/* ✅ แสดงค่าที่ Apply ล่าสุด */}
+      {labelYearStart && labelYearEnd && (
+        <>
+          <label className='Duration-label'>
+            Duration ({labelYearStart} - {labelYearEnd})
+          </label>
+          <label className='Area-label'>
+            Area ({labelRegion})
+          </label>
+        </>
+      )}
+
+  <div className='dashboard-content'>
+ 
+ 
+
+</div>
+  
 {/* Button select map */}
 <div className="map-buttons">
-  <button onClick={() => toggleViewMode("Heatmap")}>choropleth Map</button>
+  <button onClick={() => toggleViewMode("Heatmap")}>Value Map</button>
   <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
 </div>
 
-   
     <div className="right-map">
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
     <MapComponent
@@ -609,16 +659,23 @@ useEffect(() => {
 </div>
 
 
-
+<div className='time-series-box'>
         {/* Time series chart */}
   <div className="time-series-chart">
-    <h3>Time Series</h3>
+    {labelYearStart && labelYearEnd ? (
+      <h3 className="time-series-head">
+        Time Series ({labelYearStart} - {labelYearEnd}) 
+        {kernelSize && <span className="kernel-size"> Kernel Size: {kernelSize} term</span>}
+      </h3>
+    ) : (
+      <h3 className="time-series-head">Time Series</h3>
+    )}
     <Line
       data={chartData}
       options={{
         responsive: true,
-        maintainAspectRatio: false,  // อนุญาตให้กำหนดขนาดเอง ไม่บังคับอัตราส่วนเดิม
-        devicePixelRatio: 2, // เพิ่มความคมชัดของ Canvas
+        maintainAspectRatio: false,  
+        devicePixelRatio: 2, 
         plugins: {
           legend: {
             display: true,
@@ -634,13 +691,13 @@ useEffect(() => {
               display: true,
               text: 'Year',
               font: {
-                size: 18,
+                size: 12,
                 weight: 'bold',
               },
             },
             ticks: {
               font: {
-                size: 18,
+                size: 12,
                 weight: 'bold',
               },
               autoSkip: true,
@@ -654,13 +711,13 @@ useEffect(() => {
               display: true,
               text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
               font: {
-                size: 18,
+                size: 15,
                 weight: 'bold',
               },
             },
             ticks: {
               font: {
-                size: 16,
+                size: 12,
                 weight: 'bold',
               },
               callback: function(value) {
@@ -672,7 +729,9 @@ useEffect(() => {
       }}
     />
   </div>
+</div>
 
+<div className='seasonal-cycle-box'>
   {/* Seasonal Cycle chart */}
   {showSeasonalCycle && (
     <div className="Seasonal-Cycle-chart">
@@ -694,13 +753,13 @@ useEffect(() => {
                 display: true,
                 text: 'Months',
                 font: {
-                  size: 18,
+                  size: 12,
                   weight: 'bold',
                 },
               },
               ticks: {
                 font: {
-                  size: 14,
+                  size: 12,
                   weight: 'bold',
                 },
               },
@@ -712,13 +771,13 @@ useEffect(() => {
                 display: true,
                 text: `${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'}`,
                 font: {
-                  size: 18,
+                  size: 15,
                   weight: 'bold',
                 },
               },
               ticks: {
                 font: {
-                  size: 16,
+                  size: 12,
                   weight: 'bold',
                 },
                 callback: function(value) {
@@ -731,9 +790,8 @@ useEffect(() => {
       />
     </div>
   )}
-
 </div>
-
+</div>
       
     
   </div>
