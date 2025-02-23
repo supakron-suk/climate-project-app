@@ -2,8 +2,9 @@
 .main-container {
   display: flex;
   flex-direction: column;
-  align-items: right;
-  margin-top: 5px; /* กำหนดระยะห่างจากด้านบนของเว็บเพจ */
+  align-items: center; /* จัดตรงกลาง */
+  width: 100%;
+  margin-top: 5px;
 }
 
 .header-text {
@@ -21,6 +22,15 @@
   z-index: 1000; /* ป้องกันไม่ให้ถูกเลเยอร์อื่นบัง */
 }
 
+
+@media (max-width: 768px) {
+  .header-text {
+    height: 50px; 
+    font-size: 14px; 
+    padding-left: 10px;
+  }
+}
+
 /* สไตล์สำหรับ h1 ข้อความ */
 .block-text {
   font-size: 2px; /* ปรับขนาดตัวอักษร */
@@ -29,183 +39,156 @@
 }
 
 
-/*-------------------side bar config-------------------------*/
-/* สไตล์สำหรับ sidebar ด้านซ้าย */
+/* ======================== Sidebar ======================== */
 .left-sidebar {
   width: 360px;
-  height: 530px;
+  height: 100vh; 
   background-color: #ffffff;
   color: #000;
   padding: 20px;
-  padding-bottom: 110px;
   border: 2px solid #000;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-
-  position: absolute;
-  top: 48px;
-  left: -360px;
+  position: fixed; 
+  top: 0;
+  left: -410px; /* ซ่อน Sidebar */
   transition: left 0.3s ease-in-out;
-  max-height: 700px;
-
+  overflow-y: auto; 
+  z-index: 1;
 }
 
-.sidebar-content {
-  width: 357px;
-  height: 600px;
-  position: relative;
-  margin-left: -20px;
-  top: -38px;
-  background-color: #ffffff;
-  color: #000;
-  padding: 20px;
-  padding-bottom: 110px;
-  border: 2px solid #ffffff;
-  /* box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); */
-  max-height: none; /* ไม่จำกัด max-height ภายใน */
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 20px;
-}
-
-/* แสดง Sidebar เมื่อเปิด */
 .left-sidebar.open {
   left: 0;
 }
 
-
-/* ปรับแต่ง scrollbar ให้แสดงเฉพาะใน .sidebar-content */
-.sidebar-content::-webkit-scrollbar {
-  width: 10px; /* กำหนดความกว้างของ scrollbar */
+/* ======================== Responsive Sidebar ======================== */
+@media (max-width: 1024px) {
+  .left-sidebar {
+    width: 300px; /* ลดขนาด Sidebar */
+    left: -300px;
+  }
 }
 
-.sidebar-content::-webkit-scrollbar-thumb {
-  background: #888; /* สีของ scrollbar */
-  border-radius: 4px; /* ทำมุมโค้ง */
+@media (max-width: 768px) {
+  .left-sidebar {
+    width: 260px;
+    left: -260px;
+  }
 }
 
-.sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: #555; /* สีเข้มขึ้นเมื่อ hover */
+/* ======================== Sidebar Content ======================== */
+.sidebar-content {
+  width: 100%;
+  padding-bottom: 20px;
+  overflow-y: auto; /* ให้เลื่อนภายใน Sidebar */
 }
 
-
-
-/* สไตล์สำหรับหัวข้อ sidebar */
-/* สไตล์สำหรับ h2 ใน sidebar */
+/* ======================== Header & Titles ======================== */
 .sidebar-header h2 {
-  position: absolute;
-  right: 140px;
-  top: 50px;
-  margin: 0;
-  
-  font-size: 40px; 
-  font-weight: normal; 
-  font-family: "Poppins", sans-serif; 
-  white-space: nowrap; 
-  letter-spacing: 2px; 
-  color: #444; 
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 15px;
+  color: #444;
 }
 
 .sidebar-header h3 {
-  position: absolute;
-  bottom: -150px;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 20px;
 }
 
-/* สไตล์สำหรับเนื้อหาใน sidebar */
-.sidebar-content {
-  margin-top: 20px;
-}
-
-
+/* ======================== Apply Button ======================== */
 .apply_button {
-  padding: 15px 25px; /* ขยายขนาดปุ่ม */
-  margin: 20px auto; /* จัดให้อยู่กึ่งกลางและเพิ่มระยะห่าง */
+  padding: 12px;
+  width: 100%;
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 8px; /* มุมโค้งมน */
-  font-size: 18px; /* ขยายขนาดตัวอักษร */
-  font-weight: bold; /* ตัวหนา */
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: bold;
   cursor: pointer;
-  width: 90%; /* ทำให้ปุ่มกว้างเกือบเต็มพื้นที่ */
-  display: block; /* ให้ปุ่มอยู่เป็นบล็อกเดียว */
-  text-align: center; /* จัดข้อความกึ่งกลาง */
-  transition: all 0.3s ease-in-out; /* เพิ่มเอฟเฟกต์เวลา hover */
-
-  position: relative; /* ตำแหน่งแบบ absolute */
-  bottom: -50px; 
-  left: 40%; 
-  transform: translateX(-50%);
-  padding-bottom: -100px; 
-
+  text-align: center;
+  display: block;
+  margin: 15px auto;
+  transition: all 0.3s ease-in-out;
 }
 
-/* เมื่อปุ่มถูกปิดการใช้งาน (Disabled) */
+.apply_button:hover {
+  background-color: #45a049;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
 .apply_button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-/* เอฟเฟกต์ Hover */
-.apply_button:hover:not(:disabled) {
-  background-color: #45a049;
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-
-
-/* ปุ่มเปิด-ปิด Sidebar */
+/* ======================== ปุ่มเปิด-ปิด Sidebar ======================== */
 .side-button {
-  position: absolute;
-  top: 60%;
-  left: 43px; /* ซ่อนข้างนอกตอน Sidebar ปิด */
-  transform: translateY(-50%);
-  width: 20px;
-  height: 50px;
+  position: fixed;
+  top: 50%;
+  left: 15px;
+  width: 45px;
+  height: 45px;
   background-color: #062b74;
   color: white;
   border: none;
-  border-radius: 0 5px 5px 0; /* โค้งด้านขวา */
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   transition: left 0.3s ease-in-out;
+  z-index: 1100;
 }
 
 /* เมื่อ Sidebar เปิด */
 .side-button.open {
-  left: 402px; /* ปุ่มเลื่อนมาติดขอบด้านนอกของ Sidebar */
+  left: 375px;
 }
 
 /* ไอคอนในปุ่ม */
 .side-button::after {
-  content: "▶"; /* สามเหลี่ยมไปทางขวา */
-  font-size: 18px;
+  content: "▶"; /* ลูกศรขวา */
 }
 
-/* เปลี่ยนไอคอนเมื่อ Sidebar เปิด */
 .side-button.open::after {
-  content: "◀"; /* สามเหลี่ยมไปทางซ้าย */
-
+  content: "◀"; /* ลูกศรซ้าย */
 }
 
-/* สไตล์ปุ่ม Apply */
+/* ======================== Responsive ปุ่ม Sidebar ======================== */
+@media (max-width: 1024px) {
+  .side-button.open {
+    left: 315px;
+  }
+}
+
+@media (max-width: 768px) {
+  .side-button {
+    left: 10px;
+  }
+
+  .side-button.open {
+    left: 270px;
+  }
+}
 
 
 
 /*-------------------side bar config-------------------------*/
 
-
+/* ปรับขนาดตัวอักษรให้เหมาะสมกับหน้าจอ */
 .block-text {
-  color: white; /* สีข้อความ */
-  font-size: 24px; /* ขนาดตัวอักษร */
-  font-weight: bold; /* ความหนาของข้อความ */
-  text-align: center; /* จัดข้อความให้อยู่กึ่งกลาง */
+  color: white;
+  font-size: clamp(18px, 2vw, 24px); /* ใช้ clamp() ปรับขนาดอัตโนมัติ */
+  font-weight: bold;
+  text-align: center;
 }
 
-.timeseries-text{
+/* ปรับโครงสร้าง layout ให้ยืดหยุ่น */
+.timeseries-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -213,30 +196,87 @@
   margin-left: 40px;
 }
 
+/* ปรับตำแหน่งให้เหมาะกับหน้าจอขนาดต่างๆ */
 .map-text {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* จัดข้อความไว้ทางซ้าย (หรือ flex-end สำหรับขวา) */
+  align-items: flex-start;
   margin-top: -80px;
-  margin-left: 800px; /* ปรับตำแหน่งด้วยตัวเลข px เพื่อเลื่อนไปทางขวา */
+  margin-left: 800px;
 }
 
+/* ปรับตำแหน่ง title-year ให้อยู่กึ่งกลาง */
 .title-year {
-  position: relative; 
-  top: -25px; 
-  /* left: 700px;  */
-  text-align: center; 
+  position: relative;
+  top: -25px;
+  text-align: center;
 }
 
-
+/* ปรับ container ให้เป็น layout ที่ยืดหยุ่น */
 .container {
   display: flex;
-  margin-top: 70px; /* เพิ่มส่วนนี้เพื่อเลื่อนทั้งสองลงมา */
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; /* ให้เนื้อหาขยับลงเมื่อหน้าจอเล็ก */
+  margin-top: 70px;
+  padding: 10px;
 }
 
+/* ปรับเนื้อหาให้เรียงลำดับเหมาะสม */
 .content {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly; /* กระจายองค์ประกอบให้สมดุล */
+  align-items: center;
+  gap: 20px; /* ระยะห่างระหว่างแต่ละคอนเทนต์ */
+}
+
+/* ปรับแต่งให้รองรับหน้าจอขนาดเล็ก */
+@media (max-width: 1024px) {
+  .timeseries-text {
+    margin-left: 20px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .map-text {
+    margin-left: 0;
+    align-items: center;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .container {
+    flex-direction: column; /* เปลี่ยนเป็นเรียงแนวตั้ง */
+    align-items: center;
+  }
+}
+
+/* ปรับแต่งสำหรับมือถือ */
+@media (max-width: 768px) {
+  .block-text {
+    font-size: 20px; /* ลดขนาดฟอนต์ */
+  }
+
+  .timeseries-text,
+  .map-text {
+    margin-top: 20px;
+    margin-left: 0;
+    text-align: center;
+    align-items: center;
+  }
+
+  .container {
+    flex-direction: column;
+    margin-top: 30px;
+  }
+
+  .content {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 
@@ -247,11 +287,16 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-.dashboard-box {
-  width: 1100px; 
-  height: 820px;
+
+.dashboard-box{
+  width: auto; 
+  max-width: 1460px; 
+  height: auto;
+  max-height: 610px;
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 20px;
@@ -262,35 +307,50 @@
   flex-direction: column;
   align-items: center;
   position: relative; 
-  margin-top: 250px;
-  margin-right: -470px;
+  margin-top: 310px;
+  margin-right: -90px;
 
-   overflow: auto;
+   overflow-y: auto; 
+   overflow-x: hidden; 
 }
+
 
 .dashboard-title{
   position: relative;
   right: 36%;
   top: -4%;
   transform: translateX(-50%);
-  font-size: 2rem; /* ขนาดใหญ่ขึ้น */
-  font-weight: bold; /* ทำให้ตัวหนา */
-  color: #2c3e50; /* สีเข้มขึ้น */
+  font-size: 2rem; 
+  font-weight: bold; 
+  color: #2c3e50; 
 }
 
-.Duration-label {
-  position: absolute; /* หรือ fixed ถ้าต้องการให้คงที่บนหน้าจอ */
-  left: 50%;
-  top: 50px; /* ควบคุมตำแหน่งจากด้านบน */
-  transform: translateX(-50%); /* จัดให้อยู่ตรงกลางแนวนอน */
-  font-size: 1rem;
-  text-align: center; /* ให้ข้อความอยู่ตรงกลาง */
+.dashboard-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f0f0f0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center; 
+  gap: 5px; 
+}
+
+.dataset-head-dashboard{
+  font-size: 20px;
+  margin-right: 30px; 
+  font-weight: bold;
   white-space: nowrap;
-  font-weight: bold; /* ป้องกันการขึ้นบรรทัดใหม่ */
+  position: relative;
+  right: -36%; 
 }
 
-
-/* ใช้ Flexbox เพื่อให้แผนที่และกราฟอยู่ใน dashboard */
 .dashboard-content {
   display: flex;
   flex-direction: column;
@@ -298,63 +358,261 @@
   width: 100%;
 }
 
-/* Sidebar เปิด: Dashboard อยู่ค่าปกติ */
+ 
 .dashboard-box.sidebar-open {
-  margin-left: 0; /* ค่าเริ่มต้น */
-  transition: margin-left 0.3s ease-in-out;
+  margin-left: 9px; 
+  transition: margin-left 0.2s ease-in-out;
+  width: 1300px;  
+  height: 800px;
+  left: 22%;
+  margin-top: 5%;
 }
 
-/* Sidebar ปิด: Dashboard ขยับไปทางซ้าย */
 .dashboard-box.sidebar-closed {
-  margin-left: -425px; /* ปรับตามขนาด Sidebar ที่ซ่อน */
-  width: 1400px; 
-  transition: margin-left 0.3s ease-in-out;
+  margin-left: -85px; 
+  width: 1500px; 
+  transition: margin-left 0.2s ease-in-out;
+  margin-top: 5%;
+  overflow-y: auto; 
+  overflow-x: hidden;
 }
 
 
-.time-series-box, .seasonal-cycle-box {
-  border: 2px solid #ccc; /* สีกรอบ */
-  border-radius: 10px; /* มุมโค้ง */
-  padding: 20px; /* เว้นระยะห่างภายใน */
-  margin: -80px 0; /* ระยะห่างระหว่างกล่อง */
-  background: #fff; /* พื้นหลัง */
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); /* เงาเพิ่มมิติ */
-  margin-left: -700px;
+.time-series-box.sidebar-open{
+  border: 2px solid #ccc; 
+  border-radius: 10px; 
+  padding: 20px; 
+  margin: -80px 0; 
+  background: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+  margin-left: -560px;
   margin-top: 100px;
+  position: relative;
+  top: -50px;
+  width: 55%;
+  padding-bottom: 80px;
+} 
+
+.seasonal-cycle-box.sidebar-open {
+  border: 2px solid #ccc; 
+  border-radius: 10px; 
+  padding: 20px; 
+  margin: -80px 0; 
+  background: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+  margin-left: -560px;
+  margin-top: 100px;
+  position: relative;
+  top: -7%;
+  width: 55%;
 }
+
+
+.time-series-box.sidebar-closed{
+  border: 2px solid #ccc; 
+  border-radius: 10px; 
+  padding: 20px; 
+  margin: -80px 0; 
+  background: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+  margin-left: -650px;
+  margin-top: 100px;
+  position: relative;
+  top: -50px;
+  width: 50%;
+  padding-bottom: 80px; 
+} 
+
+.seasonal-cycle-box.sidebar-closed {
+  border: 2px solid #ccc; 
+  border-radius: 10px; 
+  padding: 20px; 
+  margin: -80px 0; 
+  background: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+  margin-left: -650px;
+  margin-top: 100px;
+  position: relative;
+  top: -60px;
+  width: 50%;
+}
+/* .time-series-box, .seasonal-cycle-box {
+  border: 2px solid #ccc; 
+  border-radius: 10px; 
+  padding: 20px; 
+  margin: -80px 0; 
+  background: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+  margin-left: -560px;
+  margin-top: 100px;
+  position: relative;
+  top: -7%;
+} */
+
 
 .time-series-chart canvas, .seasonal-cycle-chart canvas {
   width: 100% !important; 
   height: 100% !important;
 }
 
-.time-series-chart {
+.time-series-chart.sidebar-open {
   width: 650px; 
   height: 350px; 
   margin: 0 auto; 
   margin-left: 15px;
-  margin-top: 10px;
+  margin-top: 5px;
+  position: relative;
+  top: 100px;
 }
 
-.Seasonal-Cycle-chart{
+.time-series-chart.sidebar-closed {
   width: 650px; 
-  height: 300px; 
+  height: 350px; 
+  margin: 0 auto; 
+  margin-left: 15px;
+  margin-top: -5px;
+  position: relative;
+  top: 100px;
+  z-index: 1px;
+}
+
+.time-series-chart h3{
+  margin-bottom: -170px; 
+  position: relative;
+  top: -33%;
+}
+
+/*--------------------------------*/
+.time-series-legend-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; 
+  margin-top: 20px;
+  position: relative;
+  top: 112%;
+  bottom: -55%;
+  margin-left: 5%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.annual-average-line{
+  display: inline-block;
+  width: 50px; /* ความยาวของเส้น */
+  height: 3px; /* ความหนาของเส้น */
+  margin-right: 10px; /* ระยะห่างจากข้อความ */
+}
+
+.kernel-average-line {
+  display: inline-block;
+  width: 50px; 
+  height: 3px; 
+  margin-right: 10px; 
+  border-top: 3px dashed purple; 
+  /* background-color: transparent;  */
+}
+
+
+.annual-average-line {
+  background-color: rgb(0, 0, 0); /* สีของเส้น Annual Average */
+}
+
+/* .kernel-average-line {
+  background-color: purple; 
+} */
+
+.legend-text {
+  font-size: 14px;
+  font-weight: bold;
+}
+/*---------------------------------*/
+
+
+
+.seasonal-Cycle-chart.sidebar-open{
+  width: 650px; 
+  height: 350px; 
   margin: 0 auto; 
   margin-left: 50px;
   margin-top: 50px;
+  position: relative;
+  top: -20%;
 }
+
+.seasonal-cycle-chart.sidebar-closed{
+  width: 650px; 
+  height: 350px; 
+  margin: 0 auto; 
+  margin-left: 20px;
+  margin-top: 50px;
+  position: relative;
+  top: -50px;
+}
+
+.seasonal-cycle-chart h3 {
+  margin-bottom: -70px; 
+  padding-bottom: 5px; 
+  font-size: 18px; 
+}
+
+/* สไตล์สำหรับ legend line */
+.seasonal-legend-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  position: relative;
+  top: 385px;  
+}
+
+.seasonal-legend-line span {
+  display: inline-block;
+  width: 40px;  
+  height: 3px;  
+  background-color: #000000;  
+  margin-right: 15px;  
+}
+
+
+.seasonal-legend-line .legend-text {
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 1px;  
+}
+
+
 
 
 .right-map {
   position: absolute; 
+  top: 15%;
+  left: 30%;
+  /* display: flex;
+  justify-content: flex-start; 
+  align-items: flex-start; 
+  left: 720px;
+  top: 14%; 
+  margin-right: 200px; 
+  margin-top: 1108px;
+  height: 100%; */
+}
+
+
+/* .right-map {
+  position: absolute; 
   display: flex;
   justify-content: flex-start; 
   align-items: flex-start; 
-  left: 720px; 
+  left: 720px;
+  top: 14%; 
   margin-right: 200px; 
   margin-top: 1108px;
   height: 100%;
-}
+} */
 
 /*---------------User Select Value Legend Bar----------------*/
 /* Legend Bar Controls */
@@ -485,59 +743,73 @@
 }
 
 .map-buttons {
-  position: absolute; /* ให้อยู่บนสุดของแผนที่ */
-  top: 150px; /* ระยะจากขอบบน */
-  left: 850px; /* ระยะจากขอบซ้าย */
-  z-index: 1000; /* ให้ปุ่มอยู่ด้านหน้า */
+  position: absolute; 
+  top: 170px; 
+  left: 900px; 
+  z-index: 1000; 
   display: flex;
-  flex-direction: row; /* เรียงปุ่มในแนวตั้ง */
-  gap: 5px; /* ระยะห่างระหว่างปุ่ม */
+  flex-direction: row; 
+  gap: 5px; 
 }
 
 .map-buttons button {
-  padding: 10px 15px; /* ขนาดปุ่ม */
-  font-size: 14px; /* ขนาดตัวอักษร */
-  background-color: #007bff; /* สีพื้นหลังของปุ่ม */
-  color: white; /* สีตัวอักษร */
-  border: none; /* ไม่มีเส้นขอบ */
-  border-radius: 5px; /* มุมมน */
-  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
+  padding: 10px 15px; 
+  font-size: 10px; 
+  background-color: #007bff; 
+  color: white; 
+  border: none; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); 
 }
 
 .map-buttons button:hover {
-  background-color: #0056b3; /* สีเมื่อ hover */ 
+  background-color: #0056b3; 
 }
 
 .map-box {
-  border: 3px solid #333; 
+  border: 3px solid #ccc; 
   border-radius: 10px;  
   padding: 15px;  
   background: #f9f9f9; 
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); 
-  height: 750px;
+  box-shadow: 2px 2px 8px rgba(105, 69, 69, 0.1); 
+  height: 886px;
   position: relative;
-  top: -1000px;
-  margin-left: 50px;
+  top: -75%;
+  left: 42%;
+  margin-left: 85px;
+  margin-top: -4%;
+  margin-bottom: 5%;
 }
 
-.map-container {
+.area-head-map{
+  margin-bottom: -4%;
+  font-weight: bold;
+  font-size: 20px;
+  position: relative;
+  right: 0%;
+  top: 1%;
+}
+
+.map-container{
+  position: relative;
+  margin-top: 10%;
+}
+/* .map-container {
   position: relative;
   top: 1005px; 
   border-radius: 10px;
-}
+  margin-top: -1015px;
+} */
 
 
 /*-------------Variable, Index Selector---------------*/
 /*----------------------Dashboard box-----------------------------*/
 
-.map-container{
-  flex: auto;
-  margin-top: -1015px;
-}
+
 
 /* .thai-map {
   position: relative; 
@@ -552,14 +824,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 10px 0;
+  margin: -40px 0;
   width: 90%;
 }
 
 .gradient-bar {
   display: flex;
   height: 17px;
-  width: 110%;
+  width: 111%;
   border: 1px solid #000;
   position: relative;
   top: 50px;
@@ -572,16 +844,18 @@
 .labels {
   position: relative;
   width: 100%;
-  left: 15px;
+  left: 0%;
   display: flex;
-  justify-content: space-between;
-  margin-top: 32px;
+  justify-content: center;
+  margin-top: 35px;
   top: 20px;
+  gap: 10px;
 }
 
 .labels span {
   transform: translateX(-50%);
   white-space: nowrap;
+  gap: 10px;
 }
 
 .title {
@@ -667,6 +941,7 @@
   text-align: center;
   font-size: 20px;
   margin-bottom: 50px;
+  margin-left: 10px;
 }
 
 .year-label {
@@ -730,14 +1005,14 @@
 
 /*-------------Region, Province Selector---------------*/
 
-.area-label {
+/* .area-label {
   font-size: 25px; 
   color: #000000; 
   margin-bottom: 30px;  
   text-align: center;
   position: relative;
   margin-left: 0px; 
-}
+} */
 
 .region-selector {
   display: flex;

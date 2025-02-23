@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapContainer,TileLayer, GeoJSON, LayersControl } from 'react-leaflet';
 import mapbackgroud from "./Geo-data/thailand-Geo.json";
+import colormap from 'colormap';
 
 // ฟังก์ชันไล่ระดับสี real value สำหรับ Choroplet map
 const tempColor = [
@@ -31,6 +32,19 @@ const coolwarmColor = [
   [0.5, "#67001f"],
 ];
 
+const coolwarmColor_reverse = [
+  [0.5, "#67001f"],
+  [0.3, "#b6202f"],
+  [0.2, "#dd6f59"],
+  [0.1, "#f7b799"],
+  [0, "#fae7dc"],
+  [-0.1, "#e2edf3"],
+  [-0.2, "#a7d0e4"],
+  [-0.3, "#559ec9"],
+  [-0.4, "#256baf"],
+  [-0.5, "#053061"],
+];
+
 // const rain_Color = [
 //   [1, "#00008B"],   // สีน้ำเงินเข้ม สำหรับปริมาณน้ำฝนสูงสุด
 //   [0.9, "#0000CD"], // สีน้ำเงิน
@@ -46,52 +60,80 @@ const coolwarmColor = [
 // ];
 
 const rain_Color = [
-  [0, "#FFFFFF"],   // สีน้ำเงินเข้ม สำหรับปริมาณน้ำฝนน้อยที่สุด
-  [0.1, "#F0FFFF"], // สีน้ำเงิน
-  [0.2, "#E0FFFF"], // สีฟ้าเข้ม
-  [0.3, "#AFEEEE"], // สีฟ้า
-  [0.4, "#B0E0E6"], // สีฟ้าอ่อน
-  [0.5, "#ADD8E6"], // สีฟ้าอ่อนมาก
-  [0.6, "#87CEEB"], // สีฟ้าอ่อนมาก
-  [0.7, "#00BFFF"], // สีฟ้าอ่อนอมเขียว
-  [0.8, "#1E90FF"], // สีฟ้าอ่อนสุดๆ
-  [0.9, "#0000CD"], // สีฟ้าอ่อนสุดๆ
-  [1, "#00008B"]    // สีขาว สำหรับปริมาณน้ำฝนสูงสุด 
+  [0, "#f7fcf0"],   
+  [0.1, "#e0f3db"], 
+  [0.2, "#ccebc5"], 
+  [0.3, "#a8ddb5"], 
+  [0.4, "#7bccc4"], 
+  [0.5, "#4eb3d3"], 
+  [0.6, "#2b8cbe"], 
+  [0.7, "#0868ac"], 
+  [0.8, "#084081"], 
+  [0.9, "#062b61"], 
+  [1, "#041e42"]    
 ];
+
 
 
 // ฟังก์ชันไล่ระดับสี Coolwarm สำหรับ TrendMap
-const coolwarmColor_reverse = [
-  [0.5, "#67001f"],
-  [0.3, "#b6202f"],
-  [0.2, "#dd6f59"],
-  [0.1, "#f7b799"],
-  [0, "#fae7dc"],
-  [-0.1, "#e2edf3"],
-  [-0.2, "#a7d0e4"],
-  [-0.3, "#559ec9"],
-  [-0.4, "#256baf"],
-  [-0.5, "#053061"],
-];
+
 
 
 // ฟังก์ชันไล่ระดับสีที่ใช้ real value หรือ Coolwarm
+
+
+// const interpolateColor = (value, min, max, scale) => {
+//   if (value === undefined || value === null) return "#ccc";
+//   if (min === max) return scale[0]?.[1] || "#ccc";
+
+//   // จำกัดค่า value ให้อยู่ในช่วง min และ max
+//   const clampedValue = Math.max(min, Math.min(max, value));
+
+//   // Normalize value into a 0-1 range
+//   const ratio = (clampedValue - min) / (max - min);
+//   const clampedRatio = Math.max(0, Math.min(1, ratio));
+
+//   // Find two closest scale points
+//   const scaledIndex = clampedRatio * (scale.length - 1); // คำนวณตำแหน่งของสี
+//   const lowerIndex = Math.floor(scaledIndex);              // หา index ของสีที่ต่ำกว่า
+//   const upperIndex = Math.min(lowerIndex + 1, scale.length - 1); // หา index ของสีที่สูงกว่า
+//   const t = scaledIndex - lowerIndex;   // ระยะห่างระหว่างสีที่ต่ำกว่าและสูงกว่า
+
+//   if (!scale[lowerIndex] || !scale[upperIndex]) {
+//     console.warn("Color scale index out of bounds", { lowerIndex, upperIndex, scale });
+//     return "#ccc";
+//   }
+
+//   const lowerColor = scale[lowerIndex][1];
+//   const upperColor = scale[upperIndex][1];
+
+//   const interpolateRgb = (color1, color2, t) => {
+//     const [r1, g1, b1] = color1.match(/\w\w/g).map((c) => parseInt(c, 16));
+//     const [r2, g2, b2] = color2.match(/\w\w/g).map((c) => parseInt(c, 16));
+
+//     const r = Math.round(r1 + t * (r2 - r1));
+//     const g = Math.round(g1 + t * (g2 - g1));
+//     const b = Math.round(b1 + t * (b2 - b1));
+
+//     return `rgb(${r}, ${g}, ${b})`;
+//   };
+
+//   // Interpolate between the two colors
+//   return interpolateRgb(lowerColor, upperColor, t);
+// };
+
 const interpolateColor = (value, min, max, scale) => {
   if (value === undefined || value === null) return "#ccc";
   if (min === max) return scale[0]?.[1] || "#ccc";
 
-  // จำกัดค่า value ให้อยู่ในช่วง min และ max
   const clampedValue = Math.max(min, Math.min(max, value));
-
-  // Normalize value into a 0-1 range
   const ratio = (clampedValue - min) / (max - min);
   const clampedRatio = Math.max(0, Math.min(1, ratio));
 
-  // Find two closest scale points
-  const scaledIndex = clampedRatio * (scale.length - 1); // คำนวณตำแหน่งของสี
-  const lowerIndex = Math.floor(scaledIndex);              // หา index ของสีที่ต่ำกว่า
-  const upperIndex = Math.min(lowerIndex + 1, scale.length - 1); // หา index ของสีที่สูงกว่า
-  const t = scaledIndex - lowerIndex;   // ระยะห่างระหว่างสีที่ต่ำกว่าและสูงกว่า
+  const scaledIndex = clampedRatio * (scale.length - 1);
+  const lowerIndex = Math.floor(scaledIndex);
+  const upperIndex = Math.min(lowerIndex + 1, scale.length - 1);
+  const t = scaledIndex - lowerIndex;
 
   if (!scale[lowerIndex] || !scale[upperIndex]) {
     console.warn("Color scale index out of bounds", { lowerIndex, upperIndex, scale });
@@ -112,29 +154,49 @@ const interpolateColor = (value, min, max, scale) => {
     return `rgb(${r}, ${g}, ${b})`;
   };
 
-  // Interpolate between the two colors
   return interpolateRgb(lowerColor, upperColor, t);
 };
 
-const getColorScale = (selectedValue) => {
-  if (selectedValue === "pre" || selectedValue === "rx1day") {
+
+const getColorScale = (selectedValue, viewMode) => {
+  const isPrecipitation = ["pre", "rx1day"].includes(selectedValue);
+  const isTemperature = ["Temperature Mean", "Temperature Min", "Temperature Max", "TXx", "Tnn"].includes(selectedValue);
+
+  if (viewMode === "TrendMap") {
     return {
-      temp_color: rain_Color,
-      coolwarm: coolwarmColor_reverse
+      temp_color: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
+      coolwarm: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
     };
   }
-  return { temp_color: tempColor, coolwarm: coolwarmColor };
+
+  // ใช้ colormap สำหรับ Heatmap และ Choropleth
+  const colormapName = isPrecipitation ? "viridis" : "jet"; 
+  const colormapScale = colormap({
+    colormap: colormapName,
+    nshades: 10,
+    format: "hex",
+    alpha: 1,
+  }).map((color, i) => [i / 9, color]);
+
+  return {
+    temp_color: colormapScale,
+    coolwarm: colormapScale,
+  };
 };
 
+// const getColorScale = (selectedValue) => {
+//   if (selectedValue === "pre" || selectedValue === "rx1day") {
+//     return {
+//       temp_color: rain_Color,
+//       coolwarm: coolwarmColor_reverse
+//     };
+//   }
+//   return { temp_color: tempColor, coolwarm: coolwarmColor };
+// };
 
-// ฟังก์ชันกำหนดสี
 const getColor = (value, viewMode, min, max, selectedValue) => {
-  const isReverse = selectedValue === "pre" || selectedValue === "rx1day";
-  
-  const temp_color = isReverse ? rain_Color : tempColor;
-  const coolwarm = isReverse ? coolwarmColor_reverse : coolwarmColor;
-  
-  const scale = viewMode === "Heatmap" ? temp_color : coolwarm;
+  const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode);
+  const scale = viewMode === "Heatmap" || viewMode === "Choropleth" ? temp_color : coolwarm;
 
   if (!scale || !Array.isArray(scale) || scale.length === 0) {
     console.warn(`Invalid scale for viewMode: ${viewMode}`);
@@ -145,12 +207,40 @@ const getColor = (value, viewMode, min, max, selectedValue) => {
 };
 
 
+// const getColor = (value, viewMode, min, max, selectedValue) => {
+//   const isReverse = selectedValue === "pre" || selectedValue === "rx1day";
+  
+//   const temp_color = isReverse ? rain_Color : tempColor;
+//   const coolwarm = isReverse ? coolwarmColor_reverse : coolwarmColor;
+  
+//   const scale = viewMode === "Heatmap" ? temp_color : coolwarm;
 
+//   if (!scale || !Array.isArray(scale) || scale.length === 0) {
+//     console.warn(`Invalid scale for viewMode: ${viewMode}`);
+//     return "#ccc";
+//   }
+
+//   return interpolateColor(value, min, max, scale);
+// };
 
 // // ฟังก์ชันคำนวณ Min และ Max ของข้อมูล
-const calculateMinMax = (geoData, viewMode, value, selectedValue) => {
-  if (!geoData || !geoData.features) return { min: 0, max: 1 }; // ค่าเริ่มต้นสำหรับ Heatmap
+// const calculateMinMax = (geoData, viewMode, value) => {
+//   if (!geoData || !geoData.features) return { min: 0, max: 1 };
   
+//   const values = geoData.features
+//     .map((feature) => viewMode === "TrendMap" ? feature.properties.slope_value : feature.properties[value])
+//     .filter((val) => val !== undefined && val !== null);
+
+//   return {
+//     min: Math.min(...values),
+//     max: Math.max(...values)
+//   };
+// };
+
+
+const calculateMinMax = (geoData, viewMode, value, selectedValue) => {
+  if (!geoData || !geoData.features) return { min: 0, max: 1 };
+
   const values = geoData.features
     .map((feature) =>
       viewMode === "TrendMap"
@@ -159,70 +249,110 @@ const calculateMinMax = (geoData, viewMode, value, selectedValue) => {
     )
     .filter((val) => val !== undefined && val !== null);
 
-  if (selectedValue === "pre" || selectedValue === "rx1day") {
-    // สำหรับ Precipitation และ Rx1day
-    const rawMax = Math.max(...values);
-    return { min: 0, max: rawMax };  // Min = 0, Max = ค่าสูงสุด
+  if (values.length === 0) return { min: 0, max: 1 };
+
+  if (viewMode === "Heatmap" || viewMode === "Choropleth") {
+    return { min: Math.min(...values), max: Math.max(...values) };
   }
 
-  const rawMin = Math.min(...values);
-  const rawMax = Math.max(...values);
-
-  if (viewMode === "Heatmap") {
-    return { min: rawMin, max: rawMax };
-  }
-
-  const range = Math.max(Math.abs(rawMin), Math.abs(rawMax));
+  // สำหรับ TrendMap
+  const range = Math.max(Math.abs(Math.min(...values)), Math.abs(Math.max(...values)));
   return { min: -range, max: range };
 };
 
+// const calculateMinMax = (geoData, viewMode, value, selectedValue) => {
+//   if (!geoData || !geoData.features) return { min: 0, max: 1 }; // ค่าเริ่มต้นสำหรับ Heatmap
+  
+//   const values = geoData.features
+//     .map((feature) =>
+//       viewMode === "TrendMap"
+//         ? feature.properties.slope_value
+//         : feature.properties[value]
+//     )
+//     .filter((val) => val !== undefined && val !== null);
+
+//   if (selectedValue === "pre" || selectedValue === "rx1day") {
+//     // สำหรับ Precipitation และ Rx1day
+//     const rawMax = Math.max(...values);
+//     return { min: 0, max: rawMax };  // Min = 0, Max = ค่าสูงสุด
+//   }
+
+//   const rawMin = Math.min(...values);
+//   const rawMax = Math.max(...values);
+
+//   if (viewMode === "Heatmap") {
+//     return { min: rawMin, max: rawMax };
+//   }
+
+//   const range = Math.max(Math.abs(rawMin), Math.abs(rawMax));
+//   return { min: -range, max: range };
+// };
+
 
 // // ฟังก์ชันกำหนดสไตล์
+// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue) => {
+//   const dataValue = viewMode === "TrendMap" ? feature.properties.slope_value : feature.properties[selectedValue];
+//   return {
+//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue),
+//     weight: 0.3,
+//     opacity: 1,
+//     color: 'black',
+//     fillOpacity: (selectedRegion === 'Thailand' || feature.properties.region === selectedRegion) &&
+//       (!selectedProvince || feature.properties.name === selectedProvince) ? 0.9 : 0,
+//   };
+// };
+
+
 const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue) => {
   const dataValue = viewMode === "TrendMap"
     ? feature.properties.slope_value
-    : feature.properties[selectedValue]; // ใช้ selectedValue เพื่อให้ตรงกับ getColor
+    : feature.properties[selectedValue];
 
   return {
-    fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue), // เพิ่ม selectedValue
-    weight: 0.5,
+    fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue),
+    weight: 0.3,
     opacity: 1,
-    color: 'black',
-    dashArray: '3',
+    color: "black",
+    dashArray: "0",
     fillOpacity:
-      (selectedRegion === 'All' || feature.properties.region === selectedRegion) &&
+      (selectedRegion === "Thailand" || feature.properties.region === selectedRegion) &&
       (!selectedProvince || feature.properties.name === selectedProvince)
         ? 0.9
         : 0,
   };
 };
 
-// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, value) => {
-//   //console.log('style called with:', { feature, selectedRegion, selectedProvince, viewMode, min, max, value });
-
+// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue) => {
 //   const dataValue = viewMode === "TrendMap"
 //     ? feature.properties.slope_value
-//     : feature.properties[value];
+//     : feature.properties[selectedValue]; // ใช้ selectedValue เพื่อให้ตรงกับ getColor
 
-//   const styleResult = {
-//     fillColor: getColor(dataValue || 0, viewMode, min, max),
-//     weight: 0.5,
+//   return {
+//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue), // เพิ่ม selectedValue
+//     weight: 0.3,
 //     opacity: 1,
 //     color: 'black',
-//     dashArray: '3',
+//     dashArray: '0',
 //     fillOpacity:
-//       (selectedRegion === 'All' || feature.properties.region === selectedRegion) &&
+//       (selectedRegion === 'Thailand' || feature.properties.region === selectedRegion) &&
 //       (!selectedProvince || feature.properties.name === selectedProvince)
 //         ? 0.9
 //         : 0,
 //   };
-
-//   //console.log('style result:', styleResult);
-//   return styleResult;
 // };
 
 
 // ฟังก์ชันแสดงข้อมูลใน popup
+// const onEachFeature = (feature, layer, viewMode, value) => {
+//   const valueText = feature.properties[value] !== undefined && feature.properties[value] !== null
+//     ? feature.properties[value].toFixed(2) : 'N/A';
+
+//   layer.bindPopup(
+//     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
+//      <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
+//      <b>Value:</b> ${valueText}`
+//   );
+// };
 const onEachFeature = (feature, layer, viewMode, value) => {
   const valueText = viewMode === "TrendMap"
     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
@@ -241,9 +371,87 @@ const onEachFeature = (feature, layer, viewMode, value) => {
   );
 };
 
+// const ColorBar = ({ viewMode, selectedValue, min, max }) => {
+//   const scale = getColorScale(selectedValue);
+//   const steps = 10;
+//   const stepSize = (max - min) / (steps - 1);
+//   const labels = Array.from({ length: steps }, (_, i) => (min + i * stepSize).toFixed(2));
+
+//   return (
+//     <div className="color-bar-horizontal">
+//       <div className="gradient-bar">
+//         {scale.map((color, index) => (
+//           <div key={index} className="color-segment" style={{ backgroundColor: color, flex: 1 }} />
+//         ))}
+//       </div>
+//       <div className="labels">
+//         {labels.map((label, index) => (
+//           <span key={index} style={{
+//             position: "absolute",
+//             left: `${(index / (labels.length - 1)) * 100}%`,
+//             transform: "translateX(-50%)",
+//             fontSize: "11px"
+//           }}>
+//             {label}
+//           </span>
+//         ))}
+//       </div>
+//       <div className="title">{viewMode === "Heatmap" ? "Data Values" : "Trend Values"}</div>
+//     </div>
+//   );
+// };
+
+// const ColorBar = ({ viewMode, selectedValue, steps = 10, min, max }) => {
+//   const { temp_color, coolwarm } = getColorScale(selectedValue);
+//   const colorScale = viewMode === "Heatmap" ? temp_color : coolwarm;
+
+//   const stepSize = (max - min) / (steps - 1);
+//   const labels = Array.from({ length: steps }, (_, i) => (min + i * stepSize).toFixed(2));
+
+//   return (
+//     <div className="color-bar-horizontal">
+//       <div className="gradient-bar">
+//         {colorScale.map((scale, index) => (
+//           <div
+//             key={index}
+//             className="color-segment"
+//             style={{
+//               backgroundColor: scale[1],
+//               flex: 1,
+//             }}
+//           />
+//         ))}
+//       </div>
+//       <div className="labels">
+//         {labels.map((label, index) => (
+//           <span
+//             key={index}
+//             style={{
+//               position: "absolute",
+//               left: `${(index / (labels.length - 1)) * 100}%`,
+//               transform: "translateX(-50%)",
+//               fontSize: "11px",
+//             }}
+//           >
+//             {label}
+//           </span>
+//         ))}
+//       </div>
+//       <div className="title">
+//         {viewMode === "Heatmap" ? "Data Values" : "Trend Values"}
+//       </div>
+//     </div>
+//   );
+// };
+
 const ColorBar = ({ viewMode, selectedValue, steps = 10, min, max }) => {
-  const { temp_color, coolwarm } = getColorScale(selectedValue);
-  const colorScale = viewMode === "Heatmap" ? temp_color : coolwarm;
+  const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode);
+  const colorScale = viewMode === "Heatmap" || viewMode === "Choropleth" ? temp_color : coolwarm;
+
+  if (!colorScale || !Array.isArray(colorScale)) {
+    console.warn("Invalid colorScale in ColorBar", { colorScale, viewMode, selectedValue });
+    return null; // หยุด render ถ้าไม่มีค่า
+  }
 
   const stepSize = (max - min) / (steps - 1);
   const labels = Array.from({ length: steps }, (_, i) => (min + i * stepSize).toFixed(2));
@@ -251,12 +459,12 @@ const ColorBar = ({ viewMode, selectedValue, steps = 10, min, max }) => {
   return (
     <div className="color-bar-horizontal">
       <div className="gradient-bar">
-        {colorScale.map((scale, index) => (
+        {colorScale.map(([_, color], index) => (
           <div
             key={index}
             className="color-segment"
             style={{
-              backgroundColor: scale[1],
+              backgroundColor: color,
               flex: 1,
             }}
           />
@@ -294,6 +502,8 @@ const MapComponent = ({
   value,
   legendMin,
   legendMax,
+  labelRegion,
+  labelProvince
 }) => {
   const { min, max } = calculateMinMax(geoData, viewMode, value);
   const finalMin = legendMin !== null ? legendMin : min;
@@ -308,11 +518,21 @@ const MapComponent = ({
 
   return (
     <div className='map-box'> 
+
+      <label className='area-head-map'>
+  {selectedRegion === "Thailand"
+    ? "Thailand"
+    : labelProvince
+    ? labelProvince.replace(/_/g, " ")
+    : labelRegion.replace(/_/g, " ")}
+</label>
+
+
     <div className="map-container">
       <MapContainer
         center={[13.7563, 100.5018]}
-        zoom={5}
-        style={{ height: "700px", width: "600px" }}
+        zoom={6}
+        style={{ height: "750px", width: "600px" }}
       >
         <LayersControl position="topright">
           {/* Backgroud layer */}

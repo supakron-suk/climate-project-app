@@ -4,7 +4,7 @@ export const dummyTimeSeriesData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
-      label: 'Average Temperature (°C)',
+      label: '',
       data: [], 
       borderColor: 'rgba(75,192,192,1)',
       backgroundColor: 'rgba(75,192,192,0.2)',
@@ -19,7 +19,7 @@ export const dummySeasonalCycleData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
-      label: 'Seasonal Cycle (°C)',
+      label: '',
       data: [],
       borderColor: 'rgba(75,192,192,1)',
       backgroundColor: 'rgba(75,192,192,0.2)',
@@ -49,7 +49,7 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
     // ฟังก์ชันสำหรับกรองข้อมูล GeoJSON ตาม region และ province
     let filteredFeatures = features;
 
-    if (region !== 'All') {
+    if (region !== 'Thailand') {
       filteredFeatures = filteredFeatures.filter(
         (feature) => feature.properties.region === region
       );
@@ -150,7 +150,6 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
     tnn: { label: 'Value', unit: '°C' },
     pre: { label: 'Value', unit: 'mm' },
     rx1day: { label: 'Value', unit: 'mm' },
-  // เพิ่ม index อื่น ๆ ตามที่คุณมีในข้อมูล
 };
 
 const calculateYAxisBounds = (data) => {
@@ -194,7 +193,7 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
       borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
-      tension: 0.4,
+      tension: 0,
     },
   ],
   options: {
@@ -289,97 +288,6 @@ const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') =>
 
 // **ให้ User กำหนดค่า kernelSize**
 const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 'reflect');
-
-// Gaussian Filter พร้อม Padding
-// const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') => {
-//   const sigma = kernelSize / 6;
-
-//   // สร้าง Gaussian Kernel และ Normalize
-//   const kernel = Array.from({ length: kernelSize }, (_, i) => {
-//     const x = i - Math.floor(kernelSize / 2);
-//     return Math.exp(-(x ** 2) / (2 * sigma ** 2));
-//   });
-
-//   // Normalize Kernel (ทำให้ผลรวมเป็น 1)
-//   const sumKernel = kernel.reduce((sum, val) => sum + val, 0);
-//   const normalizedKernel = kernel.map(val => val / sumKernel);
-
-//   // **Padding Data**
-//   let paddedData;
-//   const padSize = Math.floor(kernelSize / 2);
-
-//   if (paddingType === 'reflect') {
-//     paddedData = [
-//       ...data.slice(1, padSize + 1).reverse(), 
-//       ...data,
-//       ...data.slice(-padSize - 1, -1).reverse() 
-//     ];
-//   } else if (paddingType === 'edge') {
-//     paddedData = [
-//       ...Array(padSize).fill(data[0]), 
-//       ...data,
-//       ...Array(padSize).fill(data[data.length - 1]) 
-//     ];
-//   } else {
-//     paddedData = [
-//       ...Array(padSize).fill(0), 
-//       ...data,
-//       ...Array(padSize).fill(0)  
-//     ];
-//   }
-
-//   // Apply Gaussian Filter บนข้อมูลที่มี padding
-//   return data.map((_, i) => {
-//     let sum = 0;
-//     let weightSum = 0;
-
-//     for (let j = 0; j < kernelSize; j++) {
-//       const index = i + j;
-//       sum += paddedData[index] * normalizedKernel[j];
-//       weightSum += normalizedKernel[j];
-//     }
-
-//     return sum / weightSum;
-//   });
-// };
-
-// // คำนวณ Gaussian Filter แบบมี Padding
-// const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 'reflect');
-
-// const gaussianFilter = (data, kernelSize = 21) => {
-//   const sigma = kernelSize / 6;
-  
-//   // สร้าง Gaussian Kernel และ Normalize
-//   const kernel = Array.from({ length: kernelSize }, (_, i) => {
-//     const x = i - Math.floor(kernelSize / 2);
-//     return Math.exp(-(x ** 2) / (2 * sigma ** 2));
-//   });
-
-//   // Normalize Kernel (ทำให้ผลรวมเป็น 1)
-//   const sumKernel = kernel.reduce((sum, val) => sum + val, 0);
-//   const normalizedKernel = kernel.map(val => val / sumKernel);
-
-//   // Apply Gaussian Filter
-//   return data.map((_, i) => {
-//     let sum = 0;
-//     let weightSum = 0;
-
-//     for (let j = 0; j < kernelSize; j++) {
-//       const index = i + j - Math.floor(kernelSize / 2);
-//       if (index >= 0 && index < data.length) {
-//         sum += data[index] * normalizedKernel[j];
-//         weightSum += normalizedKernel[j];
-//       }
-//     }
-
-//     return sum / weightSum; 
-//   });
-// };
-
-// const annualGaussianAverage = gaussianFilter(annualData, kernelSize);
-
-
-
   //----------------------------------------------------//
 
   const timeSeriesData = {
@@ -392,6 +300,8 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
       tension: 0,
+      pointRadius: 0, 
+      pointHoverRadius: 6, 
     },
     {
       label: `moving average`,
@@ -400,13 +310,23 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
       borderWidth: 2,
       borderDash: [5, 5],
       pointBackgroundColor: 'purple',
-      pointRadius: 6,
+      pointRadius: 0,
+      pointHoverRadius: 6,
       fill: false,
-      tension: 0.4,
+      tension: 0,
     },
   ],
   options: {
     responsive: true,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      tooltip: {
+        enabled: true,
+      },
+    },
     scales: {
       x: {
         ticks: {
@@ -426,7 +346,7 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
       y: {
         ticks: {
           callback: function(value) {
-            return Number(value.toFixed(0)); // ตัดทศนิยมออก
+            return Number(value.toFixed(0)); 
           },
           font: {
             size: 25,
@@ -446,6 +366,7 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
     },
   },
 };
+
 return { seasonalCycleData, timeSeriesData };
 
 };

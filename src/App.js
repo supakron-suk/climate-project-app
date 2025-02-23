@@ -60,8 +60,8 @@ import erra_data_1975 from './Geo-data/Era-Dataset/era_data_polygon_1975.json';
 
 //----------------------------------------------------------------------------//
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
-// import { isCompositeComponent } from 'react-dom/test-utils';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
+import { CrosshairPlugin } from 'chartjs-plugin-crosshair';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
 //------------------------IMPORT FUCTION-------------------------------------//
 
 //------------------------FUNCTION APP-------------------------------- -----//
@@ -70,7 +70,7 @@ function App() {
   
 
   //const [timeSeriesData, setTimeSeriesData] = useState(null);
-  const [selectedRegion, setSelectedRegion] = useState('All');
+  const [selectedRegion, setSelectedRegion] = useState('Thailand');
   const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
   const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
   const [filteredYearData, setFilteredYearData] = useState(null);  // เก็บข้อมูลของช่วงปีที่เลือก
@@ -130,14 +130,14 @@ const [variableOptions, setVariableOptions] = useState([
 const [labelYearStart, setlabelYearStart] = useState(null);
 const [labelYearEnd, setlabelYearEnd] = useState(null);
 const [labelRegion, setlabelRegion] = useState("");
-
+const [labelProvince, setlabelProvince] = useState("");
 
 //------------------------FUNCTION APP-------------------------------------//
 
 //-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
   const filterByRegion = (data, region) => {
-    if (region === 'All') {
+    if (region === 'Thailand') {
       return data.features;
     } else {
       return data.features.filter(feature => feature.properties.region === region);
@@ -145,7 +145,7 @@ const [labelRegion, setlabelRegion] = useState("");
   };
 
  const filteredProvinces = React.useMemo(() => {
-  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "All") {
+  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
     return []; // คืนค่ารายการว่างถ้าเงื่อนไขไม่ครบ
   }
 
@@ -239,7 +239,7 @@ const handleDatasetChange = (e) => {
         { label: "Temperature Max", value: "tmax", group: "Raw Data" },
         { label: "Precipitation", value: "pre", group: "Raw Data" },
         { label: "TXx", value: "txx", group: "Index Data" },
-        { label: "Tnn", value: "tnn", group: "Index Data" },
+        { label: "TNn", value: "tnn", group: "Index Data" },
         { label: "Rx1day", value: "rx1day", group: "Index Data" },
       
     ]);
@@ -256,6 +256,30 @@ const handleDatasetChange = (e) => {
   setIsApplied(false);
 };
 
+
+const getUnit = (variable) => {
+  const units = {
+    temperature: "°C",
+    tmin: "°C",
+    tmax: "°C",
+    txx: "°C",
+    tnn: "°C",
+    pre: "mm",
+    rx1day: "mm",
+  };
+  return units[variable] || "";
+};
+
+const getFullDatasetName = (dataset) => {
+  switch (dataset) {
+    case "CRU_dataset":
+      return "Climatic Research Unit Data";
+    case "ERA_dataset":
+      return "ECMWF Reanalysis v5 Data";
+    default:
+      return "";
+  }
+};
 
 //---------------------- value change when change dataset
 
@@ -322,44 +346,16 @@ useEffect(() => {
   }
 }, [isApplied]);
 
+useEffect(() => {
+  if (isApplied && selectedYearStart && selectedYearEnd) {
+    // อัปเดตค่า labelRegion และ labelProvince
+    setlabelRegion(selectedRegion);
+    setlabelProvince(selectedProvince);
+    
+    setIsApplied(false);
+  }
+}, [isApplied]);
 
-// useEffect(() => {
-//   if (filteredYearData && selectedValue) {
-//     const generatedGeoJSON = TrendMap(
-//       dataByYear,
-//       parseInt(selectedYearStart),
-//       parseInt(selectedYearEnd),
-//       selectedRegion,
-//       selectedProvince,
-//       selectedValue
-//     );
-//     if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
-
-//     const averageData = Heatmap(
-//       dataByYear,
-//       parseInt(selectedYearStart),
-//       parseInt(selectedYearEnd),
-//       selectedRegion,
-//       selectedProvince,
-//       selectedValue
-//     );
-//     if (averageData) setHeatmapData(averageData);
-
-//     const chartData = calculatemean(
-//       dataByYear,
-//       selectedYearStart,
-//       selectedYearEnd,
-//       selectedRegion,
-//       selectedProvince,
-//       selectedValue,
-//       kernelSize
-//     );
-//     if (chartData) {
-//       setSeasonalCycle(chartData.seasonalCycleData);
-//       setChartData(chartData.timeSeriesData);
-//     }
-//   }
-// }, [selectedValue,  filteredYearData, kernelSize]);
 
 //---------------------------------- Index Use Effect------------------------------------//
 useEffect(() => {
@@ -422,7 +418,7 @@ useEffect(() => {
 
     {/* Dropdown for Start Year Selection */}
     <div className="year-selector">
-      <label className="year-label">Select Time Period</label>
+      <label className="year-label">Time period</label>
       <div className="dropdown-container">
         <div className="dropdown-item">
           <label className="start-year-label">Start Year</label>
@@ -469,7 +465,7 @@ useEffect(() => {
         }}
         value={selectedRegion}
       >
-        <option value="All">Thailand</option>
+        <option value="Thailand">Thailand</option>
         <option value="North_East_region">North East</option>
         <option value="North_region">North</option>
         <option value="South_region">South</option>
@@ -616,18 +612,15 @@ useEffect(() => {
     <div className="content-container">
     {/* <h1>DashBoard</h1> */}
   <div className={`dashboard-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-
-   {/* ✅ แสดงค่าที่ Apply ล่าสุด */}
-      {labelYearStart && labelYearEnd && (
-        <>
-          <label className='Duration-label'>
-            Duration ({labelYearStart} - {labelYearEnd})
-          </label>
-          <label className='Area-label'>
-            Area ({labelRegion})
-          </label>
-        </>
-      )}
+      <div className="dashboard-header">
+        {selectedDataset && labelRegion && (
+          <>
+            <label className="dataset-head-dashboard">
+              {getFullDatasetName(selectedDataset)}
+            </label>
+          </>
+        )}
+      </div>
 
   <div className='dashboard-content'>
  
@@ -652,98 +645,191 @@ useEffect(() => {
       selectedProvince={selectedProvince}
       viewMode={viewMode}
       value={selectedValue}
-      legendMin={legendMin} // ส่งค่า Min
-    legendMax={legendMax} // ส่งค่า Max
+      legendMin={legendMin} 
+      legendMax={legendMax}
+      labelRegion={labelRegion}
+      labelProvince={labelProvince} 
     />
   )}
 </div>
 
 
-<div className='time-series-box'>
+<div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
         {/* Time series chart */}
-  <div className="time-series-chart">
+  <div className={`time-series-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
     {labelYearStart && labelYearEnd ? (
       <h3 className="time-series-head">
         Time Series ({labelYearStart} - {labelYearEnd}) 
-        {kernelSize && <span className="kernel-size"> Kernel Size: {kernelSize} term</span>}
       </h3>
     ) : (
       <h3 className="time-series-head">Time Series</h3>
     )}
-    <Line
-      data={chartData}
-      options={{
-        responsive: true,
-        maintainAspectRatio: false,  
-        devicePixelRatio: 2, 
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
+
+    <div className="time-series-legend-line">
+  <div className="legend-item">
+    <span className="annual-average-line"></span>
+    <h4 className="legend-text">Annual Average</h4>
+  </div>
+  <div className="legend-item">
+    <span className="kernel-average-line"></span>
+    <h4 className="legend-text">{kernelSize}-Year Average</h4>
+  </div>
+</div>
+<Line
+  data={chartData}
+  options={{
+    responsive: true,
+    maintainAspectRatio: false,
+    devicePixelRatio: 2,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+      axis: 'x',
+    },
+    hover: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+          display: false,
+        },
+  tooltip: {
+    enabled: true,
+    mode: 'nearest',
+    intersect: false,
+    backgroundColor: 'white',
+    titleColor: 'black',
+    bodyColor: 'black',
+    borderColor: 'black',
+    borderWidth: 1,
+    titleFont: {
+      size: 16,
+      weight: 'bold',
+    },
+    bodyFont: {
+      size: 14,
+    },
+    padding: 10,
+    callbacks: {
+      label: function (context) {
+        let label = context.dataset.label || '';
+        if (label) {
+          label += ': ';
+        }
+        let value = context.raw || 0;
+        let unit = getUnit(selectedValue);
+        return `${label}${value.toFixed(2)} ${unit}`;
+      },
+    },
+  },
+  crosshair: {
+            line: {
+              color: 'rgba(255, 0, 0, 0.3)',
+              width: 1,
+              dashPattern: [5, 5],
+            },
+            sync: {
+              enabled: true,
+            },
+            zoom: {
+              enabled: false,
+            },
           },
-          annotation: {
-            annotations: chartData?.options?.plugins?.annotation?.annotations || [],
+},
+    
+    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Year',
+          font: {
+            size: 12,
           },
         },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Year',
-              font: {
-                size: 12,
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              font: {
-                size: 12,
-                weight: 'bold',
-              },
-              autoSkip: true,
-              maxTicksLimit: 10,
-            },
+        ticks: {
+          font: {
+            size: 12,
           },
-          y: {
-            min: chartData?.options?.scales?.y?.min || 0,
-            max: chartData?.options?.scales?.y?.max || 100,
-            title: {
-              display: true,
-              text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
-              font: {
-                size: 15,
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              font: {
-                size: 12,
-                weight: 'bold',
-              },
-              callback: function(value) {
-                return `${Number(value.toFixed(0))} ${chartData?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
-              },
-            },
+          autoSkip: true,
+          maxTicksLimit: 10,
+        },
+      },
+      y: {
+        min: chartData?.options?.scales?.y?.min || 0,
+        max: chartData?.options?.scales?.y?.max || 100,
+        title: {
+          display: true,
+          text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
+          font: {
+            size: 15,
           },
         },
-      }}
-    />
+        ticks: {
+          font: {
+            size: 12,
+          },
+          callback: function (value) {
+            return `${Number(value.toFixed(0))} ${chartData?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
+          },
+        },
+      },
+    },
+  }}
+/>
+
   </div>
 </div>
 
-<div className='seasonal-cycle-box'>
+<div className={`seasonal-cycle-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
   {/* Seasonal Cycle chart */}
   {showSeasonalCycle && (
-    <div className="Seasonal-Cycle-chart">
+    <div className={`seasonal-cycle-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
       <h3>Seasonal Cycle</h3>
+
+      
+        <div className="seasonal-legend-line">
+  <span></span><h4 className='legend-text'>Value</h4>
+  {/* <span className="legend-text">Value</span>  */}
+</div>
+
       <Line
         data={seasonalCycle}
         options={{
           responsive: true,
           plugins: {
+            tooltip: {
+    enabled: true,
+    mode: 'nearest',
+    intersect: false,
+    backgroundColor: 'white',
+    titleColor: 'black',
+    bodyColor: 'black',
+    borderColor: 'black',
+    borderWidth: 1,
+    titleFont: {
+      size: 16,
+      weight: 'bold',
+    },
+    bodyFont: {
+      size: 14,
+    },
+    padding: 10,
+    callbacks: {
+      label: function (context) {
+        let label = context.dataset.label || '';
+        if (label) {
+          label += ': ';
+        }
+        let value = context.raw || 0;
+        let unit = getUnit(selectedValue);
+        return `${label}${value.toFixed(2)} ${unit}`;
+      },
+    },
+  },
             legend: {
-              display: true,
-              position: 'top',
+              display: false, 
             },
           },
           scales: {
@@ -754,13 +840,13 @@ useEffect(() => {
                 text: 'Months',
                 font: {
                   size: 12,
-                  weight: 'bold',
+                  
                 },
               },
               ticks: {
                 font: {
                   size: 12,
-                  weight: 'bold',
+                  
                 },
               },
             },
@@ -772,13 +858,13 @@ useEffect(() => {
                 text: `${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'}`,
                 font: {
                   size: 15,
-                  weight: 'bold',
+                  
                 },
               },
               ticks: {
                 font: {
                   size: 12,
-                  weight: 'bold',
+                  
                 },
                 callback: function(value) {
                   return `${Number(value.toFixed(0))} ${seasonalCycle?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
