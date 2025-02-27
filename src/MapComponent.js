@@ -507,7 +507,6 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
     <div className="color-bar-container trendmap">
       <div className="color-bar-title">Trend Value</div>
 
-      {/* 🎨 แสดงสีแบบต่อเนื่อง */}
       <div className="gradient-bar">
         {coolwarm.map(([_, color], index) => (
           <div
@@ -521,7 +520,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
         ))}
       </div>
 
-      {/* 🏷️ แสดง label ให้ครบถ้วน */}
+
       <div className="labels">
         {labels.map(({ label, position }, index) => (
           <span

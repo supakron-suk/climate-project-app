@@ -570,29 +570,30 @@ useEffect(() => {
   </div>
 
   {/* Box สำหรับ Min */}
-  <div className="legend-bar-item legend-bar-min">
+<div className="legend-bar-item legend-bar-min">
   <label>Min:</label>
   <input
     type="text"
     value={applyLegendMin ?? ""}
     onChange={(e) => {
-      const value = e.target.value;
+      let value = e.target.value;
 
-      // ถ้าเลือก Actual ห้ามใส่ค่าติดลบ
-      if (minmaxButton === 'Actual' && value === "-") return;
-
-      // ตรวจสอบให้ใส่ "-" ได้เฉพาะปุ่ม Trend
-      if (minmaxButton === 'Trend' && value === "-") {
-        setapplyLegendMin(value);
-        return;
+      if (minmaxButton === "Actual") {
+        // Actual: ห้ามใส่ค่าติดลบ และต้องเป็นตัวเลขเท่านั้น
+        if (!/^\d*(\.\d*)?$/.test(value)) return;
+      } else if (minmaxButton === "Trend") {
+        // Trend: อนุญาตตัวเลขทุกประเภท
+        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
       }
 
-      // อนุญาตเฉพาะตัวเลขทศนิยม
-      if (/^-?\d*\.?\d*$/.test(value)) {
-        setapplyLegendMin(value === "" ? null : parseFloat(value));
-      }
+      setapplyLegendMin(value); // เก็บค่าเป็น string
     }}
     className="legend-bar-input"
+    onBlur={() => {
+      if (applyLegendMin !== "" && applyLegendMin !== "-") {
+        setapplyLegendMin(parseFloat(applyLegendMin));
+      }
+    }}
   />
 </div>
 
@@ -603,25 +604,27 @@ useEffect(() => {
     type="text"
     value={applyLegendMax ?? ""}
     onChange={(e) => {
-      const value = e.target.value;
+      let value = e.target.value;
 
-      // ถ้าเลือก Actual ห้ามใส่ค่าติดลบ
-      if (minmaxButton === 'Actual' && value === "-") return;
-
-      // ตรวจสอบให้ใส่ "-" ได้เฉพาะปุ่ม Trend
-      if (minmaxButton === 'Trend' && value === "-") {
-        setapplyLegendMax(value);
-        return;
+      if (minmaxButton === "Actual") {
+        // Actual: ห้ามใส่ค่าติดลบ และต้องเป็นตัวเลขเท่านั้น
+        if (!/^\d*(\.\d*)?$/.test(value)) return;
+      } else if (minmaxButton === "Trend") {
+        // Trend: อนุญาตตัวเลขทุกประเภท
+        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
       }
 
-      // อนุญาตเฉพาะตัวเลขทศนิยม
-      if (/^-?\d*\.?\d*$/.test(value)) {
-        setapplyLegendMax(value === "" ? null : parseFloat(value));
-      }
+      setapplyLegendMax(value);
     }}
     className="legend-bar-input"
+    onBlur={() => {
+      if (applyLegendMax !== "" && applyLegendMax !== "-") {
+        setapplyLegendMax(parseFloat(applyLegendMax));
+      }
+    }}
   />
 </div>
+
 </div>
 
     {/* Apply Button */}
