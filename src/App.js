@@ -111,8 +111,21 @@ const [selectedIndex, setSelectedIndex] = useState(null);
 const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
 
 //-------------------------------User Select Min/Max Legend Bar-----------------------//
-const [legendMin, setLegendMin] = useState(null);
-const [legendMax, setLegendMax] = useState(null);
+const [minmaxButton, setminmaxButton] = useState(null);
+
+const [legendMin, setLegendMin] = useState();
+const [legendMax, setLegendMax] = useState();
+
+const [actualMin, setActualMin] = useState(null);
+const [actualMax, setActualMax] = useState(null);
+const [trendMin, setTrendMin] = useState(null);
+const [trendMax, setTrendMax] = useState(null);
+
+const [trendLegendMin, setTrendLegendMin] = useState(null);
+const [trendLegendMax, setTrendLegendMax] = useState(null);
+
+const [applyLegendMin, setapplyLegendMin] = useState(legendMin);
+const [applyLegendMax, setapplyLegendMax] = useState(legendMax);
 //-------------------------------User Select Min/Max Legend Bar-----------------------//
 const [kernelSize, setKernelSize] = useState(null);
 
@@ -132,6 +145,9 @@ const [labelYearEnd, setlabelYearEnd] = useState(null);
 const [labelRegion, setlabelRegion] = useState("");
 const [labelProvince, setlabelProvince] = useState("");
 
+
+
+const [DataApply, setDataApply] = useState("");
 //------------------------FUNCTION APP-------------------------------------//
 
 //-------------------------------------------------- Function Area------------------------------------------//
@@ -178,8 +194,9 @@ const [labelProvince, setlabelProvince] = useState("");
   const handleValueChange = (e) => {
     const newValue = e.target.value;
     setSelectedValue(newValue);
-    // setIsApplied(true); 
     
+  setapplyLegendMin(null);
+  setapplyLegendMax(null);
   };
 
 // const handleValueChange = (e) => {
@@ -281,6 +298,8 @@ const getFullDatasetName = (dataset) => {
   }
 };
 
+
+
 //---------------------- value change when change dataset
 
 
@@ -357,14 +376,21 @@ useEffect(() => {
 }, [isApplied]);
 
 
+
 //---------------------------------- Index Use Effect------------------------------------//
 useEffect(() => {
     if (selectedValue === 'txx' || selectedValue === 'tnn' || selectedValue === 'rx1day') {
-      setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle เมื่อเลือก txx หรือ tnn
+      setShowSeasonalCycle(false); 
     } else {
-      setShowSeasonalCycle(true); // แสดงกราฟ seasonal cycle เมื่อเลือก --- หรือค่าอื่น
+      setShowSeasonalCycle(true); 
     }
-  }, [selectedValue]); // ติดตามการเปลี่ยนแปลงของ selectedValue
+  }, [selectedValue]); 
+
+useEffect(() => {
+  setapplyLegendMin(null);
+  setapplyLegendMax(null);
+}, [minmaxButton]);
+
 
  
 
@@ -377,25 +403,7 @@ useEffect(() => {
       <h1 className="block-text">Multidimensional climate data visualization</h1>
     </div>
 
-     
-
-    {/* <div className="introduction" style={{ padding: '20px', textAlign: 'justify' }}>
-      <p style={{ fontSize: '30px', lineHeight: '1.6' }}>
-        Thailand's climate varies and fluctuates across different times of the year, 
-        often presenting intriguing patterns worth exploring. 
-        This dashboard aims to provide users with a clear and interactive way to understand climate data and trends 
-        within specific regions and time periods. 
-        Through the use of dynamic graphs and spatial visualizations, 
-        users can gain insights into regional climate behavior and make 
-        informed observations about environmental changes over time.
-      </p>
-      <p style={{ fontSize: '30px', lineHeight: '1.6' }}>
-        The datasets utilized in this visualization are sourced from the CRU dataset provided by 
-        the University of East Anglia (UEA) and the ERA5 dataset from the European Centre for Medium-Range Weather Forecasts (ECMWF). 
-        Both datasets serve as reliable references, and we have tailored their data to be presented in various 
-        formats suitable for visualizing climate conditions across Thailand.
-      </p>
-    </div> */}
+    
 
     {/* sidebar */}
 <div className={`left-sidebar ${isSidebarOpen ? "open" : ""}`}>
@@ -454,9 +462,9 @@ useEffect(() => {
     </div>
 
     {/* Select Area */}
-    <label className="area-label">Select Area</label>
+    <label className="area-label">Area</label>
     <div className="region-selector">
-      <label>Select Region</label>
+      <label>Region</label>
       <select
         onChange={(e) => {
           const region = e.target.value;
@@ -477,7 +485,7 @@ useEffect(() => {
 
     {/* Select Province */}
     <div className="province-selector">
-      <label>Select Province</label>
+      <label>Province</label>
       <select
         onChange={(e) => {
           const provinceName = e.target.value;
@@ -503,10 +511,10 @@ useEffect(() => {
   <label>Kernel Size</label>
   <input
     type="text"
-    value={kernelSize ?? ""} // ถ้า null ให้แสดงเป็น ""
+    value={kernelSize ?? ""} 
     onChange={(e) => {
       const value = e.target.value;
-      if (/^\d*$/.test(value)) {  // ตรวจสอบว่าเป็นตัวเลขเท่านั้น
+      if (/^\d*$/.test(value)) {  
         const num = Number(value);
         if (num === 0 || (num % 2 === 1 && num >= 1 && num <= 50)) {
           setKernelSize(num);
@@ -540,40 +548,80 @@ useEffect(() => {
 </div>
 
 
+
+
+
 {/* User Select Legend Bar */}
 <div className="legend-bar-container">
+
+  <div className="legend-bar-buttons">
+    <button
+      className={`legend-bar-button Actual_minmax ${minmaxButton === 'Actual' ? 'selected' : ''}`}
+      onClick={() => setminmaxButton('Actual')}
+    >
+      Actual
+    </button>
+    <button
+      className={`legend-bar-button Trend_minmax ${minmaxButton === 'Trend' ? 'selected' : ''}`}
+      onClick={() => setminmaxButton('Trend')}
+    >
+      Trend
+    </button>
+  </div>
+
   {/* Box สำหรับ Min */}
   <div className="legend-bar-item legend-bar-min">
-    <label>Min:</label>
-    <input
-  type="text"
-  value={legendMin ?? ""}  // ถ้า null ให้แสดงเป็น ""
-  onChange={(e) => {
-    const value = e.target.value;
-    if (/^-?\d*\.?\d*$/.test(value)) {
-      setLegendMin(value === "" ? null : Number(value)); // ถ้าเป็น "" ให้เซ็ตเป็น null
-    }
-  }}
-  className="legend-bar-input"
-/>
+  <label>Min:</label>
+  <input
+    type="text"
+    value={applyLegendMin ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
 
-  </div>
-  {/* Box สำหรับ Max */}
-  <div className="legend-bar-item legend-bar-max">
-    <label>Max:</label>
-    <input
-  type="text"
-  value={legendMax ?? ""}
-  onChange={(e) => {
-    const value = e.target.value;
-    if (/^-?\d*\.?\d*$/.test(value)) {
-      setLegendMax(value === "" ? null : Number(value));
-    }
-  }}
-  className="legend-bar-input"
-/>
+      // ถ้าเลือก Actual ห้ามใส่ค่าติดลบ
+      if (minmaxButton === 'Actual' && value === "-") return;
 
-  </div>
+      // ตรวจสอบให้ใส่ "-" ได้เฉพาะปุ่ม Trend
+      if (minmaxButton === 'Trend' && value === "-") {
+        setapplyLegendMin(value);
+        return;
+      }
+
+      // อนุญาตเฉพาะตัวเลขทศนิยม
+      if (/^-?\d*\.?\d*$/.test(value)) {
+        setapplyLegendMin(value === "" ? null : parseFloat(value));
+      }
+    }}
+    className="legend-bar-input"
+  />
+</div>
+
+{/* Box สำหรับ Max */}
+<div className="legend-bar-item legend-bar-max">
+  <label>Max:</label>
+  <input
+    type="text"
+    value={applyLegendMax ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      // ถ้าเลือก Actual ห้ามใส่ค่าติดลบ
+      if (minmaxButton === 'Actual' && value === "-") return;
+
+      // ตรวจสอบให้ใส่ "-" ได้เฉพาะปุ่ม Trend
+      if (minmaxButton === 'Trend' && value === "-") {
+        setapplyLegendMax(value);
+        return;
+      }
+
+      // อนุญาตเฉพาะตัวเลขทศนิยม
+      if (/^-?\d*\.?\d*$/.test(value)) {
+        setapplyLegendMax(value === "" ? null : parseFloat(value));
+      }
+    }}
+    className="legend-bar-input"
+  />
+</div>
 </div>
 
     {/* Apply Button */}
@@ -588,6 +636,31 @@ useEffect(() => {
             alert('ปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด');
             return;
           }
+           
+          if (minmaxButton === 'Actual') {
+          setActualMin(applyLegendMin);
+          setActualMax(applyLegendMax);
+          setTrendLegendMin(null);  
+          setTrendLegendMax(null);
+    } else if (minmaxButton === 'Trend') {
+          setTrendLegendMin(applyLegendMin);
+          setTrendLegendMax(applyLegendMax);
+          setActualMin(null);  
+          setActualMax(null);
+    }
+
+          const appliedData = {
+            yearStart: selectedYearStart,
+            yearEnd: selectedYearEnd,
+            selectedValue: selectedValue,
+            legendMin: minmaxButton === 'Actual' ? applyLegendMin : null, // ใช้เฉพาะเมื่อเลือก Actual
+            legendMax: minmaxButton === 'Actual' ? applyLegendMax : null, // ใช้เฉพาะเมื่อเลือก Actual
+            trendMin: minmaxButton === 'Trend' ? applyLegendMin : null,  // เพิ่มสำหรับ Trend
+            trendMax: minmaxButton === 'Trend' ? applyLegendMax : null,  // เพิ่มสำหรับ Trend
+            selectedRegion: selectedRegion,
+            selectedProvince: selectedProvince,
+          };
+          setDataApply(appliedData);
 
           setIsApplied(true);
         }}
@@ -604,9 +677,6 @@ useEffect(() => {
       <button className={`side-button ${isSidebarOpen ? "open" : ""}`}
         onClick={() => setSidebarOpen(!isSidebarOpen)}>
 </button>
-
-
-
 
 
     <div className="content-container">
@@ -630,7 +700,7 @@ useEffect(() => {
   
 {/* Button select map */}
 <div className="map-buttons">
-  <button onClick={() => toggleViewMode("Heatmap")}>Value Map</button>
+  <button onClick={() => toggleViewMode("Heatmap")}>Actual Map</button>
   <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
 </div>
 
@@ -639,14 +709,16 @@ useEffect(() => {
     <MapComponent
       key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
       geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
-      selectedRegion={selectedRegion}
-      selectedProvinceData={selectedProvinceData} 
+      selectedRegion={DataApply.selectedRegion}
+      selectedProvinceData={DataApply.selectedProvinceData} 
       setSelectedProvinceData={setSelectedProvinceData}
-      selectedProvince={selectedProvince}
+      selectedProvince={DataApply.selectedProvince}
       viewMode={viewMode}
-      value={selectedValue}
-      legendMin={legendMin} 
-      legendMax={legendMax}
+      value={DataApply.selectedValue}
+      legendMin={DataApply.legendMin}  // ใช้ค่า legendMin ที่อัปเดต
+      legendMax={DataApply.legendMax}  // ใช้ค่า legendMax ที่อัปเดต
+      trendMin={DataApply.trendMin}    // ใช้ค่า trendMin ที่อัปเดต
+      trendMax={DataApply.trendMax}    // ใช้ค่า trendMax ที่อัปเดต
       labelRegion={labelRegion}
       labelProvince={labelProvince} 
     />

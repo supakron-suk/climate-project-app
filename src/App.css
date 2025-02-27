@@ -84,10 +84,12 @@
 
 /* ======================== Header & Titles ======================== */
 .sidebar-header h2 {
-  font-size: 28px;
+  font-size: 40px;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: -50px;
   color: #444;
+  position: relative;
+  top: 30px;
 }
 
 .sidebar-header h3 {
@@ -111,6 +113,9 @@
   display: block;
   margin: 15px auto;
   transition: all 0.3s ease-in-out;
+  position: relative;
+  bottom: -25px;
+  margin-bottom: 13%;
 }
 
 .apply_button:hover {
@@ -127,8 +132,8 @@
 /* ======================== ปุ่มเปิด-ปิด Sidebar ======================== */
 .side-button {
   position: fixed;
-  top: 50%;
-  left: 15px;
+  top: 6%;
+  left: 0px;
   width: 45px;
   height: 45px;
   background-color: #062b74;
@@ -146,16 +151,17 @@
 
 /* เมื่อ Sidebar เปิด */
 .side-button.open {
-  left: 375px;
+  left: 402px;
 }
+
 
 /* ไอคอนในปุ่ม */
 .side-button::after {
-  content: "▶"; /* ลูกศรขวา */
+  content: "≡"; /* ลูกศรขวา */
 }
 
 .side-button.open::after {
-  content: "◀"; /* ลูกศรซ้าย */
+  content: "≡"; /* ลูกศรซ้าย */
 }
 
 /* ======================== Responsive ปุ่ม Sidebar ======================== */
@@ -436,19 +442,6 @@
   top: -60px;
   width: 50%;
 }
-/* .time-series-box, .seasonal-cycle-box {
-  border: 2px solid #ccc; 
-  border-radius: 10px; 
-  padding: 20px; 
-  margin: -80px 0; 
-  background: #fff;
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
-  margin-left: -560px;
-  margin-top: 100px;
-  position: relative;
-  top: -7%;
-} */
-
 
 .time-series-chart canvas, .seasonal-cycle-chart canvas {
   width: 100% !important; 
@@ -591,55 +584,60 @@
   position: absolute; 
   top: 15%;
   left: 30%;
-  /* display: flex;
-  justify-content: flex-start; 
-  align-items: flex-start; 
-  left: 720px;
-  top: 14%; 
-  margin-right: 200px; 
-  margin-top: 1108px;
-  height: 100%; */
+}
+
+/*---------------User Select Value Legend Bar----------------*/
+
+.legend-bar-button {
+  border: 2px solid #ccc;
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: white;
+  color: black;
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  position: relative;
+  top: -25px;
+}
+
+.legend-bar-button:hover {
+  background-color: #d3d3d3; 
+  color: white;
+}
+
+.legend-bar-button.selected {
+  background-color: #3d3c3a;
+  border-color: #141413;
+  color: white;
 }
 
 
-/* .right-map {
-  position: absolute; 
-  display: flex;
-  justify-content: flex-start; 
-  align-items: flex-start; 
-  left: 720px;
-  top: 14%; 
-  margin-right: 200px; 
-  margin-top: 1108px;
-  height: 100%;
-} */
-
-/*---------------User Select Value Legend Bar----------------*/
 /* Legend Bar Controls */
 .legend-bar-container {
   display: flex;
-  justify-content: space-between; /* จัดให้อยู่คนละด้าน */
+  justify-content: space-between; 
   align-items: center;
-  width: 100%; /* ใช้พื้นที่เต็ม */
-  padding: 10px 20px; /* เพิ่ม Padding รอบ */
+  width: 100%; 
+  padding: 10px 20px;
+  position: relative; 
 }
 
 .legend-bar-item {
   display: flex;
   align-items: center;
-  gap: 10px; /* ระยะห่างระหว่าง Label และ Input */
+  gap: 10px;
+  position: relative;
 }
 
 .legend-bar-min {
   position: relative;
-  left: 10px;  
-  top: -10px;
+  left: -180px;  
+  top: 32px;
 }
 
 .legend-bar-max {
   position: relative;
-  left: -80px;  
-  top: -10px;  /* เลื่อน Max ไปทางซ้าย 50px */
+  left: -100px;  
+  top: 32px;  /* เลื่อน Max ไปทางซ้าย 50px */
 }
 
 .legend-bar-input {
@@ -651,11 +649,18 @@
   border-radius: 5px;
   font-size: 10px;
   z-index: 1000;
+  position: relative;
 }
 
 /*---------------User Select Value Legend Bar----------------*/
 
 /*--------------------- Kernel Input -------------------------*/
+
+.kernel-size-container {
+  position: relative;
+  top: 80px;
+}
+
 .kernel-input {
   position: relative;
   top: 50px;  
@@ -691,6 +696,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
+  position: relative;
+  top: -130px;
+  left: -15px;
 }
 
 .value-selector select{
@@ -820,7 +828,89 @@
 
 
 /*----------------Color Value Bar------------------*/
-.color-bar-horizontal {
+.color-bar-container.heatmap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: -40px 0;
+  width: 90%;
+}
+
+.color-bar-container.heatmap .gradient-bar {
+  display: flex;
+  height: 20px;
+  width: 111%;
+  border: 1px solid #000;
+  position: relative;
+  top: 6%;
+}
+
+.color-bar-container.heatmap .labels {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  top: 7px;
+  padding: 0 5px;
+}
+
+.color-bar-container.heatmap .labels span {
+  white-space: nowrap;
+}
+
+
+
+.color-bar-container.trendmap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: -40px 0;
+  width: 90%;
+}
+
+.color-bar-container.trendmap .gradient-bar {
+  display: flex;
+  height: 17px;
+  width: 111%;
+  border: 1px solid #000;
+  position: relative;
+  top: 10px;
+}
+
+.color-bar-container.trendmap .color-segment {
+  height: 100%;
+}
+
+.color-bar-container.trendmap .labels {
+  position: relative;
+  width: 100%;
+  left: 0%;
+  display: flex;
+  justify-content: center;
+  margin-top: 35px;
+  top: -20px;
+  gap: 10px;
+}
+
+.color-bar-container.trendmap .labels span {
+  transform: translateX(-50%);
+  white-space: nowrap;
+  gap: 10px;
+}
+
+
+.color-bar-title {
+  margin-top: 25px;
+  margin-right: -80px;
+  font-size: 15px;
+  position: relative;
+  top: 70px;
+  text-align: center;
+} 
+
+
+/* .color-bar-horizontal {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -866,7 +956,7 @@
   top: 18px;
   text-align: center;
   
-}
+} */
 
 /*-----------------------dropdown region--------------------------------------*/
 
@@ -1005,19 +1095,22 @@
 
 /*-------------Region, Province Selector---------------*/
 
-/* .area-label {
+.area-label {
   font-size: 25px; 
   color: #000000; 
   margin-bottom: 30px;  
   text-align: center;
   position: relative;
-  margin-left: 0px; 
-} */
+  margin-left: 0px;
+  top: -30px; 
+}
 
 .region-selector {
   display: flex;
   align-items: center; /* จัดกึ่งกลางในแนวตั้ง */
   margin-bottom: 20px; /* ระยะห่างด้านล่าง */
+  position: relative;
+  top: -40px;
 }
 
 /* สไตล์สำหรับ label */
@@ -1041,8 +1134,14 @@
   text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
 }
 
-.region-selector,
-.province-selector {
+.province-selector{
+  position: relative;
+  margin-bottom: 10px;
+  left: 200px;
+  z-index: 1000;
+}
+
+.region-selector{
   display: flex;
   flex-direction: column; /* จัดเรียง label และ select ให้อยู่ในแนวตั้ง */
   align-items: center; /* ทำให้อยู่ตรงกลางแนวนอน */
@@ -1054,20 +1153,26 @@
   font-size: 16px; /* ขนาดตัวอักษรสำหรับ label */
   margin-bottom: 10px; /* ระยะห่างระหว่าง label และ select */
   margin-left: -230px;
+  position: relative;
+  top: -60px;
+  left: 50px;
 }
 
 
 .province-selector select {
-  width: 250px; /* กำหนดความกว้าง dropdown */
-  padding: 12px; /* เพิ่มพื้นที่ภายใน dropdown */
-  font-size: 16px; /* ขนาดตัวอักษรใน dropdown */
-  border: 1px solid #ccc; /* ขอบของ dropdown */
-  border-radius: 8px; /* มุมมนของ dropdown */
-  background-color: #f9f9f9; /* สีพื้นหลังของ dropdown */
-  color: #333; /* สีข้อความ */
-  cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
-  text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+  width: 250px; 
+  padding: 12px; 
+  font-size: 16px; 
+  border: 1px solid #ccc; 
+  border-radius: 8px; 
+  background-color: #f9f9f9; 
+  color: #333; 
+  cursor: pointer; 
+  text-align: center; 
   margin-left: -50px;
+  position: relative;
+  left: 20px;
+  top: -10px;
 }
 
 .region-selector select:disabled,
