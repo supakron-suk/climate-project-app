@@ -25,7 +25,7 @@ import { dummyTimeSeriesData,
        } from './JS/Graph';
 import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap } from './JS/Heatmap.js';
-import { cal_index } from './JS/Index.js';
+import { new_dataset } from "./JS/new_dataset.js";
 
 //----------------------- DATA CRU -----------------------------//
 import data_index_1901 from './Geo-data/Year-Dataset/data_index_polygon_1901.json';
@@ -144,10 +144,13 @@ const [labelYearStart, setlabelYearStart] = useState(null);
 const [labelYearEnd, setlabelYearEnd] = useState(null);
 const [labelRegion, setlabelRegion] = useState("");
 const [labelProvince, setlabelProvince] = useState("");
-
-
-
 const [DataApply, setDataApply] = useState("");
+
+//-----------------------------------------New dataset State---------------------------//
+const [getdataset, setgetdataset] = useState("");
+//-----------------------------------------New dataset State---------------------------//
+
+
 //------------------------FUNCTION APP-------------------------------------//
 
 //-------------------------------------------------- Function Area------------------------------------------//
@@ -287,20 +290,49 @@ const getUnit = (variable) => {
   return units[variable] || "";
 };
 
-const getFullDatasetName = (dataset) => {
+// const getFullDatasetName = (dataset) => {
+//   switch (dataset) {
+//     case "CRU_dataset":
+//       return "Climatic Research Unit Data";
+//     case "ERA_dataset":
+//       return "ECMWF Reanalysis v5 Data";
+//     default:
+//       return "";
+//   }
+// };
+
+const getFullDatasetName = (dataset, variable) => {
+  let datasetName = "";
+  
   switch (dataset) {
     case "CRU_dataset":
-      return "Climatic Research Unit Data";
+      datasetName = "Climatic Research Unit Data";
+      break;
     case "ERA_dataset":
-      return "ECMWF Reanalysis v5 Data";
+      datasetName = "ECMWF Reanalysis v5 Data";
+      break;
     default:
       return "";
   }
+
+  // ตรวจสอบว่า selectedVariable มีค่าหรือไม่
+  return variable ? `${datasetName} (${variable})` : datasetName;
 };
 
+//---------------------- value change when change dataset------------------------------//
 
-
-//---------------------- value change when change dataset
+//-------------------------- New dataset function-------------------------------------//
+const onFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            try {
+                const content = await new_dataset(file);
+                setgetdataset(content); 
+            } catch (error) {
+                console.error("File Upload Error:", error);
+            }
+        }
+    };
 
 
 //----------------------------------User Effect-------------------------------------------//
@@ -386,6 +418,15 @@ useEffect(() => {
     }
   }, [selectedValue]); 
 
+  useEffect(() => {
+  if (selectedDataset === "ERA_dataset") {
+    setSelectedValue("tmin");
+  } else if (selectedDataset === "CRU_dataset") {
+    setSelectedValue("temperature");
+  }
+}, [selectedDataset]);
+
+
 useEffect(() => {
   setapplyLegendMin(null);
   setapplyLegendMax(null);
@@ -423,6 +464,10 @@ useEffect(() => {
       </select>
     </div>
 
+    <h2>Upload Dataset</h2>
+            <input type="file" accept=".json,.csv,.txt" onChange={onFileChange} />
+            <p>Open Console to see file content</p>
+            
 
     {/* Dropdown for Start Year Selection */}
     <div className="year-selector">
@@ -554,16 +599,34 @@ useEffect(() => {
 {/* User Select Legend Bar */}
 <div className="legend-bar-container">
 
-  <div className="legend-bar-buttons">
+   <div className="legend-bar-buttons">
     <button
       className={`legend-bar-button Actual_minmax ${minmaxButton === 'Actual' ? 'selected' : ''}`}
-      onClick={() => setminmaxButton('Actual')}
+      onClick={() => {
+        
+        if (minmaxButton === "Actual") {
+          setminmaxButton(null);
+          setapplyLegendMin(null);
+          setapplyLegendMax(null);
+        } else {
+          setminmaxButton("Actual");
+        }
+      }}
     >
       Actual
     </button>
     <button
       className={`legend-bar-button Trend_minmax ${minmaxButton === 'Trend' ? 'selected' : ''}`}
-      onClick={() => setminmaxButton('Trend')}
+      onClick={() => {
+       
+        if (minmaxButton === "Trend") {
+          setminmaxButton(null);
+          setapplyLegendMin(null);
+          setapplyLegendMax(null);
+        } else {
+          setminmaxButton("Trend");
+        }
+      }}
     >
       Trend
     </button>
@@ -571,18 +634,20 @@ useEffect(() => {
 
   {/* Box สำหรับ Min */}
 <div className="legend-bar-item legend-bar-min">
-  <label>Min:</label>
+  <label style={{ opacity: !minmaxButton ? 0.5 : 1 }}>Min:</label>
   <input
     type="text"
     value={applyLegendMin ?? ""}
+    disabled={!minmaxButton}
+    style={{ opacity: !minmaxButton ? 0.5 : 1 }}
     onChange={(e) => {
       let value = e.target.value;
 
       if (minmaxButton === "Actual") {
-        // Actual: ห้ามใส่ค่าติดลบ และต้องเป็นตัวเลขเท่านั้น
+        
         if (!/^\d*(\.\d*)?$/.test(value)) return;
       } else if (minmaxButton === "Trend") {
-        // Trend: อนุญาตตัวเลขทุกประเภท
+        
         if (!/^-?\d*(\.\d*)?$/.test(value)) return;
       }
 
@@ -599,18 +664,20 @@ useEffect(() => {
 
 {/* Box สำหรับ Max */}
 <div className="legend-bar-item legend-bar-max">
-  <label>Max:</label>
+  <label style={{ opacity: !minmaxButton ? 0.5 : 1 }}>Max:</label>
   <input
     type="text"
     value={applyLegendMax ?? ""}
+    disabled={!minmaxButton}
+    style={{ opacity: !minmaxButton ? 0.5 : 1 }}
     onChange={(e) => {
       let value = e.target.value;
 
       if (minmaxButton === "Actual") {
-        // Actual: ห้ามใส่ค่าติดลบ และต้องเป็นตัวเลขเท่านั้น
+        
         if (!/^\d*(\.\d*)?$/.test(value)) return;
       } else if (minmaxButton === "Trend") {
-        // Trend: อนุญาตตัวเลขทุกประเภท
+        
         if (!/^-?\d*(\.\d*)?$/.test(value)) return;
       }
 
@@ -689,8 +756,9 @@ useEffect(() => {
         {selectedDataset && labelRegion && (
           <>
             <label className="dataset-head-dashboard">
-              {getFullDatasetName(selectedDataset)}
-            </label>
+  {getFullDatasetName(selectedDataset)}
+</label>
+
           </>
         )}
       </div>
@@ -718,10 +786,10 @@ useEffect(() => {
       selectedProvince={DataApply.selectedProvince}
       viewMode={viewMode}
       value={DataApply.selectedValue}
-      legendMin={DataApply.legendMin}  // ใช้ค่า legendMin ที่อัปเดต
-      legendMax={DataApply.legendMax}  // ใช้ค่า legendMax ที่อัปเดต
-      trendMin={DataApply.trendMin}    // ใช้ค่า trendMin ที่อัปเดต
-      trendMax={DataApply.trendMax}    // ใช้ค่า trendMax ที่อัปเดต
+      legendMin={DataApply.legendMin}  
+      legendMax={DataApply.legendMax}  
+      trendMin={DataApply.trendMin}    
+      trendMax={DataApply.trendMax}    
       labelRegion={labelRegion}
       labelProvince={labelProvince} 
     />
