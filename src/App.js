@@ -25,7 +25,7 @@ import { dummyTimeSeriesData,
        } from './JS/Graph';
 import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap } from './JS/Heatmap.js';
-import { new_dataset } from "./JS/new_dataset.js";
+import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 
 //----------------------- DATA CRU -----------------------------//
 import data_index_1901 from './Geo-data/Year-Dataset/data_index_polygon_1901.json';
@@ -148,6 +148,7 @@ const [DataApply, setDataApply] = useState("");
 
 //-----------------------------------------New dataset State---------------------------//
 const [getdataset, setgetdataset] = useState("");
+const [filePath, setFilePath] = useState("");
 //-----------------------------------------New dataset State---------------------------//
 
 
@@ -322,17 +323,37 @@ const getFullDatasetName = (dataset, variable) => {
 //---------------------- value change when change dataset------------------------------//
 
 //-------------------------- New dataset function-------------------------------------//
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;  
+console.log("process.env:", process.env);
+console.log("Backend URL:", process.env.REACT_APP_BACKEND_URL);
+
+
 const onFileChange = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            try {
-                const content = await new_dataset(file);
-                setgetdataset(content); 
-            } catch (error) {
-                console.error("File Upload Error:", error);
-            }
+    const file = event.target.files[0];
+    if (file) {
+        try {
+            const content = await new_dataset(file);  
+            setgetdataset(content);
+            const result = await sendFileToBackend(file, content, BACKEND_URL);  
+            setFilePath(result.file_path);
+        } catch (error) {
+            console.error("File Upload Error:", error);
         }
-    };
+    }
+};
+
+// const onFileChange = async (event) => {
+//         const file = event.target.files[0];
+//         if (file) {
+//             try {
+//                 const content = await new_dataset(file);
+//                 setgetdataset(content); 
+//             } catch (error) {
+//                 console.error("File Upload Error:", error);
+//             }
+//         }
+//     };
 
 
 //----------------------------------User Effect-------------------------------------------//
@@ -465,7 +486,7 @@ useEffect(() => {
     </div>
 
     <h2>Upload Dataset</h2>
-            <input type="file" accept=".json,.csv,.txt" onChange={onFileChange} />
+            <input type="file" accept=".json,.csv,.txt,.nc" onChange={onFileChange} />
             <p>Open Console to see file content</p>
             
 
