@@ -27,6 +27,11 @@ import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap } from './JS/Heatmap.js';
 import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 
+
+//----------------------------Decoration File--------------------//
+import document_icon from './images/document_icon.png'
+//----------------------------Decoration File--------------------//
+
 //----------------------- DATA CRU -----------------------------//
 import data_index_1901 from './Geo-data/Year-Dataset/data_index_polygon_1901.json';
 import data_index_1902 from './Geo-data/Year-Dataset/data_index_polygon_1902.json';
@@ -41,6 +46,15 @@ import data_index_1910 from './Geo-data/Year-Dataset/data_index_polygon_1910.jso
 //import data_index_1960 from './Geo-data/Year-Dataset/test_1960.json';
 
 //----------------------- DATA ERRA -----------------------------//
+
+// const eraData = {};
+// for (let year = 1960; year <= 1970; year++) {
+//   eraData[year] = require(`./Geo-data/Era-Dataset/era_data_polygon_${year}.json`);
+// }
+
+
+
+
 import erra_data_1960 from './Geo-data/Era-Dataset/era_data_polygon_1960.json';
 import erra_data_1961 from './Geo-data/Era-Dataset/era_data_polygon_1961.json';
 import erra_data_1962 from './Geo-data/Era-Dataset/era_data_polygon_1962.json'; 
@@ -57,6 +71,12 @@ import erra_data_1972 from './Geo-data/Era-Dataset/era_data_polygon_1972.json';
 import erra_data_1973 from './Geo-data/Era-Dataset/era_data_polygon_1973.json';
 import erra_data_1974 from './Geo-data/Era-Dataset/era_data_polygon_1974.json';
 import erra_data_1975 from './Geo-data/Era-Dataset/era_data_polygon_1975.json';
+import erra_data_1976 from './Geo-data/Era-Dataset/era_data_polygon_1976.json';
+
+
+
+
+
 
 //----------------------------------------------------------------------------//
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
@@ -157,6 +177,12 @@ const [filePath, setFilePath] = useState("");
 //-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
   const filterByRegion = (data, region) => {
+
+    if (!data || !data.features) {
+    console.warn("filterByRegion: Data is null or has no features.");
+    return []; // ✅ ป้องกัน error โดยคืนค่า array ว่าง
+  }
+
     if (region === 'Thailand') {
       return data.features;
     } else {
@@ -210,7 +236,7 @@ const [filePath, setFilePath] = useState("");
 
 // ฟังก์ชันเปลี่ยน dataset
 // ฟังก์ชันเปลี่ยน dataset
-const handleDatasetChange = (e) => {
+const handleDatasetChange = async (e) => {
   const selected = e.target.value;
   setSelectedDataset(selected);
 
@@ -236,6 +262,7 @@ const handleDatasetChange = (e) => {
         { label: "Precipitation", value: "pre", group: "Raw Data" },
       ]);
   } else if (selected === 'ERA_dataset') {
+    
     setDataByYear({
       "1960": erra_data_1960,
       "1961": erra_data_1961,
@@ -485,9 +512,19 @@ useEffect(() => {
       </select>
     </div>
 
-    <h2>Upload Dataset</h2>
-            <input type="file" accept=".json,.csv,.txt,.nc" onChange={onFileChange} />
-            <p>Open Console to see file content</p>
+    <div className="new-dataset">
+      <label htmlFor="file-upload" className="file-upload-button">
+        {/* ใช้ <img> แสดงเป็นปุ่ม icon */}
+        <img src={document_icon} alt="Upload Document" className="file-icon" />
+      </label>
+      <input
+        type="file"
+        id="file-upload"
+        accept=".json,.csv,.txt,.nc"
+        onChange={onFileChange}
+        className="file-input"
+      />
+    </div>
             
 
     {/* Dropdown for Start Year Selection */}
@@ -921,8 +958,8 @@ useEffect(() => {
         },
       },
       y: {
-        min: chartData?.options?.scales?.y?.min || 0,
-        max: chartData?.options?.scales?.y?.max || 100,
+        min: chartData?.options?.scales?.y?.min || 10,
+        max: chartData?.options?.scales?.y?.max || 50,
         title: {
           display: true,
           text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
@@ -934,8 +971,10 @@ useEffect(() => {
           font: {
             size: 12,
           },
+          stepSize: (chartData?.options?.scales?.y?.max - chartData?.options?.scales?.y?.min) / 3, 
           callback: function (value) {
-            return `${Number(value.toFixed(0))} ${chartData?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
+          let unit = chartData?.options?.scales?.y?.title?.text.split("(")[1]?.replace(")", "") || "";
+          return `${Number(value.toFixed(0))} ${unit}`;
           },
         },
       },

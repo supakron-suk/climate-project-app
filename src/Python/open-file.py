@@ -1,14 +1,39 @@
-import xarray as xr
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
-# เปิดไฟล์ NetCDF
-ds = xr.open_dataset("src/dataset-nc/TH_tmax_ERA5_day.1960-2022.nc")
+# # โหลดข้อมูล GeoJSON
+# data = gpd.read_file('src/Geo-data/nc_to_json_2001.json')
+# # shapefile = gpd.read_file('../Geo-data/thailand-Geo.json')
 
-# กรองข้อมูลให้เลือกช่วงเวลาที่ต้องการ (เช่น ปี 1901-1910)
-# ในกรณีนี้ ค่าเฉลี่ยของข้อมูลทั้งหมด
-print(ds)
+# # สร้าง plot
+# fig, ax = plt.subplots(figsize=(10, 8))
+
+# # แสดงผลข้อมูลพื้นที่ด้วย GeoPandas
+# data.plot(column='temperature', cmap='jet', linewidth=0.5, ax=ax, edgecolor='black', legend=True)
+
+# # shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=1)
+
+# # ปรับแต่งการแสดงผลเพิ่มเติม
+# plt.title('Data grid Geometry')
+# plt.xlabel('Longitude')
+# plt.ylabel('Latitude')
+
+# plt.show()
+
+
+
+# import xarray as xr
+# import matplotlib.pyplot as plt
+# import cartopy.crs as ccrs
+# import cartopy.feature as cfeature
+
+# # เปิดไฟล์ NetCDF
+# ds = xr.open_dataset("src/dataset-nc/TH_tmax_ERA5_day.1960-2022.nc")
+
+# # กรองข้อมูลให้เลือกช่วงเวลาที่ต้องการ (เช่น ปี 1901-1910)
+# # ในกรณีนี้ ค่าเฉลี่ยของข้อมูลทั้งหมด
+# print(ds)
 
 
 # สร้างกราฟแผนที่
@@ -31,6 +56,12 @@ print(ds)
 # plt.show()
 
 
+import xarray as xr
+
+# เปิดไฟล์ NetCDF
+ds = xr.open_dataset("src/dataset-nc/cru_ts4.08.1901.2023.tmx.dat.nc")
+
+print(ds)
 
 
 

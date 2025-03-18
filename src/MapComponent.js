@@ -442,7 +442,7 @@ const HeatmapBar = ({ selectedValue, min, max }) => {
     if (["pre", "rx1day"].includes(selectedValue)) {
       return Math.round(value); // ปริมาณน้ำฝนให้แสดงเลขเต็ม
     }
-    return Math.round(value * 2) / 2; // อุณหภูมิให้แสดงเป็น .0 หรือ .5
+    return Math.round(value); // อุณหภูมิให้แสดงเป็น .0 หรือ .5
   };
 
   const labels = Array.from({ length: 12 }, (_, i) => roundLabel(min + (i / 11) * (max - min)));
@@ -486,7 +486,7 @@ const HeatmapBar = ({ selectedValue, min, max }) => {
 
 
 
-const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
+const TrendmapBar = ({ selectedValue, min, max, steps = 11 }) => {
   const { coolwarm } = getColorScale(selectedValue, "TrendMap");
 
   if (!coolwarm || !Array.isArray(coolwarm)) {
@@ -494,19 +494,23 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
     return null;
   }
 
-  const numBlocks = coolwarm.length;
   const stepSize = (max - min) / (steps - 1);
+  const midIndex = Math.floor(steps / 2);
 
-  // 🔢 คำนวณ label ที่กระจายเป็นช่วงๆ
-  const labels = Array.from({ length: steps }, (_, i) => ({
-    label: (min + i * stepSize).toFixed(2),
-    position: (i / (steps - 1)) * 100, // คำนวณตำแหน่งเป็นเปอร์เซ็นต์
-  }));
+  // ใช้ coolwarm.length เพื่อให้ tick marks ตรงกับขอบสี
+  const labels = Array.from({ length: coolwarm.length }, (_, i) => {
+    const value = min + i * stepSize;
+    return {
+      label: i === midIndex ? "0" : value.toFixed(2),
+      position: (i / (coolwarm.length - 1)) * 100, // ตำแหน่งต้องสัมพันธ์กับ coolwarm.length
+    };
+  });
 
   return (
     <div className="color-bar-container trendmap">
       <div className="color-bar-title">Trend Value</div>
 
+      {/* Gradient Bar */}
       <div className="gradient-bar">
         {coolwarm.map(([_, color], index) => (
           <div
@@ -520,7 +524,29 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
         ))}
       </div>
 
+      {/* Tick Marks - ใช้ coolwarm.length เพื่อให้ตรงกับขอบสี */}
+      <div className="tick-marks">
+        {Array.from({ length: coolwarm.length + 1 }, (_, index) => {
+          const position = (index / (coolwarm.length - 1)) * 100;
+          return (
+            <div
+              key={index}
+              className="tick-mark"
+              style={{
+                position: "absolute",
+                left: `${position}%`,
+                transform: "translateX(-50%)",
+                height: "8px",
+                width: "1px",
+                backgroundColor: "black",
+              }}
+            />
+          );
+        })}
+        
+      </div>
 
+      {/* Labels */}
       <div className="labels">
         {labels.map(({ label, position }, index) => (
           <span
@@ -529,7 +555,8 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
               position: "absolute",
               left: `${position}%`,
               transform: "translateX(-50%)",
-              fontSize: "11px",
+              fontSize: "10px",
+              marginTop: "12px",
             }}
           >
             {label}
@@ -539,6 +566,8 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 10 }) => {
     </div>
   );
 };
+
+
 
 
 

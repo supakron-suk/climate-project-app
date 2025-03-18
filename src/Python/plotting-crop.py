@@ -34,12 +34,12 @@
 # plt.show()
 
 
-#import geopandas as gpd
+# import geopandas as gpd
 # import matplotlib.pyplot as plt
 # import seaborn as sns
 
 # # โหลดข้อมูล GeoJSON
-# data = gpd.read_file('src/Geo-data/nc_to_json_2000_1.json')
+# data = gpd.read_file('src/Geo-data/Year-Dataset/data_index_polygon_1901.json')
 # shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
 # # สร้าง plot
@@ -51,11 +51,50 @@
 # shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=1)
 
 # # ปรับแต่งการแสดงผลเพิ่มเติม
-# plt.title('Tmp map Thailand')
+# plt.title('Shapefile Geo in Grid Geo')
 # plt.xlabel('Longitude')
 # plt.ylabel('Latitude')
 
 # plt.show()
+
+
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+
+# # โหลดข้อมูล GeoJSON
+# data = gpd.read_file('src/Geo-data/Year-Dataset/data_index_polygon_1901.json')
+# shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
+
+# # กำหนด min, max ที่ต้องการ
+# vmin, vmax = 18, 28  
+
+# # สร้าง plot
+# fig, ax = plt.subplots(figsize=(10, 8))
+
+# # แสดงผลข้อมูลพื้นที่ด้วย GeoPandas พร้อมกำหนด vmin, vmax
+# im = data.plot(
+#     column='temperature', cmap='jet', linewidth=0.5, 
+#     ax=ax, edgecolor='black', legend=True, vmin=vmin, vmax=vmax
+# )
+
+# # แสดงขอบเขตของ shapefile
+# shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=0.5)
+
+# # ปรับแต่งการแสดงผลเพิ่มเติม
+# plt.title('Grid to Polygon Thailand')
+# plt.xlabel('Longitude')
+# plt.ylabel('Latitude')
+
+# # ปรับแต่ง colorbar
+# # cbar = im.get_figure().colorbar(im.get_children()[0], ax=ax)
+# # cbar.set_label('Temperature (°C)')
+# # cbar.set_ticks(range(vmin, vmax + 1))  # ปรับ tick ให้แสดงค่าจาก 20 - 28
+
+# plt.show()
+
+
+
 
 # import geopandas as gpd
 # import matplotlib.pyplot as plt
@@ -348,6 +387,8 @@
 # # แสดงผล
 # plt.tight_layout()
 # plt.show()
+
+
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -362,8 +403,8 @@ columns = ['tmin', 'tmax', 'pre', 'txx', 'tnn']
 colormaps = {'tmin': 'turbo', 'tmax': 'turbo', 'pre': 'Blues', 'txx': 'turbo', 'tnn': 'turbo'}  
 
 # กำหนดช่วง color bar ที่ต้องการ (ใช้เหมือนกันสำหรับทุก subplot)
-vmin, vmax = 17, 30
-pre_vmin, pre_vmax = data['pre'].min(), data['pre'].max()  # คำนวณช่วงของ pre
+vmin, vmax = 10, 35
+pre_vmin, pre_vmax = 1, 10 # คำนวณช่วงของ pre
 
 # สร้าง subplot (1 แถว x จำนวนคอลัมน์)
 fig, axes = plt.subplots(1, len(columns), figsize=(18, 6))  # กำหนด subplot ตามจำนวนคอลัมน์
