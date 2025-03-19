@@ -370,6 +370,8 @@ const onFileChange = async (event) => {
     }
 };
 
+
+let uniqueTicks = new Set();
 // const onFileChange = async (event) => {
 //         const file = event.target.files[0];
 //         if (file) {
@@ -580,7 +582,7 @@ useEffect(() => {
         <option value="North_East_region">North East</option>
         <option value="North_region">North</option>
         <option value="South_region">South</option>
-        <option value="Middle_region">Middle</option>
+        <option value="Middle_region">Center</option>
         <option value="East_region">East</option>
         <option value="West_region">West</option>
       </select>
@@ -834,6 +836,7 @@ useEffect(() => {
 </div>
 
     <div className="right-map">
+      
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
     <MapComponent
       key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
@@ -847,12 +850,15 @@ useEffect(() => {
       legendMin={DataApply.legendMin}  
       legendMax={DataApply.legendMax}  
       trendMin={DataApply.trendMin}    
-      trendMax={DataApply.trendMax}    
+      trendMax={DataApply.trendMax}
+      selectedYearStart={DataApply.selectedYearStart}
+      selectedYearEnd={DataApply.selectedYearEnd}    
       labelRegion={labelRegion}
       labelProvince={labelProvince} 
     />
   )}
 </div>
+
 
 
 <div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
@@ -971,10 +977,19 @@ useEffect(() => {
           font: {
             size: 12,
           },
-          stepSize: (chartData?.options?.scales?.y?.max - chartData?.options?.scales?.y?.min) / 3, 
-          callback: function (value) {
-          let unit = chartData?.options?.scales?.y?.title?.text.split("(")[1]?.replace(")", "") || "";
-          return `${Number(value.toFixed(0))} ${unit}`;
+          stepSize: Math.ceil((chartData?.options?.scales?.y?.max - chartData?.options?.scales?.y?.min) / 3),
+    callback: function (value, index, values) {
+      let unit = chartData?.options?.scales?.y?.title?.text.split("(")[1]?.replace(")", "") || "";
+      let uniqueTicks = [];
+
+      
+      let newValue = Math.round(value);
+      while (uniqueTicks.includes(newValue)) {
+        newValue += 2;
+      }
+      uniqueTicks.push(newValue);
+
+      return `${newValue} ${unit}`;
           },
         },
       },

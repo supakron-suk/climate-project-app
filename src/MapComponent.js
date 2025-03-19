@@ -345,91 +345,7 @@ const onEachFeature = (feature, layer, viewMode, value) => {
 };
 
 
-
-
-// const formatLabel = (value) => {
-//   return value % 1 === 0 ? value.toFixed(1) : value.toFixed(2);
-// };
-
-// const ColorBar = ({ viewMode, selectedValue, min, max }) => {
-//   const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode);
-
-//   const colorScale = viewMode === "Heatmap" ? temp_color : coolwarm;
-
-//   if (!colorScale || !Array.isArray(colorScale)) {
-//     console.warn("Invalid colorScale in ColorBar", { colorScale, viewMode, selectedValue });
-//     return null;
-//   }
-
-//   const formatLabel = (value) => {
-//     return value % 1 === 0 ? value.toFixed(1) : value.toFixed(2);
-//   };
-
-//   const labels = Array.from({ length: 12 }, (_, i) => {
-//     const value = min + (i / 9) * (max - min);
-//     return formatLabel(value);
-//   });
-
-//   const numBlocks = colorScale.length;
-
-//   return (
-//     <div className={`color-bar-container ${viewMode.toLowerCase()}`}>
-//       <div className="color-bar-title">
-//         {viewMode === "Heatmap" ? "Variable Value" : "Trend Value"}
-//       </div>
-
-//       {viewMode === "Heatmap" ? (
-//         // Colorbar แบบไล่สีต่อเนื่อง
-//         <div className="gradient-bar">
-//           {colorScale.map(([_, color], index) => (
-//             <div
-//               key={index}
-//               className="color-segment"
-//               style={{
-//                 backgroundColor: color,
-//                 width: `${100 / numBlocks}%`, // กำหนดความกว้างให้มีความยาวตามจำนวนบล็อก
-//                 height: "20px",
-//               }}
-//             />
-//           ))}
-//         </div>
-//       ) : (
-//         // Colorbar แบบบล็อก (Trendmap)
-//         <div className="gradient-bar">
-//           {colorScale.map(([_, color], index) => (
-//             <div
-//               key={index}
-//               className="color-segment"
-//               style={{
-//                 backgroundColor: color,
-//                 flex: 1,
-//               }}
-//             />
-//           ))}
-//         </div>
-//       )}
-
-//       {/* แสดง label ตามจำนวนบล็อก */}
-//       <div className="labels">
-//         {labels.map((label, index) => (
-//           <span
-//             key={index}
-//             style={{
-//               position: "absolute",
-//               left: `${(index / (labels.length - 1)) * 100}%`,
-//               transform: "translateX(-50%)",
-//               fontSize: "11px",
-//             }}
-//           >
-//             {label}
-//           </span>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-const HeatmapBar = ({ selectedValue, min, max }) => {
+const HeatmapBar = ({ selectedValue, min, max, yearDifference }) => {
   const { temp_color } = getColorScale(selectedValue, "Heatmap");
 
   if (!temp_color || !Array.isArray(temp_color)) {
@@ -448,9 +364,14 @@ const HeatmapBar = ({ selectedValue, min, max }) => {
   const labels = Array.from({ length: 12 }, (_, i) => roundLabel(min + (i / 11) * (max - min)));
   const numBlocks = temp_color.length;
 
+  // กำหนดหน่วยตาม selectedValue
+  const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+
   return (
     <div className="color-bar-container heatmap">
-      <div className="color-bar-title">Actual Value</div>
+      <div className="color-bar-title">
+        Actual Value ({unit}) {/* แสดงจำนวนปี */}
+      </div>
       <div className="gradient-bar">
         {temp_color.map(([_, color], index) => (
           <div
@@ -485,8 +406,7 @@ const HeatmapBar = ({ selectedValue, min, max }) => {
 
 
 
-
-const TrendmapBar = ({ selectedValue, min, max, steps = 11 }) => {
+const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, selectedYearStart, selectedYearEnd, yearDifference }) => {
   const { coolwarm } = getColorScale(selectedValue, "TrendMap");
 
   if (!coolwarm || !Array.isArray(coolwarm)) {
@@ -494,21 +414,37 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11 }) => {
     return null;
   }
 
-  const stepSize = (max - min) / (steps - 1);
-  const midIndex = Math.floor(steps / 2);
+  // ขยายขอบเขตเล็กน้อย
+  const stepSize = (max - min) / (steps - 3); 
+  const newMin = min - stepSize; 
+  const newMax = max + stepSize; 
 
-  // ใช้ coolwarm.length เพื่อให้ tick marks ตรงกับขอบสี
-  const labels = Array.from({ length: coolwarm.length }, (_, i) => {
-    const value = min + i * stepSize;
+  // สร้าง labels ให้ตรงกับ tick marks
+  const labels = Array.from({ length: steps }, (_, i) => {
+    const value = newMin + i * stepSize;
     return {
-      label: i === midIndex ? "0" : value.toFixed(2),
-      position: (i / (coolwarm.length - 1)) * 100, // ตำแหน่งต้องสัมพันธ์กับ coolwarm.length
+      label: i === Math.floor(steps / 2) ? "0" : value.toFixed(2), // ให้ 0 อยู่ตรงกลาง
+      position: (i / (steps - 1)) * 100, // ใช้ steps ในการกำหนดตำแหน่ง
     };
   });
 
+  // สร้างตำแหน่งของ tick marks โดยให้หัวและท้ายติดขอบ
+  const tickMarksPositions = Array.from({ length: steps }, (_, i) => {
+    if (i === 0) return 0; // ตำแหน่งของ tick mark ที่แรก (ซ้ายสุด)
+    if (i === steps - 1) return 111; // ตำแหน่งของ tick mark ที่สุดท้าย (ขวาสุด)
+
+    // คำนวณตำแหน่งที่เหลือของ tick marks
+    const basePosition = (i / (steps - 1)) * 100;
+    return basePosition * spacingFactor;  
+  });
+
+  // กำหนดหน่วยตาม selectedValue
+  const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+  const trendTitle = `Trend Values (${unit})`;  // แสดงจำนวนปีใน title
+
   return (
     <div className="color-bar-container trendmap">
-      <div className="color-bar-title">Trend Value</div>
+      <div className="color-bar-title">{trendTitle}</div>  {/* แสดง title ที่ปรับปรุงแล้ว */}
 
       {/* Gradient Bar */}
       <div className="gradient-bar">
@@ -524,39 +460,35 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11 }) => {
         ))}
       </div>
 
-      {/* Tick Marks - ใช้ coolwarm.length เพื่อให้ตรงกับขอบสี */}
+      {/* Tick Marks - ปรับระยะห่างตาม spacingFactor */}
       <div className="tick-marks">
-        {Array.from({ length: coolwarm.length + 1 }, (_, index) => {
-          const position = (index / (coolwarm.length - 1)) * 100;
-          return (
-            <div
-              key={index}
-              className="tick-mark"
-              style={{
-                position: "absolute",
-                left: `${position}%`,
-                transform: "translateX(-50%)",
-                height: "8px",
-                width: "1px",
-                backgroundColor: "black",
-              }}
-            />
-          );
-        })}
-        
+        {tickMarksPositions.map((position, index) => (
+          <div
+            key={index}
+            className="tick-mark"
+            style={{
+              position: "absolute",
+              left: `${Math.min(position, 160)}%`,  // ป้องกันไม่ให้ตำแหน่งเกิน 100%
+              transform: `translateX(-50%)`,
+              height: "8px",
+              width: "1px",
+              backgroundColor: "black",
+            }}
+          />
+        ))}
       </div>
 
-      {/* Labels */}
+      {/* Labels - ให้ตรงกับ tick marks และไม่มีค่าซ้ำกัน */}
       <div className="labels">
         {labels.map(({ label, position }, index) => (
           <span
             key={index}
             style={{
               position: "absolute",
-              left: `${position}%`,
-              transform: "translateX(-50%)",
+              left: `${tickMarksPositions[index]}%`,
+              transform: `translateX(-30%)`,
               fontSize: "10px",
-              marginTop: "12px",
+              marginTop: "16px", 
             }}
           >
             {label}
@@ -582,7 +514,9 @@ const MapComponent = ({
   trendMin,
   trendMax,
   labelRegion,
-  labelProvince
+  labelProvince,
+  selectedYearStart,
+  selectedYearEnd,
 }) => {
   const { min: calculatedMin, max: calculatedMax } = calculateMinMax(geoData, viewMode, value);
 
@@ -595,6 +529,14 @@ const MapComponent = ({
     ? (trendMax ?? calculatedMax) 
     : (legendMax ?? calculatedMax);
 
+  console.log("selectedYearStart:", selectedYearStart);
+  console.log("selectedYearEnd:", selectedYearEnd);
+
+   const yearDifference = (selectedYearStart && selectedYearEnd) 
+    ? selectedYearEnd - selectedYearStart + 1 
+    : NaN;
+
+console.log("yearDifference:", yearDifference);
 
   console.log("Legend Min:", defaultMin, "Legend Max:", defaultMax);
 
@@ -638,9 +580,9 @@ const MapComponent = ({
 
       {/* ใช้ ColorBar ที่เหมาะสม */}
       {viewMode === "Heatmap" ? (
-        <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax} />
+        <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax}/>
       ) : (
-        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} />
+        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax}/>
       )}
     </div>
   );

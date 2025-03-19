@@ -393,10 +393,10 @@
 }
 
 .dashboard-box.sidebar-closed {
-  margin-left: -85px; 
+  margin-left: -2px; 
   width: 1500px; 
   transition: margin-left 0.2s ease-in-out;
-  margin-top: 5%;
+  margin-top: 3%;
   overflow-y: auto; 
   overflow-x: hidden;
 }
@@ -770,8 +770,7 @@
 
 .map-buttons {
   position: absolute; 
-  /* top: 170px;  */
-  top: 215px;
+  top: 170px;
   left: 900px; 
   z-index: 1000; 
   display: flex;
@@ -925,6 +924,7 @@
   left: 0%;
   display: flex;
   justify-content: center;
+  left: -31.9px;
   margin-top: 35px;
   top: -40px;
   gap: 10px;
@@ -939,10 +939,10 @@
 
 .color-bar-title {
   margin-top: 25px;
-  margin-right: -80px;
+  margin-right: -10px;
   font-size: 15px;
   position: relative;
-  top: 70px;
+  top: 75px;
   text-align: center;
 } 
 
