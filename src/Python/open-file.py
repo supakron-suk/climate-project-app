@@ -56,12 +56,17 @@
 # plt.show()
 
 
-import xarray as xr
+# import xarray as xr
+import geopandas as gpd
 
-# เปิดไฟล์ NetCDF
-ds = xr.open_dataset("src/dataset-nc/cru_ts4.08.1901.2023.tmx.dat.nc")
+gdf = gpd.read_file('src/Geo-data/Era-Dataset/era_data_grid_1960.json')
 
-print(ds)
+
+print(gdf)
+# # เปิดไฟล์ NetCDF
+# ds = xr.open_dataset("src/Python/prepare_dataset/dataset/tmin.day.ltm.1991-2020.nc")
+
+# print(ds)
 
 
 

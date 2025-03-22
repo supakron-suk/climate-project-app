@@ -3,26 +3,20 @@
 import numpy as np
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import random
 import json
 from shapely.geometry import Polygon
 import matplotlib.colors as mcolors
 import cartopy.crs as ccrs
 
-# โหลดข้อมูล GeoJSON ของประเทศไทย
-thailand_geo_path = "src/Geo-data/thailand-Geo.json"
-thailand_gdf = gpd.read_file(thailand_geo_path)
-
-def calculate_weighted_average(data, index="txx", province_name="Chiang Rai"):
+def calculate_weighted_average(data, index="txx"):
     """
     รับ JSON dataset และ plot Grid Polygon โดยใช้ CRS และสีโทนที่เหมาะสม
-    พร้อมแสดงค่าจาก indices ที่กำหนด (เช่น "txx") และ overlay จังหวัดที่เลือก
+    พร้อมแสดงค่าจาก indices ที่กำหนด (เช่น "txx")
     """
     try:
         # แปลง Grid Polygon จาก JSON เป็น GeoDataFrame
         grid_geometries = []
-        property_values = []  # เก็บค่าที่สุ่มจาก properties
-        indices_chosen = []   # เก็บชื่อของ indices ที่สุ่มเลือก
+        property_values = []  # เก็บค่าของ properties
 
         for feature in data['features']:
             coords = feature['geometry']['coordinates']
@@ -31,45 +25,31 @@ def calculate_weighted_average(data, index="txx", province_name="Chiang Rai"):
 
             # ตรวจสอบว่า property ที่เราต้องการมีอยู่หรือไม่
             properties = feature['properties']
-            if index in properties:  # ถ้ามี index ที่ต้องการ
-                indices_chosen.append(index)
-                property_values.append(properties[index])
-            else:
-                indices_chosen.append("N/A")
-                property_values.append(np.nan)  # กรณีไม่มีข้อมูลใน `index`
+            value = properties.get(index, np.nan)  # ใช้ค่า NaN ถ้าไม่มี index
+            property_values.append(value)
 
+        # สร้าง GeoDataFrame
         grid_gdf = gpd.GeoDataFrame(geometry=grid_geometries, crs="EPSG:4326")
 
-        # เลือกจังหวัดตามชื่อ
-        province_gdf = thailand_gdf[thailand_gdf["NAME_1"] == province_name]
-
-        # ใช้ CRS สำหรับการแสดงผลบนแผนที่
-        ax = plt.axes(projection=ccrs.PlateCarree())
-
-        # คำนวณการทำแผนที่สีตามค่า property
-        cmap = plt.cm.get_cmap("coolwarm")  # ใช้สี coolwarm หรือสามารถเปลี่ยนเป็น jet ได้
+        # ใช้สี coolwarm ตามค่าข้อมูล
+        cmap = plt.cm.get_cmap("coolwarm")
         norm = mcolors.Normalize(vmin=np.nanmin(property_values), vmax=np.nanmax(property_values))
 
-        # Plot ข้อมูล Grid Polygon และใช้ colormap
+        # ตั้งค่าการ plot
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw={'projection': ccrs.PlateCarree()})
+
+        # Plot Grid Polygon
         grid_gdf.plot(ax=ax, color=cmap(norm(property_values)), alpha=0.7, edgecolor="black")
 
-        # Overlay จังหวัดที่เลือก (เช่น Chiang Rai)
-        province_gdf.plot(ax=ax, color="none", edgecolor="red", linewidth=2, label=province_name)
-
-        # แสดงแผนที่
-        ax.set_title(f"Grid Data Visualization with {index} Property Values\nProvince: {province_name}")
-        ax.set_xlabel("Longitude")
-        ax.set_ylabel("Latitude")
-
-        # Colorbar สำหรับแสดงค่า
+        # เพิ่ม Colorbar
         cbar = plt.colorbar(plt.cm.ScalarMappable(cmap=cmap, norm=norm), ax=ax, orientation="vertical")
         cbar.set_label(f"{index} Values", rotation=270, labelpad=15)
 
-        # ขยาย plot ในส่วนของจังหวัดที่เลือก
-        ax.set_xlim(province_gdf.total_bounds[0] - 1, province_gdf.total_bounds[2] + 1)
-        ax.set_ylim(province_gdf.total_bounds[1] - 1, province_gdf.total_bounds[3] + 1)
+        # ตั้งชื่อแผนที่
+        ax.set_title(f"Grid Data Visualization ({index})")
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Latitude")
 
-        plt.legend()
         plt.show()
 
     except Exception as e:
