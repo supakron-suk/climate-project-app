@@ -59,7 +59,7 @@
 # import xarray as xr
 import geopandas as gpd
 
-gdf = gpd.read_file('src/Geo-data/Era-Dataset/era_data_grid_1960.json')
+gdf = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
 
 print(gdf)

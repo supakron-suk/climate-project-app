@@ -180,7 +180,7 @@ const [filePath, setFilePath] = useState("");
 
     if (!data || !data.features) {
     console.warn("filterByRegion: Data is null or has no features.");
-    return []; // ✅ ป้องกัน error โดยคืนค่า array ว่าง
+    return []; // ป้องกัน error โดยคืนค่า array ว่าง
   }
 
     if (region === 'Thailand') {
@@ -351,27 +351,54 @@ const getFullDatasetName = (dataset, variable) => {
 
 //-------------------------- New dataset function-------------------------------------//
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;  
-console.log("process.env:", process.env);
-console.log("Backend URL:", process.env.REACT_APP_BACKEND_URL);
+const [datasetInfo, setDatasetInfo] = useState(null);
 
+  useEffect(() => {
+    // ใช้ค่า BACKEND_URL จาก .env
+    const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
-const onFileChange = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        try {
-            const content = await new_dataset(file);  
-            setgetdataset(content);
-            const result = await sendFileToBackend(file, content, BACKEND_URL);  
-            setFilePath(result.file_path);
-        } catch (error) {
-            console.error("File Upload Error:", error);
+    // ฟังก์ชันเพื่อดึงข้อมูลจาก Flask API
+    const fetchDatasetInfo = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/dataset-info`);  // เรียก API ใช้ URL ที่เก็บใน .env
+        if (response.ok) {
+          const data = await response.json();
+          setDatasetInfo(data);  // เก็บข้อมูลไว้ใน state
+          console.log('Dataset Info:', data);  // แสดงข้อมูลใน console.log
+        } else {
+          console.log('Failed to fetch dataset:', response.status);
         }
-    }
-};
+      } catch (error) {
+        console.log('Error fetching dataset:', error);
+      }
+    };
+
+    // เรียกใช้ฟังก์ชันเมื่อ component โหลด
+    fetchDatasetInfo();
+  }, []);  // ว่างเปล่าเพื่อให้ทำแค่ครั้งเดียวเมื่อ component ถูก mount
 
 
-let uniqueTicks = new Set();
+// const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;  
+// console.log("process.env:", process.env);
+// console.log("Backend URL:", process.env.REACT_APP_BACKEND_URL);
+
+
+// const onFileChange = async (event) => {
+//     const file = event.target.files[0];
+//     if (file) {
+//         try {
+//             const content = await new_dataset(file);  
+//             setgetdataset(content);
+//             const result = await sendFileToBackend(file, content, BACKEND_URL);  
+//             setFilePath(result.file_path);
+//         } catch (error) {
+//             console.error("File Upload Error:", error);
+//         }
+//     }
+// };
+
+
+// let uniqueTicks = new Set();
 // const onFileChange = async (event) => {
 //         const file = event.target.files[0];
 //         if (file) {
@@ -514,19 +541,7 @@ useEffect(() => {
       </select>
     </div>
 
-    <div className="new-dataset">
-      <label htmlFor="file-upload" className="file-upload-button">
-        {/* ใช้ <img> แสดงเป็นปุ่ม icon */}
-        <img src={document_icon} alt="Upload Document" className="file-icon" />
-      </label>
-      <input
-        type="file"
-        id="file-upload"
-        accept=".json,.csv,.txt,.nc"
-        onChange={onFileChange}
-        className="file-input"
-      />
-    </div>
+    
             
 
     {/* Dropdown for Start Year Selection */}
