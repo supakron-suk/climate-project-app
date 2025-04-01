@@ -1,0 +1,65 @@
+{
+  "datasets": {
+    "ERA_dataset": {
+      "path": "/Geo-data/Era-Dataset/",
+      "years": [1960, 1961, 1962, 1963, 1964, 1965, 1966, 1967, 1968, 1969, 1970, 1971, 1972, 1973, 1974, 1975,
+    1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994,
+  1995, 1996, 1997, 1998, 1999, 2000],
+      "file_prefix": "era_data_polygon_",
+      "file_extension": ".json",
+      "variable_options": [
+        { "label": "Temperature Min", "value": "tmin", "group": "Raw Data" },
+        { "label": "Temperature Max", "value": "tmax", "group": "Raw Data" },
+        { "label": "Precipitation", "value": "pre", "group": "Raw Data" },
+        { "label": "TXx", "value": "txx", "group": "Index Data" },
+        { "label": "TNn", "value": "tnn", "group": "Index Data" },
+        { "label": "Rx1day", "value": "rx1day", "group": "Index Data" },
+        { "label": "Drought Severity (spei24)", "value": "spei24", "group": "Index Data" },
+        { "label": "Drought Severity (spi24)", "value": "spi24", "group": "Index Data" }
+      ]
+    },
+    "CRU_dataset": {
+      "path": "/Geo-data/Year-Dataset/",
+      "years": [1901, 1902, 1903, 1904, 1905, 1906, 1907, 1908, 1909, 1910],
+      "file_prefix": "data_index_polygon_",
+      "file_extension": ".json",
+      "variable_options": [
+        { "label": "Temperature Mean", "value": "temperature", "group": "Raw Data" },
+        { "label": "Temperature Min", "value": "tmin", "group": "Raw Data" },
+        { "label": "Temperature Max", "value": "tmax", "group": "Raw Data" },
+        { "label": "Precipitation", "value": "pre", "group": "Raw Data" }
+      ]
+    }
+  },
+  "dropdown_options": [
+    { "value": "CRU dataset", "label": "CRU Dataset" },
+    { "value": "ERA dataset", "label": "ERA Dataset" }
+  ],
+
+
+  
+  "areas": {
+    "North_East_region": ["Nakhon Ratchasima", "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Bueng Kan", 
+    "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon", "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin", 
+    "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"],
+
+    "North_region": ["Chiang Rai", "Chiang Mai", "Nan", "Phayao", "Phrae", "Mae Hong Son", 
+    "Lampang", "Lamphun", "Uttaradit"],
+    
+    "South_region": ["Krabi", "Chumphon", "Trang", "Nakhon Si Thammarat", "Narathiwat", 
+    "Pattani", "Phangnga", "Phatthalung", "Phuket", "Yala", "Ranong", "Songkhla", "Satun", "Surat Thani"],
+    
+    "Center_region": ["Bangkok Metropolis", "Kamphaeng Phet", "Chai Nat", "Nakhon Nayok", "Nakhon Pathom", 
+    "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya", "Phichit", "Phitsanulok", 
+    "Phetchabun", "Lop Buri", "Samut Prakan", "Samut Songkhram", "Samut Sakhon", "Saraburi", "Sing Buri", 
+    "Sukhothai", "Suphan Buri", "Ang Thong", "Uthai Thani"],
+
+    "East_region": ["Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Prachin Buri", "Rayong", "Sa Kaeo"],
+    
+    "West_region": ["Kanchanaburi", "Tak", "Prachuap Khiri Khan", "Phetchaburi", "Ratchaburi"]
+  }
+}
+
+
+
+
