@@ -25,5 +25,8 @@ yarn-error.log*
 # Ignore all JSON files
 *.json
 
+# Allow specific JSON file
+!src/config/config.json
+
 # Ignore all NetCDF files
 *.nc

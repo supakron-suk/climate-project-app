@@ -29,7 +29,7 @@ export const Heatmap = (dataByYear, startYear, endYear, region, province, value)
     filteredFeatures.forEach((feature) => {
       const { name, region } = feature.properties;
       const { temperature, dtr, pre, tmin, tmax, tnn, txx, rx1day} = feature.properties;
-      console.log(`Year: ${year}, Province: ${name}, Value: ${value}, Pre: ${pre}, TXX: ${txx}, TNN: ${tnn}`);
+      //console.log(`Year: ${year}, Province: ${name}, Value: ${value}, Pre: ${pre}, TXX: ${txx}, TNN: ${tnn}`);
       const geometry = feature.geometry;
 
       if (!groupedData[name]) {

@@ -529,16 +529,16 @@ const MapComponent = ({
     ? (trendMax ?? calculatedMax) 
     : (legendMax ?? calculatedMax);
 
-  console.log("selectedYearStart:", selectedYearStart);
-  console.log("selectedYearEnd:", selectedYearEnd);
+  // console.log("selectedYearStart:", selectedYearStart);
+  // console.log("selectedYearEnd:", selectedYearEnd);
 
    const yearDifference = (selectedYearStart && selectedYearEnd) 
     ? selectedYearEnd - selectedYearStart + 1 
     : NaN;
 
-console.log("yearDifference:", yearDifference);
+// console.log("yearDifference:", yearDifference);
 
-  console.log("Legend Min:", defaultMin, "Legend Max:", defaultMax);
+//   console.log("Legend Min:", defaultMin, "Legend Max:", defaultMax);
 
   const displayedGeoData = geoData?.features ? geoData : { type: "FeatureCollection", features: [] };
 
