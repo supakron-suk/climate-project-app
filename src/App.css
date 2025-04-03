@@ -56,6 +56,8 @@
   z-index: 1;
 }
 
+
+
 .left-sidebar.open {
   left: 0;
 }
@@ -82,21 +84,27 @@
   overflow-y: auto; /* ให้เลื่อนภายใน Sidebar */
 }
 
+.sidebar-content.loading {
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /* ======================== Header & Titles ======================== */
 .sidebar-header h2 {
   font-size: 40px;
-  text-align: center;
+  /* text-align: center; */
   margin-bottom: -50px;
   color: #444;
   position: relative;
   top: 30px;
+  right: -17%;
 }
 
-.sidebar-header h3 {
+/* .sidebar-header h3 {
   text-align: center;
   margin-top: 10px;
   font-size: 20px;
-}
+} */
 
 /* ======================== Apply Button ======================== */
 .apply_button {
@@ -1060,12 +1068,47 @@
   background-color: #f0f8ff; 
 }
 
-.new-dataset {
-  position: relative;
-  top: -56px;
-  right: -10px;
-  margin-bottom: -30px;
+
+/*----------------------------Loading Zone----------------------------*/
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* ระยะห่างระหว่าง Spinner และข้อความ */
+  font-size: 16px;
+  font-weight: bold;
+  color: #062b74; /* สีฟ้าน้ำเงิน */
 }
+
+.spinner {
+  width: 100px;
+  height: 100px;
+  border: 3px solid rgba(6, 43, 116, 0.3); /* สีขอบซีด */
+  border-top: 3px solid #062b74; /* สีขอบบนเข้ม */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: relative;
+  right: -33%;
+  top: -10%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.loading-text {
+  position: relative;
+  top: 59px; 
+  font-size: 16px;
+  font-weight: bold;
+  color: #062b74;
+  margin-top: 20px;
+}
+
+/*----------------------------Loading Zone----------------------------*/
+
+
 
 .file-upload-button {
   cursor: pointer;

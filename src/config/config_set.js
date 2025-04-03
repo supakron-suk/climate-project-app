@@ -12,7 +12,7 @@ const loadDatasetFiles = async (datasetName) => {
   const dataset = {};
 
   for (const year of datasetConfig.years) {
-    const filePath = `${datasetConfig.path}${datasetConfig.file_prefix}${year}${datasetConfig.file_extension}`;
+    const filePath = `${datasetConfig.path}${datasetConfig.file_name}${year}${datasetConfig.file_extension}`;
     console.log("Loading file:", filePath);
 
     try {
@@ -72,7 +72,7 @@ const Geometries_data = async (datasetName, areaName) => {
   let geometries = [];
 
   for (const year of datasetConfig.years) {
-    const filePath = `${datasetConfig.path}${datasetConfig.file_prefix}${year}${datasetConfig.file_extension}`;
+    const filePath = `${datasetConfig.path}${datasetConfig.file_name}${year}${datasetConfig.file_extension}`;
     console.log("Loading file:", filePath);
 
     try {

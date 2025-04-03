@@ -81,12 +81,18 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 function App() {
   // config Line test
   const [selectedDataset, setSelectedDataset] = useState('');  // เก็บข้อมูล dataset ที่เลือก
+  const [isLoading, setIsLoading] = useState(false);
+  const [datasetData, setDatasetData] = useState(null);
+
+
+
+
   const [dataByYear, setDataByYear] = useState({});  // เก็บข้อมูลที่โหลดตามปี
   const [variableOptions, setVariableOptions] = useState([]);  // ตัวเลือกตัวแปรต่าง ๆ ที่จะใช้
   const [selectedYearStart, setSelectedYearStart] = useState('');
   const [selectedYearEnd, setSelectedYearEnd] = useState('');
   const [geometries, setGeometries] = useState([]);
-  const [loading, setLoading] = useState(false);
+  
   
 
   //const [timeSeriesData, setTimeSeriesData] = useState(null);
@@ -273,28 +279,58 @@ const [filePath, setFilePath] = useState("");
 // ฟังก์ชันเปลี่ยน dataset
 
 // ฟังก์ชันจัดการการเปลี่ยนแปลงของ dropdown
-  const handleDatasetChange = async (e) => {
-    const selected = e.target.value;
-    setSelectedDataset(selected);  // อัปเดต dataset ที่เลือก
+const handleDatasetChange = async (e) => {
+  const selected = e.target.value;
+  setSelectedDataset(selected);
+  setIsLoading(true); // เริ่มโหลดข้อมูล
 
+  try {
     // โหลดข้อมูลจาก dataset ที่เลือก
     const dataset = await loadDatasetFiles(selected);
-    setDataByYear(dataset);  // อัปเดตข้อมูลที่โหลดตามปี
+    setDataByYear(dataset);
 
     // กำหนดตัวเลือกของตัวแปรตาม dataset ที่เลือก
     const options = getVariableOptions(selected);
     setVariableOptions(options);
 
     // Reset ค่าอื่นๆ (กราฟและแผนที่)
-    setSelectedYearStart('');
-    setSelectedYearEnd('');
+    setSelectedYearStart("");
+    setSelectedYearEnd("");
     setFilteredYearData(null);
     setTrendGeoData(null);
     setHeatmapData(null);
     setSeasonalCycle({ labels: [], datasets: [] });
     setChartData({ labels: [], datasets: [] });
     setIsApplied(false);
-  };
+  } catch (error) {
+    console.error("Error loading dataset:", error);
+  } finally {
+    setIsLoading(false); // โหลดเสร็จแล้ว
+  }
+};
+
+  // const handleDatasetChange = async (e) => {
+  //   const selected = e.target.value;
+  //   setSelectedDataset(selected);  // อัปเดต dataset ที่เลือก
+
+  //   // โหลดข้อมูลจาก dataset ที่เลือก
+  //   const dataset = await loadDatasetFiles(selected);
+  //   setDataByYear(dataset);  // อัปเดตข้อมูลที่โหลดตามปี
+
+  //   // กำหนดตัวเลือกของตัวแปรตาม dataset ที่เลือก
+  //   const options = getVariableOptions(selected);
+  //   setVariableOptions(options);
+
+  //   // Reset ค่าอื่นๆ (กราฟและแผนที่)
+  //   setSelectedYearStart('');
+  //   setSelectedYearEnd('');
+  //   setFilteredYearData(null);
+  //   setTrendGeoData(null);
+  //   setHeatmapData(null);
+  //   setSeasonalCycle({ labels: [], datasets: [] });
+  //   setChartData({ labels: [], datasets: [] });
+  //   setIsApplied(false);
+  // };
 
   // ฟังก์ชันเพื่อดึงตัวเลือกของตัวแปรจาก config
   const getVariableOptions = (dataset) => {
@@ -566,23 +602,23 @@ useEffect(() => {
 }, [isApplied]);
 
 
-useEffect(() => {
-  const loadGeometries = async () => {
-    if (!isApplied) return; // ถ้า isApplied เป็น false จะไม่โหลดข้อมูล geometry
+// useEffect(() => {
+//   const loadGeometries = async () => {
+//     if (!isApplied) return; // ถ้า isApplied เป็น false จะไม่โหลดข้อมูล geometry
 
-    setLoading(true);
-    try {
-      const data = await Geometries_data(selectedDataset, selectedRegion); // เรียกฟังก์ชันเพื่อโหลดข้อมูล geometry
-      setGeometries(data); // กำหนดค่าที่โหลดมาให้กับ geometries
-    } catch (error) {
-      console.error("Error loading geometries:", error); // จับ error ถ้ามี
-    } finally {
-      setLoading(false);
-    }
-  };
+//     setLoading(true);
+//     try {
+//       const data = await Geometries_data(selectedDataset, selectedRegion); // เรียกฟังก์ชันเพื่อโหลดข้อมูล geometry
+//       setGeometries(data); // กำหนดค่าที่โหลดมาให้กับ geometries
+//     } catch (error) {
+//       console.error("Error loading geometries:", error); // จับ error ถ้ามี
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-  loadGeometries();
-}, [isApplied, selectedDataset, selectedRegion, selectedYearStart, selectedYearEnd]);
+//   loadGeometries();
+// }, [isApplied, selectedDataset, selectedRegion, selectedYearStart, selectedYearEnd]);
 
 
 //---------------------------------- Index Use Effect------------------------------------//
@@ -625,7 +661,7 @@ useEffect(() => {
     {/* sidebar */}
 <div className={`left-sidebar ${isSidebarOpen ? "open" : ""}`}>
 
-  <div className="sidebar-content">
+  <div className={`sidebar-content ${isLoading ? "loading" : ""}`}>
 
     <div className="sidebar-header">
     <h2>Access Data</h2>
@@ -633,16 +669,26 @@ useEffect(() => {
 
     {/* Dropdown เลือก Dataset */}
     <div className="dataset-selector">
-        <label>Select Dataset</label>
-        <select value={selectedDataset} onChange={handleDatasetChange}>
-  {Object.keys(configData.datasets).map((key) => (
-    <option key={key} value={key}>
-      {configData.datasets[key].label || key}
-    </option>
-  ))}
-</select>
-      </div>
-    
+  <label>Select Dataset</label>
+  <select value={selectedDataset} onChange={handleDatasetChange} disabled={isLoading}>
+    <option value="" disabled>Select a dataset</option>
+    {Object.keys(configData.datasets).map((key) => (
+      <option key={key} value={key}>
+        {configData.datasets[key].label || key}
+      </option>
+    ))}
+  </select>
+</div>
+
+{/* Loading Animation */}
+{isLoading ? (
+  <div className="loading-container">
+    <div className="spinner"></div>
+     <p className="loading-text">Loading dataset...</p>
+  </div>
+) : (
+  <>
+  
 
     {/* Dropdown for Start Year Selection */}
       <div className="year-selector">
@@ -684,11 +730,8 @@ useEffect(() => {
           </div>
         </div>
       </div>
-
-            
-
-    
-
+  
+  
     {/* Select Area */}
 <label className="area-label">Area</label>
 <div className="region-selector">
@@ -770,10 +813,6 @@ useEffect(() => {
     ))}
   </select>
 </div>
-
-
-
-
 
 
 {/* User Select Legend Bar */}
@@ -874,7 +913,7 @@ useEffect(() => {
 
 </div>
 
-    {/* Apply Button */}
+{/* Apply Button */}
       <button
         onClick={() => {
           if (!selectedYearStart || !selectedYearEnd) {
@@ -919,6 +958,13 @@ useEffect(() => {
       >
         Apply
       </button>
+
+
+  {/* Loading Animation */}
+  </>
+)}
+
+    
   </div>
 </div>
 
