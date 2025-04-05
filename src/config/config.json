@@ -2,100 +2,37 @@
   "datasets": {
     "ERA dataset": {
       "path": "/Geo-data/Era-Dataset/",
-      "years": [1960, 1961, 1962, 1963, 1964, 1965, 1966, 1967, 1968, 1969, 1970, 1971, 1972, 1973, 1974, 1975,
-    1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994,
-  1995, 1996, 1997, 1998, 1999, 2000],
-      "file_name": "era_data_polygon_",
-      "file_extension": ".json",
+      "years": [1960, 1961, 1962, 1963, 1964, 1965],
+      "file_name_pattern": {
+        "country": "country_data_{year}.json",
+        "region": "region_data_{year}.json"
+      },
       "variable_options": [
-        { "label": "Temperature Min", "value": "tmin", "group": "Raw Data" },
-        { "label": "Temperature Max", "value": "tmax", "group": "Raw Data" },
-        { "label": "Precipitation", "value": "pre", "group": "Raw Data" },
-        { "label": "TXx", "value": "txx", "group": "Index Data" },
-        { "label": "TNn", "value": "tnn", "group": "Index Data" },
-        { "label": "Rx1day", "value": "rx1day", "group": "Index Data" },
-        { "label": "spei24", "value": "spei24", "group": "Index Data" },
-        { "label": "spi24", "value": "spi24", "group": "Index Data" },
-        { "label": "spei12", "value": "spei12", "group": "Index Data" },
-        { "label": "spi12", "value": "spi12", "group": "Index Data" },
-        { "label": "spei6", "value": "spei6", "group": "Index Data" },
-        { "label": "spi6", "value": "spi6", "group": "Index Data" },
-        { "label": "spei3", "value": "spei3", "group": "Index Data" },
-        { "label": "spi3", "value": "spi3", "group": "Index Data" },
-        { "label": "DTR", "value": "dtr", "group": "Index Data" },
-        { "label": "FD", "value": "fd", "group": "Index Data" },
-        { "label": "ID", "value": "id", "group": "Index Data" },
-        { "label": "PRCPTOT", "value": "prcptot", "group": "Index Data" },
-        { "label": "R10mm", "value": "r10mm", "group": "Index Data" },
-        { "label": "R20mm", "value": "r20mm", "group": "Index Data" },
-        { "label": "R30mm", "value": "r30mm", "group": "Index Data" },
-        { "label": "Rx3day", "value": "rx3day", "group": "Index Data" },
-        { "label": "Rx5day", "value": "rx5day", "group": "Index Data" },
-        { "label": "SU", "value": "su", "group": "Index Data" },
-        { "label": "TMGE10", "value": "tmge10", "group": "Index Data" },
-        { "label": "TMGE5", "value": "tmge5", "group": "Index Data" },
-        { "label": "TMLT10", "value": "tmlt10", "group": "Index Data" },
-        { "label": "TMLT5", "value": "tmlt5", "group": "Index Data" },
-        { "label": "TMM", "value": "tmm", "group": "Index Data" },
-        { "label": "TN10P", "value": "tn10p", "group": "Index Data" },
-        { "label": "TN90P", "value": "tn90p", "group": "Index Data" },
-        { "label": "TNlt2", "value": "tnlt2", "group": "Index Data" },
-        { "label": "TNltm20", "value": "tnltm20", "group": "Index Data" },
-        { "label": "TNltm2", "value": "tnltm2", "group": "Index Data" },
-        { "label": "TNM", "value": "tnm", "group": "Index Data" },
-        { "label": "TR", "value": "tr", "group": "Index Data" },
-        { "label": "TX10P", "value": "tx10p", "group": "Index Data" },
-        { "label": "TX90P", "value": "tx90p", "group": "Index Data" },
-        { "label": "TXGE30", "value": "txge30", "group": "Index Data" },
-        { "label": "TXGE35", "value": "txge35", "group": "Index Data" },
-        { "label": "TXGT50P", "value": "txgt50p", "group": "Index Data" },
-        { "label": "TXM", "value": "txm", "group": "Index Data" },
-        { "label": "TXN", "value": "txn", "group": "Index Data" }
-      ]
-    },
-    "CRU dataset": {
-      "path": "/Geo-data/Year-Dataset/",
-      "years": [1901, 1902, 1903, 1904, 1905, 1906, 1907, 1908, 1909, 1910],
-      "file_name": "data_index_polygon_",
-      "file_extension": ".json",
-      "variable_options": [
-        { "label": "Temperature Mean", "value": "temperature", "group": "Raw Data" },
-        { "label": "Temperature Min", "value": "tmin", "group": "Raw Data" },
-        { "label": "Temperature Max", "value": "tmax", "group": "Raw Data" },
-        { "label": "Precipitation", "value": "pre", "group": "Raw Data" }
+        { "label": "Precipitation (raw)", "value": "pre", "group": "Raw Data" },
+        { "label": "Temperature Min (raw)", "value": "tmin", "group": "Raw Data" },
+        { "label": "Temperature Max (raw)", "value": "tmax", "group": "Raw Data" },
+        { "label": "TXx (Index)", "value": "txx", "group": "Index Data" },
+        { "label": "TNn (Index)", "value": "tnn", "group": "Index Data" },
+        { "label": "Rx1day (Index)", "value": "rx1day", "group": "Index Data" }
       ]
     }
   },
+
   "dropdown_options": [
-    { "value": "CRU dataset", "label": "CRU Dataset" },
     { "value": "ERA dataset", "label": "ERA Dataset" }
   ],
 
-
-
-
-  
   "areas": {
-    "North_East_region": ["Nakhon Ratchasima", "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Bueng Kan", 
-    "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon", "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin", 
-    "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"],
-
-    "North_region": ["Chiang Rai", "Chiang Mai", "Nan", "Phayao", "Phrae", "Mae Hong Son", 
-    "Lampang", "Lamphun", "Uttaradit"],
-    
-    "South_region": ["Krabi", "Chumphon", "Trang", "Nakhon Si Thammarat", "Narathiwat", 
-    "Pattani", "Phangnga", "Phatthalung", "Phuket", "Yala", "Ranong", "Songkhla", "Satun", "Surat Thani"],
-    
-    "Center_region": ["Bangkok Metropolis", "Kamphaeng Phet", "Chai Nat", "Nakhon Nayok", "Nakhon Pathom", 
-    "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya", "Phichit", "Phitsanulok", 
-    "Phetchabun", "Lop Buri", "Samut Prakan", "Samut Songkhram", "Samut Sakhon", "Saraburi", "Sing Buri", 
-    "Sukhothai", "Suphan Buri", "Ang Thong", "Uthai Thani"],
-
-    "East_region": ["Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Prachin Buri", "Rayong", "Sa Kaeo"],
-    
-    "West_region": ["Kanchanaburi", "Tak", "Prachuap Khiri Khan", "Phetchaburi", "Ratchaburi"]
+    "South": ["Krabi", "Chumphon", "Trang", "Nakhon Si Thammarat", "Narathiwat", "Pattani", "Phangnga", "Phatthalung", "Phuket", "Yala", "Ranong", "Songkhla", "Satun", "Surat Thani"],
+    "North": ["Chiang Rai", "Chiang Mai", "Nan", "Phayao", "Phrae", "Mae Hong Son", "Lampang", "Lamphun", "Uttaradit"],
+    "East": ["Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Prachin Buri", "Rayong", "Sa Kaeo"],
+    "West": ["Kanchanaburi", "Tak", "Prachuap Khiri Khan", "Phetchaburi", "Ratchaburi"],
+    "Center": ["Bangkok Metropolis", "Kamphaeng Phet", "Chai Nat", "Nakhon Nayok", "Nakhon Pathom", "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya", "Phichit", "Phitsanulok", "Phetchabun", "Lop Buri", "Samut Prakan", "Samut Songkhram", "Samut Sakhon", "Saraburi", "Sing Buri", "Sukhothai", "Suphan Buri", "Ang Thong", "Uthai Thani"],
+    "North_East": ["Nakhon Ratchasima", "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon", "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin", "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"]
   }
 }
+
+
 
 
 

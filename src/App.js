@@ -67,7 +67,7 @@ import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 
 
 
-import { loadDatasetFiles, getDropdownOptions, getVariableOptions, Geometries_data } from './config/config_set';
+import { loadDatasetFiles } from './config/config_set';
 import configData from './config/config.json';
 
 

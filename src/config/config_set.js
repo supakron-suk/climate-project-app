@@ -1,6 +1,7 @@
 import configData from './config.json';  // นำเข้าข้อมูลจาก config.json
 
 // ฟังก์ชันสำหรับโหลดข้อมูลของแต่ละ dataset ตามชื่อ dataset
+// ฟังก์ชันสำหรับโหลดข้อมูลของแต่ละ dataset ตามชื่อ dataset
 const loadDatasetFiles = async (datasetName) => {
   const datasetConfig = configData.datasets[datasetName];
 
@@ -12,29 +13,41 @@ const loadDatasetFiles = async (datasetName) => {
   const dataset = {};
 
   for (const year of datasetConfig.years) {
-    const filePath = `${datasetConfig.path}${datasetConfig.file_name}${year}${datasetConfig.file_extension}`;
-    console.log("Loading file:", filePath);
+    // แทนที่ {year} ใน path และชื่อไฟล์
+    const countryFilePath = `${datasetConfig.path}${year}/${datasetConfig.file_name_pattern.country.replace("{year}", year)}`;
+    const regionFilePath = `${datasetConfig.path}${year}/${datasetConfig.file_name_pattern.region.replace("{year}", year)}`;
+
+    console.log("Loading file:", countryFilePath, regionFilePath);
 
     try {
-      const response = await fetch(filePath);
-      if (!response.ok) throw new Error(`Failed to fetch file: ${filePath}`);
+      // โหลดไฟล์ country
+      const countryResponse = await fetch(countryFilePath);
+      if (!countryResponse.ok) throw new Error(`Failed to fetch file: ${countryFilePath}`);
 
-      const geoJsonData = await response.json();
-      console.log("Loaded GeoJSON:", geoJsonData);
+      const countryGeoJsonData = await countryResponse.json();
+      console.log("Loaded Country GeoJSON:", countryGeoJsonData);
 
-      if (geoJsonData && geoJsonData.features) {
-        dataset[year] = {
-          type: "FeatureCollection", 
-          features: geoJsonData.features,
-        };
-      }
+      // โหลดไฟล์ region
+      const regionResponse = await fetch(regionFilePath);
+      if (!regionResponse.ok) throw new Error(`Failed to fetch file: ${regionFilePath}`);
+
+      const regionGeoJsonData = await regionResponse.json();
+      console.log("Loaded Region GeoJSON:", regionGeoJsonData);
+
+      // บันทึกข้อมูลลงใน dataset ตามปี
+      dataset[year] = {
+        country: countryGeoJsonData.features || [],
+        region: regionGeoJsonData.features || []
+      };
+
     } catch (error) {
-      console.error(`Error loading file: ${filePath}`, error);
+      console.error(`Error loading file for year ${year}:`, error);
     }
   }
 
   return dataset;
 };
+
 
 
 
@@ -103,7 +116,7 @@ const Geometries_data = async (datasetName, areaName) => {
   return geometries;
 };
 
-export { loadDatasetFiles, getDropdownOptions, getVariableOptions, Geometries_data };
+export { loadDatasetFiles};
 
 
 

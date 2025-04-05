@@ -181,41 +181,64 @@
 # # แสดงผล
 # plt.show()
 
-# import geopandas as gpd
-# import matplotlib.pyplot as plt
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from province import province_coord  
 
-# # โหลดข้อมูล GeoJSON
-# data = gpd.read_file('src/Geo-data/nc_to_json_2000_1.json')
-# shapefile = gpd.read_file('src/Geo-data/shapefile-lv1-thailand.json')
+# โหลดข้อมูล GeoJSON
+data = gpd.read_file('src/Geo-data/Era-Dataset/era_data_grid_1960.json')
+shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
-# # เลือกจังหวัดที่ต้องการ (เช่น จังหวัด "Nakhon Ratchasima")
-# korat_coord = shapefile[shapefile['NAME_1'] == 'Nakhon Ratchasima']
-# print(korat_coord)
+# รวม geometry ของทั้งประเทศ
+thailand_geom = shapefile.geometry.unary_union
 
-# # ตรวจสอบการตัดกันระหว่างกริดใน data กับเขตจังหวัดนครราชสีมา
-# # ทำการกรองเฉพาะกริดที่ตัดกับจังหวัดนครราชสีมา
-# grid_in_korat = data[data.geometry.intersects(korat_coord.geometry.unary_union)]
-# print("grid in Korat:", grid_in_korat)
+# กรอง grid ที่อยู่ภายในประเทศไทย
+grid_in_thailand = data[data.geometry.intersects(thailand_geom)]
 
-# # สร้างแผนที่
-# fig, ax = plt.subplots(figsize=(10, 10))
+# ==== Plot 1: ทั้งประเทศ ====
+fig, ax = plt.subplots(figsize=(10, 10))
+shapefile.plot(ax=ax, color='white', edgecolor='black', alpha=1, label='Thailand Boundary')
+grid_in_thailand.plot(ax=ax, color='red', edgecolor='black', alpha=0.05, label='Grid in Thailand')
+plt.title('Grid inside Thailand', fontsize=16)
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.legend()
+plt.show()
 
-# # Plot เส้นเขตจังหวัดนครราชสีมา
-# korat_coord.plot(ax=ax, color='white', edgecolor='black', alpha=1, label='Nakhon Ratchasima')
+# ==== Plot 2: Subplots แยกภูมิภาค ====
+region_coords = province_coord()
 
-# # Plot กริดที่ตัดกับจังหวัดนครราชสีมา
-# grid_in_korat.plot(ax=ax, color='red', edgecolor='black', alpha=0.5, label='Grid in Korat')
+# เตรียม subplot: มี 6 ภูมิภาค → แถวละ 3 คอลัมน์
+fig, axs = plt.subplots(2, 3, figsize=(18, 12))
+axs = axs.flatten()
 
-# # ปรับแต่งการแสดงผลเพิ่มเติม
-# plt.title('Grid in Nakhon Ratchasima', fontsize=16)
-# plt.xlabel('Longitude')
-# plt.ylabel('Latitude')
+region_names = ["North", "North East", "South", "Middle", "East", "West"]
 
-# # แสดงคำอธิบาย (legend)
-# plt.legend()
+for i, region in enumerate(region_coords):
+    # รวม geometry ของทั้ง region
+    region_geom = gpd.GeoSeries([g[1] for g in region]).unary_union
+    
+    # หาว่า grid ไหนตัดกับ region นี้
+    grid_in_region = data[data.geometry.intersects(region_geom)]
+    
+    # Plot
+    shapefile.plot(ax=axs[i], color='white', edgecolor='black')
+    grid_in_region.plot(ax=axs[i], color='red', edgecolor='black', alpha=0.05)
+    
+    axs[i].set_title(f"Grid in {region_names[i]} Region")
+    axs[i].set_xlabel("Longitude")
+    axs[i].set_ylabel("Latitude")
 
-# # แสดงผลแผนที่
-# plt.show()
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
 
 # import geopandas as gpd
 # import matplotlib.pyplot as plt
@@ -280,12 +303,12 @@
 #     average_temperature = total_weighted_temp / total_percentage if total_percentage != 0 else None
 #     print(f'Average Temperature in {province_name} (Tmp Means): {average_temperature:.2f}' if average_temperature else "No temperature data available")
     
-#     # # ปรับแต่งการแสดงผลเพิ่มเติม
-#     # plt.title(f'Grid in {province_name}', fontsize=16)
-#     # plt.xlabel('Longitude')
-#     # plt.ylabel('Latitude')
-#     # plt.legend()
-#     # plt.show()
+#     # ปรับแต่งการแสดงผลเพิ่มเติม
+#     plt.title(f'Grid in {province_name}', fontsize=16)
+#     plt.xlabel('Longitude')
+#     plt.ylabel('Latitude')
+#     plt.legend()
+#     plt.show()
 
 # # เรียกใช้ฟังก์ชัน calculate_weighted_temperature สำหรับทุกจังหวัด
 # for region in region_coords:
@@ -389,58 +412,58 @@
 # plt.show()
 
 
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import numpy as np
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# import matplotlib.colors as mcolors
+# import numpy as np
 
-# โหลดข้อมูล GeoJSON
-data = gpd.read_file('src/Geo-data/Era-Dataset/era_data_polygon_1960.json')
-shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
+# # โหลดข้อมูล GeoJSON
+# data = gpd.read_file('src/Geo-data/Era-Dataset/era_data_polygon_1960.json')
+# shapefile = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
-# กำหนดคอลัมน์ที่ต้องการ plot
-columns = ['tmin', 'tmax', 'pre', 'txx', 'tnn']  
-colormaps = {'tmin': 'turbo', 'tmax': 'turbo', 'pre': 'Blues', 'txx': 'turbo', 'tnn': 'turbo'}  
+# # กำหนดคอลัมน์ที่ต้องการ plot
+# columns = ['tmin', 'tmax', 'pre', 'txx', 'tnn']  
+# colormaps = {'tmin': 'turbo', 'tmax': 'turbo', 'pre': 'Blues', 'txx': 'turbo', 'tnn': 'turbo'}  
 
-# กำหนดช่วง color bar ที่ต้องการ (ใช้เหมือนกันสำหรับทุก subplot)
-vmin, vmax = 10, 35
-pre_vmin, pre_vmax = 1, 10 # คำนวณช่วงของ pre
+# # กำหนดช่วง color bar ที่ต้องการ (ใช้เหมือนกันสำหรับทุก subplot)
+# vmin, vmax = 10, 35
+# pre_vmin, pre_vmax = 1, 10 # คำนวณช่วงของ pre
 
-# สร้าง subplot (1 แถว x จำนวนคอลัมน์)
-fig, axes = plt.subplots(1, len(columns), figsize=(18, 6))  # กำหนด subplot ตามจำนวนคอลัมน์
-fig.suptitle('All Value in Properties in 1960 Year', fontsize=16)  # Header ของ plot
+# # สร้าง subplot (1 แถว x จำนวนคอลัมน์)
+# fig, axes = plt.subplots(1, len(columns), figsize=(18, 6))  # กำหนด subplot ตามจำนวนคอลัมน์
+# fig.suptitle('All Value in Properties in 1960 Year', fontsize=16)  # Header ของ plot
 
-# Loop สำหรับสร้าง plot แต่ละค่า
-for i, column in enumerate(columns):
-    ax = axes[i]  # เลือก subplot
+# # Loop สำหรับสร้าง plot แต่ละค่า
+# for i, column in enumerate(columns):
+#     ax = axes[i]  # เลือก subplot
 
-    # สร้าง normalize สำหรับค่าแต่ละคอลัมน์
-    if column == 'pre':
-        norm = mcolors.Normalize(vmin=pre_vmin, vmax=pre_vmax)  # กำหนดช่วงของ pre
-    else:
-        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+#     # สร้าง normalize สำหรับค่าแต่ละคอลัมน์
+#     if column == 'pre':
+#         norm = mcolors.Normalize(vmin=pre_vmin, vmax=pre_vmax)  # กำหนดช่วงของ pre
+#     else:
+#         norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
 
-    # แสดงผลข้อมูลพื้นที่
-    data.plot(column=column, cmap=colormaps.get(column, 'turbo'), linewidth=0.5, ax=ax, edgecolor='black', legend=False, norm=norm)
+#     # แสดงผลข้อมูลพื้นที่
+#     data.plot(column=column, cmap=colormaps.get(column, 'turbo'), linewidth=0.5, ax=ax, edgecolor='black', legend=False, norm=norm)
 
-    # เพิ่ม color bar
-    sm = plt.cm.ScalarMappable(cmap=colormaps.get(column, 'turbo'), norm=norm)
-    cbar = fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.08, pad=0.04, ticks=np.linspace(norm.vmin, norm.vmax, 6))
-    cbar.ax.set_ylabel('Value', fontsize=7)  # ชื่อแกนของ color bar
-    cbar.ax.tick_params(labelsize=6)  # ปรับขนาดตัวเลขของ color bar
+#     # เพิ่ม color bar
+#     sm = plt.cm.ScalarMappable(cmap=colormaps.get(column, 'turbo'), norm=norm)
+#     cbar = fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.08, pad=0.04, ticks=np.linspace(norm.vmin, norm.vmax, 6))
+#     cbar.ax.set_ylabel('Value', fontsize=7)  # ชื่อแกนของ color bar
+#     cbar.ax.tick_params(labelsize=6)  # ปรับขนาดตัวเลขของ color bar
 
-    # แสดงพรมแดนของประเทศไทย
-    shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=0.5)
+#     # แสดงพรมแดนของประเทศไทย
+#     shapefile.geometry.boundary.plot(ax=ax, color='black', linewidth=0.5)
 
-    # ปรับแต่งการแสดงผลเพิ่มเติม
-    ax.set_title(f'{column.capitalize()} Value', fontsize=10)
-    ax.set_xlabel('Longitude', fontsize=7)
-    ax.set_ylabel('Latitude', fontsize=7)
-    ax.tick_params(axis='both', which='major', labelsize=6)
+#     # ปรับแต่งการแสดงผลเพิ่มเติม
+#     ax.set_title(f'{column.capitalize()} Value', fontsize=10)
+#     ax.set_xlabel('Longitude', fontsize=7)
+#     ax.set_ylabel('Latitude', fontsize=7)
+#     ax.tick_params(axis='both', which='major', labelsize=6)
 
-# ปรับ layout ให้ subplot ไม่ทับกัน
-plt.tight_layout(rect=[0, 0, 1, 0.95])
-plt.show()
+# # ปรับ layout ให้ subplot ไม่ทับกัน
+# plt.tight_layout(rect=[0, 0, 1, 0.95])
+# plt.show()
 
 
 
