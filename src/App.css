@@ -31,11 +31,11 @@
   }
 }
 
-/* สไตล์สำหรับ h1 ข้อความ */
+
 .block-text {
-  font-size: 2px; /* ปรับขนาดตัวอักษร */
-  color: white; /* กำหนดสีตัวอักษร */
-  letter-spacing: 1px; /* ขยายช่องไฟให้ดูอ่านง่าย */
+  font-size: 2px; 
+  color: white; 
+  letter-spacing: 1px; 
 }
 
 
@@ -801,6 +801,59 @@
   background-color: #0056b3; 
 }
 
+
+/*--------------------------change color tone map---------------------------*/
+.tonecolor-wrapper {
+  position: absolute;
+  top: 779.5px;
+  right: 37.8%;
+  z-index: 999;
+}
+
+/* กล่องหลักที่แสดงคำว่า color */
+.change_tonecolor {
+  background: #fff;
+  color: #061fff;
+  padding: 2px 6px;
+  border: none; 
+  font-size: 13px;
+  font-weight: 300; 
+  font-family: sans-serif;
+  cursor: pointer;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.05); 
+}
+
+
+.popup-tone {
+  position: absolute;
+  bottom: 100%;
+  left: 167%; /* ขยับไปขวานิดนึง จาก 50% → 60% */
+  transform: translateX(-50%) translateY(6px); /* ขยับขึ้นน้อยลงนิดนึง */
+  background: rgba(60, 60, 60, 0.85); /* สีเข้มขึ้นนิดหน่อยให้ตัดกับตัวอักษร */
+  color: #fff;
+  padding: 12px 8px; 
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 400; 
+  font-family: sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+
+/* แสดง popup เมื่อ hover ที่กล่องหลัก */
+.tonecolor-wrapper:hover .popup-tone {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0); 
+  pointer-events: auto;
+}
+
+
+/*--------------------------change color tone map---------------------------*/
+
 .map-box {
   border: 3px solid #ccc; 
   border-radius: 10px;  
@@ -820,17 +873,17 @@
 }
 
 .area-head-map{
-  margin-bottom: -4%;
+  margin-bottom: -30px;
   font-weight: bold;
   font-size: 20px;
-  position: relative;
-  right: 0%;
-  top: 1%;
+  position: absolute;
+  right: 40%;
+  top: 2%;
 }
 
 .map-container{
   position: relative;
-  margin-top: 10%;
+  margin-top: 60px;
 }
 /* .map-container {
   position: relative;

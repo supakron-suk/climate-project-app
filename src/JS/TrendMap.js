@@ -5,6 +5,8 @@ export const TrendMap = (dataByYear, startYear, endYear, region, province, value
     return null;
   }
 
+  const numberOfYears = endYear - startYear + 1;
+  console.log(`🔍 TrendMap: Years requested = ${numberOfYears} years (${startYear} to ${endYear})`);
   // ฟกรองข้อมูลตามภูมิภาค
   const filterByRegion = (features, region) => {
     if (region === 'Thailand') return features; 
@@ -98,7 +100,11 @@ export const TrendMap = (dataByYear, startYear, endYear, region, province, value
     features, // ใส่ข้อมูล Feature ที่สร้างไว้
   };
 
-  return geojson_Trendmap; // คืนค่าข้อมูล GeoJSON
+  return {
+    geojson: geojson_Trendmap,
+    numberOfYears: numberOfYears
+  };
+  
 };
 
 // ฟังก์ชันสำหรับคำนวณ Modified Theil-Sen Slope

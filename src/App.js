@@ -19,7 +19,7 @@ import { dummyTimeSeriesData,
 import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap } from './JS/Heatmap.js';
 import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
-
+import colormap from 'colormap';
 
 //----------------------------Decoration File--------------------//
 //----------------------------Decoration File--------------------//
@@ -75,6 +75,8 @@ import configData from './config/config.json';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
 import { CrosshairPlugin } from 'chartjs-plugin-crosshair';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
+
+
 //------------------------IMPORT FUCTION-------------------------------------//
 
 //------------------------FUNCTION APP-------------------------------- -----//
@@ -108,25 +110,12 @@ function App() {
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
 
-// const [dataByYear, setDataByYear] = useState({
-//   "1901": data_index_1901,
-//   "1902": data_index_1902,
-//   "1903": data_index_1903,
-//   "1904": data_index_1904,
-//   "1905": data_index_1905,
-//   "1906": data_index_1906,
-//   "1907": data_index_1907,
-//   "1908": data_index_1908,
-//   "1909": data_index_1909,
-//   "1910": data_index_1910,
-// });
-
-
 //const [filteredDataByRange, setFilteredDataByRange] = useState(null);
 const [isApplied, setIsApplied] = useState(false);
 
 //---------------------- Trend VALUE data-----------------------//
 const [trendGeoData, setTrendGeoData] = useState(null);
+const [numberOfYears, setNumberOfYears] = useState(null);
 const [heatmapData, setHeatmapData] = useState(null);
 const [selectedValue, setSelectedValue] = useState('temperature');
 //----------------------------Select map----------------------------//
@@ -156,13 +145,6 @@ const [kernelSize, setKernelSize] = useState(null);
 
 const [isSidebarOpen, setSidebarOpen] = useState(true);
 
-// const [variableOptions, setVariableOptions] = useState([
-//     { label: "Temperature Mean", value: "temperature", group: "Raw Data" },
-//     { label: "Temperature Min", value: "tmin", group: "Raw Data" },
-//     { label: "Temperature Max", value: "tmax", group: "Raw Data" },
-//     { label: "Precipitation", value: "pre", group: "Raw Data" },
-//   ]);
-
 
 //-----------------------------------------Label Output Dashboard---------------------------//
 const [labelYearStart, setlabelYearStart] = useState(null);
@@ -171,10 +153,27 @@ const [labelRegion, setlabelRegion] = useState("");
 const [labelProvince, setlabelProvince] = useState("");
 const [DataApply, setDataApply] = useState("");
 
-//-----------------------------------------New dataset State---------------------------//
-const [getdataset, setgetdataset] = useState("");
-const [filePath, setFilePath] = useState("");
-//-----------------------------------------New dataset State---------------------------//
+//-----------------------------------------Tone color state---------------------------//
+
+const [selectedToneColor, setSelectedToneColor] = useState("blackbody");
+const toneColors = ["velocity-blue", "blackbody", "jet", "viridis"];
+const [isReversed, setIsReversed] = useState(false);
+const [isReversePopupVisible, setIsReversePopupVisible] = useState(false);
+
+const getGradient = (colormapName, isReversed = false) => {
+  const colors = colormap({
+    colormap: colormapName,
+    nshades: 10,
+    format: "hex",
+    alpha: 1,
+  });
+
+  const gradientColors = isReversed ? colors.reverse() : colors;
+  return `linear-gradient(to right, ${gradientColors.join(", ")})`;
+};
+//-----------------------------------------Tone color state---------------------------//
+
+
 
 
 //------------------------FUNCTION APP-------------------------------------//
@@ -282,18 +281,19 @@ const [filePath, setFilePath] = useState("");
 const handleDatasetChange = async (e) => {
   const selected = e.target.value;
   setSelectedDataset(selected);
-  setIsLoading(true); // เริ่มโหลดข้อมูล
+  setIsLoading(true);
 
   try {
-    // โหลดข้อมูลจาก dataset ที่เลือก
     const dataset = await loadDatasetFiles(selected);
     setDataByYear(dataset);
 
-    // กำหนดตัวเลือกของตัวแปรตาม dataset ที่เลือก
     const options = getVariableOptions(selected);
     setVariableOptions(options);
 
-    // Reset ค่าอื่นๆ (กราฟและแผนที่)
+    
+    setSelectedValue(""); 
+
+    // Reset ค่าอื่นๆ
     setSelectedYearStart("");
     setSelectedYearEnd("");
     setFilteredYearData(null);
@@ -305,9 +305,10 @@ const handleDatasetChange = async (e) => {
   } catch (error) {
     console.error("Error loading dataset:", error);
   } finally {
-    setIsLoading(false); // โหลดเสร็จแล้ว
+    setIsLoading(false);
   }
 };
+
 
   // const handleDatasetChange = async (e) => {
   //   const selected = e.target.value;
@@ -532,9 +533,9 @@ useEffect(() => {
 
       selectedYears.forEach(({ year, data }) => {
       // เพิ่มบรรทัดนี้เพื่อดูข้อมูลในแต่ละปี
-      console.log(`Data for year ${year}:`, data);
-      console.log("data in databyyear", dataByYear)
-      console.log("data in region", selectedRegion)
+      // console.log(`Data for year ${year}:`, data);
+      // console.log("data in databyyear", dataByYear)
+      // console.log("data in region", selectedRegion)
     });
 
     setFilteredYearData(selectedYears);
@@ -545,17 +546,30 @@ useEffect(() => {
     );
     setProvinces(Array.from(provinces));
     
+    const trendResult = TrendMap(
+        dataByYear,
+        parseInt(selectedYearStart),
+        parseInt(selectedYearEnd),
+        selectedRegion,
+        selectedProvince,
+        selectedValue
+      );
 
-    const generatedGeoJSON = TrendMap(
-      dataByYear,
-      parseInt(selectedYearStart),
-      parseInt(selectedYearEnd),
-      selectedRegion,
-      selectedProvince,
-      selectedValue
-    );
-    console.log("Generated Trend GeoJSON:", generatedGeoJSON);
-    if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
+      if (trendResult) {
+        setTrendGeoData(trendResult.geojson);
+        setNumberOfYears(trendResult.numberOfYears); 
+      }
+
+    // const generatedGeoJSON = TrendMap(
+    //   dataByYear,
+    //   parseInt(selectedYearStart),
+    //   parseInt(selectedYearEnd),
+    //   selectedRegion,
+    //   selectedProvince,
+    //   selectedValue
+    // );
+    // console.log("Generated Trend GeoJSON:", generatedGeoJSON);
+    // if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
 
     const averageData = Heatmap(
       dataByYear,
@@ -671,7 +685,7 @@ useEffect(() => {
     <div className="dataset-selector">
   <label>Select Dataset</label>
   <select value={selectedDataset} onChange={handleDatasetChange} disabled={isLoading}>
-    <option value="" disabled>Select a dataset</option>
+    <option value="" disabled>Select dataset</option>
     {Object.keys(configData.datasets).map((key) => (
       <option key={key} value={key}>
         {configData.datasets[key].label || key}
@@ -690,46 +704,54 @@ useEffect(() => {
   <>
   
 
-    {/* Dropdown for Start Year Selection */}
-      <div className="year-selector">
-        <label className="year-label">Time period</label>
-        <div className="dropdown-container">
-          <div className="dropdown-item">
-            <label className="start-year-label">Start Year</label>
-            <select
-              value={selectedYearStart}
-              onChange={(e) => setSelectedYearStart(e.target.value)}
-            >
-              <option value="">start year</option>
-              {selectedDataset && configData.datasets[selectedDataset] && 
-                configData.datasets[selectedDataset].years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))
-              }
-            </select>
-          </div>
+    {/* Year Selector Dropdown */}
+<div className="year-selector">
+  <label className="year-label">Time period</label>
+  <div className="dropdown-container">
 
-          {/* Dropdown for End Year Selection */}
-          <div className="dropdown-item">
-            <label>End Year</label>
-            <select
-              value={selectedYearEnd}
-              onChange={(e) => setSelectedYearEnd(e.target.value)}
-            >
-              <option value="">end year</option>
-              {selectedDataset && configData.datasets[selectedDataset] && 
-                configData.datasets[selectedDataset].years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>
+    {/* Start Year */}
+    <div className="dropdown-item">
+      <label className="start-year-label">Start Year</label>
+      <select
+        value={selectedYearStart}
+        onChange={(e) => setSelectedYearStart(e.target.value)}
+      >
+        <option value="">start year</option>
+        {selectedDataset && configData.datasets[selectedDataset] && (() => {
+          const { year_start, year_end } = configData.datasets[selectedDataset];
+          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
+          return years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ));
+        })()}
+      </select>
+    </div>
+
+    {/* End Year */}
+    <div className="dropdown-item">
+      <label>End Year</label>
+      <select
+        value={selectedYearEnd}
+        onChange={(e) => setSelectedYearEnd(e.target.value)}
+      >
+        <option value="">end year</option>
+        {selectedDataset && configData.datasets[selectedDataset] && (() => {
+          const { year_start, year_end } = configData.datasets[selectedDataset];
+          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
+          return years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ));
+        })()}
+      </select>
+    </div>
+
+  </div>
+</div>
+
   
   
     {/* Select Area */}
@@ -794,12 +816,15 @@ useEffect(() => {
 </div>
 
 
-    <div className="value-selector">
+   <div className="value-selector">
   <label>Variable</label>
   <select
     value={selectedValue}
-    onChange={handleValueChange}
+    onChange={(e) => setSelectedValue(e.target.value)}
   >
+    <option value="" disabled hidden>
+      Select Variable
+    </option>
     {["Raw Data", "Index Data"].map((group) => (
       <optgroup key={group} label={group}>
         {variableOptions
@@ -813,6 +838,8 @@ useEffect(() => {
     ))}
   </select>
 </div>
+
+
 
 
 {/* User Select Legend Bar */}
@@ -1002,10 +1029,60 @@ useEffect(() => {
 </div>
 
     <div className="right-map">
+
+    <div className="tonecolor-wrapper">
+  <div className="change_tonecolor">Color</div>
+  <div className="popup-tone">
+    {toneColors.map((tone) => (
+      <div
+        key={tone}
+        className={`tone-option ${selectedToneColor === tone ? "active" : ""}`}
+        onClick={() => setSelectedToneColor(tone)}
+        style={{
+          cursor: "pointer",
+          padding: "4px",
+          marginBottom: "6px",
+          border: selectedToneColor === tone ? "2px solid blue" : "1px solid #ccc",
+          borderRadius: "4px",
+          background: getGradient(tone, isReversed),
+          color: "transparent", 
+          height: "7px", 
+        }}
+        title={tone} 
+      >
+        {tone}
+      </div>
+    ))}
+
+    <div style={{ marginTop: "10px" }}>
+  <button
+    onClick={() => setIsReversed(prev => !prev)}
+    style={{
+      backgroundColor: isReversed ? "#4682b4" : "#888", // สีเปลี่ยนตามสถานะ
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      padding: "6px 10px",
+      fontSize: "12px",
+      cursor: "pointer",
+    }}
+  >
+    {isReversed ? "Reverse" : "Reverse"}
+  </button>
+</div>
+
+  </div>
+</div>
+
+
+
+      
       
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
     <MapComponent
-      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-${selectedValue}-${isApplied}`} 
+      key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-
+      ${selectedValue}-${isApplied}-${selectedToneColor}-${isReversed}`} 
+
       geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
       selectedRegion={DataApply.selectedRegion}
       selectedProvinceData={DataApply.selectedProvinceData} 
@@ -1020,7 +1097,12 @@ useEffect(() => {
       selectedYearStart={DataApply.selectedYearStart}
       selectedYearEnd={DataApply.selectedYearEnd}    
       labelRegion={labelRegion}
-      labelProvince={labelProvince} 
+      labelProvince={labelProvince}
+      selectedToneColor={selectedToneColor}
+      setSelectedToneColor={setSelectedToneColor}
+      toneColors={toneColors}
+      isReversed={isReversed}
+      numberOfYears={numberOfYears} 
     />
   )}
 </div>

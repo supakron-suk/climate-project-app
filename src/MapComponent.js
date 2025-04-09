@@ -4,19 +4,7 @@ import mapbackgroud from "./Geo-data/thailand-Geo.json";
 import colormap from 'colormap';
 
 // ฟังก์ชันไล่ระดับสี real value สำหรับ Choroplet map
-const tempColor = [
-  [0, "#FFFFCC"],   // สีเหลืองอ่อนสุดๆ สำหรับอุณหภูมิต่ำสุด
-  [0.1, "#FFF2AE"], // สีเหลืองอ่อน
-  [0.2, "#FFE680"], // สีเหลืองอ่อน
-  [0.3, "#FFD966"], // สีเหลือง
-  [0.4, "#FFCC4D"], // สีเหลือง
-  [0.5, "#FFB84D"], // สีส้มอ่อน
-  [0.6, "#FFA64D"], // สีส้มอ่อน
-  [0.7, "#FF8C4D"], // สีส้ม
-  [0.8, "#FF704D"], // สีส้ม
-  [0.9, "#FF4D4D"], // สีแดงอ่อน
-  [1, "#E31A1C"]
-];
+
 
 // ฟังก์ชันไล่ระดับสี Coolwarm สำหรับ TrendMap
 const coolwarmColor = [
@@ -45,82 +33,7 @@ const coolwarmColor_reverse = [
   [-0.5, "#053061"],
 ];
 
-// const rain_Color = [
-//   [1, "#00008B"],   // สีน้ำเงินเข้ม สำหรับปริมาณน้ำฝนสูงสุด
-//   [0.9, "#0000CD"], // สีน้ำเงิน
-//   [0.8, "#1E90FF"], // สีฟ้าเข้ม
-//   [0.7, "#00BFFF"], // สีฟ้า
-//   [0.6, "#87CEEB"], // สีฟ้าอ่อน
-//   [0.5, "#ADD8E6"], // สีฟ้าอ่อนมาก
-//   [0.4, "#B0E0E6"], // สีฟ้าอ่อนมาก
-//   [0.3, "#AFEEEE"], // สีฟ้าอ่อนอมเขียว
-//   [0.2, "#E0FFFF"], // สีฟ้าอ่อนสุดๆ
-//   [0.1, "#F0FFFF"], // สีฟ้าอ่อนสุดๆ
-//   [0, "#FFFFFF"] 
-// ];
 
-const rain_Color = [
-  [0, "#f7fcf0"],   
-  [0.1, "#e0f3db"], 
-  [0.2, "#ccebc5"], 
-  [0.3, "#a8ddb5"], 
-  [0.4, "#7bccc4"], 
-  [0.5, "#4eb3d3"], 
-  [0.6, "#2b8cbe"], 
-  [0.7, "#0868ac"], 
-  [0.8, "#084081"], 
-  [0.9, "#062b61"], 
-  [1, "#041e42"]    
-];
-
-
-
-// ฟังก์ชันไล่ระดับสี Coolwarm สำหรับ TrendMap
-
-
-
-// ฟังก์ชันไล่ระดับสีที่ใช้ real value หรือ Coolwarm
-
-
-// const interpolateColor = (value, min, max, scale) => {
-//   if (value === undefined || value === null) return "#ccc";
-//   if (min === max) return scale[0]?.[1] || "#ccc";
-
-//   // จำกัดค่า value ให้อยู่ในช่วง min และ max
-//   const clampedValue = Math.max(min, Math.min(max, value));
-
-//   // Normalize value into a 0-1 range
-//   const ratio = (clampedValue - min) / (max - min);
-//   const clampedRatio = Math.max(0, Math.min(1, ratio));
-
-//   // Find two closest scale points
-//   const scaledIndex = clampedRatio * (scale.length - 1); // คำนวณตำแหน่งของสี
-//   const lowerIndex = Math.floor(scaledIndex);              // หา index ของสีที่ต่ำกว่า
-//   const upperIndex = Math.min(lowerIndex + 1, scale.length - 1); // หา index ของสีที่สูงกว่า
-//   const t = scaledIndex - lowerIndex;   // ระยะห่างระหว่างสีที่ต่ำกว่าและสูงกว่า
-
-//   if (!scale[lowerIndex] || !scale[upperIndex]) {
-//     console.warn("Color scale index out of bounds", { lowerIndex, upperIndex, scale });
-//     return "#ccc";
-//   }
-
-//   const lowerColor = scale[lowerIndex][1];
-//   const upperColor = scale[upperIndex][1];
-
-//   const interpolateRgb = (color1, color2, t) => {
-//     const [r1, g1, b1] = color1.match(/\w\w/g).map((c) => parseInt(c, 16));
-//     const [r2, g2, b2] = color2.match(/\w\w/g).map((c) => parseInt(c, 16));
-
-//     const r = Math.round(r1 + t * (r2 - r1));
-//     const g = Math.round(g1 + t * (g2 - g1));
-//     const b = Math.round(b1 + t * (b2 - b1));
-
-//     return `rgb(${r}, ${g}, ${b})`;
-//   };
-
-//   // Interpolate between the two colors
-//   return interpolateRgb(lowerColor, upperColor, t);
-// };
 
 const interpolateColor = (value, min, max, scale) => {
   if (value === undefined || value === null) return "#ccc";
@@ -157,9 +70,8 @@ const interpolateColor = (value, min, max, scale) => {
   return interpolateRgb(lowerColor, upperColor, t);
 };
 
-
-const getColorScale = (selectedValue, viewMode) => {
-  const isPrecipitation = ["pre", "rx1day"].includes(selectedValue);
+const getColorScale = (selectedValue, viewMode, toneColor = "velocity-blue", isReversed = false) => {
+  const isPrecipitation = ["pre", "rx1day", "rx3day"].includes(selectedValue);
   const isTemperature = ["Temperature Mean", "Temperature Min", "Temperature Max", "TXx", "Tnn"].includes(selectedValue);
 
   if (viewMode === "TrendMap") {
@@ -169,8 +81,7 @@ const getColorScale = (selectedValue, viewMode) => {
     };
   }
 
-  // ใช้ colormap สำหรับ Heatmap และ Choropleth
-  const colormapName = isPrecipitation ? "velocity-blue" : "blackbody";
+  const colormapName = toneColor; 
   let colormapScale = colormap({
     colormap: colormapName,
     nshades: 20,
@@ -178,8 +89,10 @@ const getColorScale = (selectedValue, viewMode) => {
     alpha: 1,
   }).map((color, i) => [i / 19, color]);
 
-  // ✅ Reverse สีถ้าเป็น Temperature เพื่อให้ "แดง" อยู่ที่ค่ามาก
-  colormapScale.reverse()
+  // ตรวจสอบว่า reverse หรือไม่
+  if (isReversed) {
+    colormapScale.reverse();
+  }
 
   return {
     temp_color: colormapScale,
@@ -188,19 +101,9 @@ const getColorScale = (selectedValue, viewMode) => {
 };
 
 
-// const getColorScale = (selectedValue) => {
-//   if (selectedValue === "pre" || selectedValue === "rx1day") {
-//     return {
-//       temp_color: rain_Color,
-//       coolwarm: coolwarmColor_reverse
-//     };
-//   }
-//   return { temp_color: tempColor, coolwarm: coolwarmColor };
-// };
-
-const getColor = (value, viewMode, min, max, selectedValue) => {
-  const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode);
-  const scale = viewMode === "Heatmap"  ? temp_color : coolwarm;
+const getColor = (value, viewMode, min, max, selectedValue, selectedToneColor, isReversed = false) => {
+  const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
+  const scale = viewMode === "Heatmap" ? temp_color : coolwarm;
 
   if (!scale || !Array.isArray(scale) || scale.length === 0) {
     console.warn(`Invalid scale for viewMode: ${viewMode}`);
@@ -210,79 +113,83 @@ const getColor = (value, viewMode, min, max, selectedValue) => {
   return interpolateColor(value, min, max, scale);
 };
 
-
-// const getColor = (value, viewMode, min, max, selectedValue) => {
-//   const isReverse = selectedValue === "pre" || selectedValue === "rx1day";
-  
-//   const temp_color = isReverse ? rain_Color : tempColor;
-//   const coolwarm = isReverse ? coolwarmColor_reverse : coolwarmColor;
-  
-//   const scale = viewMode === "Heatmap" ? temp_color : coolwarm;
-
-//   if (!scale || !Array.isArray(scale) || scale.length === 0) {
-//     console.warn(`Invalid scale for viewMode: ${viewMode}`);
-//     return "#ccc";
-//   }
-
-//   return interpolateColor(value, min, max, scale);
-// };
-
-// // ฟังก์ชันคำนวณ Min และ Max ของข้อมูล
-// const calculateMinMax = (geoData, viewMode, value) => {
-//   if (!geoData || !geoData.features) return { min: 0, max: 1 };
-  
-//   const values = geoData.features
-//     .map((feature) => viewMode === "TrendMap" ? feature.properties.slope_value : feature.properties[value])
-//     .filter((val) => val !== undefined && val !== null);
-
-//   return {
-//     min: Math.min(...values),
-//     max: Math.max(...values)
-//   };
-// };
-
-// const roundToStep = (value, step) => Math.round(value / step) * step;
-
 const calculateMinMax = (geoData, viewMode, value) => {
   if (!geoData || !geoData.features) return { min: 10, max: 50 };
 
   const values = geoData.features
-    .map((feature) => 
-      viewMode === "TrendMap"
-        ? feature.properties.slope_value
-        : feature.properties[value]
-    )
+  .map((feature, index) => {
+    const val = viewMode === "TrendMap"
+      ? feature.properties.slope_value
+      : feature.properties[value];
+
+    // 🔍 Debug log: ดูว่า value ที่เรียกมีอยู่จริงไหม
+    console.log(`[Feature ${index}] ${viewMode} | value key = "${value}" | val =`, val);
+
+    return val;
+  })
     .filter((val) => val !== undefined && val !== null && !isNaN(val));
 
+    
+
   if (values.length === 0) return { min: 10, max: 50 };
+
+  
 
   let min = Math.min(...values);
   let max = Math.max(...values);
 
   if (viewMode === "TrendMap") {
     const range = Math.max(Math.abs(min), Math.abs(max));
-    return { min: -range, max: range };
+    return { min: -range, max: range }; // ยังเก็บ logic นี้ไว้สำหรับ trend
   }
 
   
-  if (["temperature", "tmin", "tmax", "txx", "tnn"].includes(value)) {
-    return { min: 10, max: 50 };
-  } 
-  if (["pre", "rx1day"].includes(value)) {
-    return { min: 10, max: 300 };
-  }
 
-  return { min, max };
+  return { min, max }; // 
 };
 
+// const calculateMinMax = (geoData, viewMode, value) => {
+//   if (!geoData || !geoData.features) return { min: 10, max: 50 };
 
-const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue) => {
+//   const values = geoData.features
+//     .map((feature) => 
+//       viewMode === "TrendMap"
+//         ? feature.properties.slope_value
+//         : feature.properties[value]
+//     )
+//     .filter((val) => val !== undefined && val !== null && !isNaN(val));
+
+//   if (values.length === 0) return { min: 10, max: 50 };
+
+//   let min = Math.min(...values);
+//   let max = Math.max(...values);
+
+//   if (viewMode === "TrendMap") {
+//     const range = Math.max(Math.abs(min), Math.abs(max));
+//     return { min: -range, max: range };
+//   }
+
+  
+//   if (["temperature", "tmin", "tmax", "txx", "tnn"].includes(value)) {
+//     return { min: 10, max: 50 };
+//   } 
+//   if (["pre", "rx1day"].includes(value)) {
+//     return { min: 10, max: 300 };
+//   }
+
+//   return { min, max };
+// };
+
+
+const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue, selectedToneColor, isReversed) => {
   const dataValue = viewMode === "TrendMap"
     ? feature.properties.slope_value
     : feature.properties[selectedValue];
 
+  const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
+
   return {
-    fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue),
+    fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
     weight: 0.3,
     opacity: 1,
     color: "black",
@@ -295,37 +202,6 @@ const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, se
   };
 };
 
-// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue) => {
-//   const dataValue = viewMode === "TrendMap"
-//     ? feature.properties.slope_value
-//     : feature.properties[selectedValue]; // ใช้ selectedValue เพื่อให้ตรงกับ getColor
-
-//   return {
-//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue), // เพิ่ม selectedValue
-//     weight: 0.3,
-//     opacity: 1,
-//     color: 'black',
-//     dashArray: '0',
-//     fillOpacity:
-//       (selectedRegion === 'Thailand' || feature.properties.region === selectedRegion) &&
-//       (!selectedProvince || feature.properties.name === selectedProvince)
-//         ? 0.9
-//         : 0,
-//   };
-// };
-
-
-// ฟังก์ชันแสดงข้อมูลใน popup
-// const onEachFeature = (feature, layer, viewMode, value) => {
-//   const valueText = feature.properties[value] !== undefined && feature.properties[value] !== null
-//     ? feature.properties[value].toFixed(2) : 'N/A';
-
-//   layer.bindPopup(
-//     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
-//      <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
-//      <b>Value:</b> ${valueText}`
-//   );
-// };
 const onEachFeature = (feature, layer, viewMode, value) => {
   const valueText = viewMode === "TrendMap"
     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
@@ -345,8 +221,8 @@ const onEachFeature = (feature, layer, viewMode, value) => {
 };
 
 
-const HeatmapBar = ({ selectedValue, min, max, yearDifference }) => {
-  const { temp_color } = getColorScale(selectedValue, "Heatmap");
+const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed , numberOfYears}) => {
+  const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
 
   if (!temp_color || !Array.isArray(temp_color)) {
     console.warn("Invalid colorScale in HeatmapBar", { temp_color });
@@ -366,11 +242,12 @@ const HeatmapBar = ({ selectedValue, min, max, yearDifference }) => {
 
   // กำหนดหน่วยตาม selectedValue
   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+  const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
 
   return (
     <div className="color-bar-container heatmap">
       <div className="color-bar-title">
-        Actual Value ({unit}) {/* แสดงจำนวนปี */}
+        {title}
       </div>
       <div className="gradient-bar">
         {temp_color.map(([_, color], index) => (
@@ -406,7 +283,7 @@ const HeatmapBar = ({ selectedValue, min, max, yearDifference }) => {
 
 
 
-const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, selectedYearStart, selectedYearEnd, yearDifference }) => {
+const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears }) => {
   const { coolwarm } = getColorScale(selectedValue, "TrendMap");
 
   if (!coolwarm || !Array.isArray(coolwarm)) {
@@ -440,7 +317,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
 
   // กำหนดหน่วยตาม selectedValue
   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
-  const trendTitle = `Trend Values (${unit})`;  // แสดงจำนวนปีใน title
+  const trendTitle = `Trend Values (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
 
   return (
     <div className="color-bar-container trendmap">
@@ -501,8 +378,6 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
 
 
 
-
-
 const MapComponent = ({
   geoData,
   selectedRegion,
@@ -517,10 +392,15 @@ const MapComponent = ({
   labelProvince,
   selectedYearStart,
   selectedYearEnd,
+  selectedToneColor,
+  setSelectedToneColor,
+  toneColors,
+  isReversed,  
+  numberOfYears,
 }) => {
   const { min: calculatedMin, max: calculatedMax } = calculateMinMax(geoData, viewMode, value);
-
-  // ใช้ค่า legendMin และ legendMax จาก Actual และ Trend
+  
+  // Use the values of legendMin and legendMax from Actual and Trend
   const defaultMin = viewMode === "TrendMap" 
     ? (trendMin ?? calculatedMin) 
     : (legendMin ?? calculatedMin);
@@ -528,17 +408,6 @@ const MapComponent = ({
   const defaultMax = viewMode === "TrendMap" 
     ? (trendMax ?? calculatedMax) 
     : (legendMax ?? calculatedMax);
-
-  // console.log("selectedYearStart:", selectedYearStart);
-  // console.log("selectedYearEnd:", selectedYearEnd);
-
-   const yearDifference = (selectedYearStart && selectedYearEnd) 
-    ? selectedYearEnd - selectedYearStart + 1 
-    : NaN;
-
-// console.log("yearDifference:", yearDifference);
-
-//   console.log("Legend Min:", defaultMin, "Legend Max:", defaultMax);
 
   const displayedGeoData = geoData?.features ? geoData : { type: "FeatureCollection", features: [] };
 
@@ -570,7 +439,8 @@ const MapComponent = ({
             <LayersControl.Overlay checked name={viewMode === "TrendMap" ? "Slope Value Map" : "Heatmap"}>
               <GeoJSON
                 data={displayedGeoData}
-                style={(feature) => style(feature, selectedRegion, selectedProvince, viewMode, defaultMin, defaultMax, value)}
+                style={(feature) => style(feature, selectedRegion, selectedProvince, 
+                  viewMode, defaultMin, defaultMax, value, selectedToneColor, isReversed)}  // Pass isReversed here
                 onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value)}
               />
             </LayersControl.Overlay>
@@ -578,11 +448,11 @@ const MapComponent = ({
         </MapContainer>
       </div>
 
-      {/* ใช้ ColorBar ที่เหมาะสม */}
+      {/* Use the appropriate color bar */}
       {viewMode === "Heatmap" ? (
-        <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax}/>
+        <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax} selectedToneColor={selectedToneColor} isReversed={isReversed} numberOfYears={numberOfYears}/>  // Pass isReversed here
       ) : (
-        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax}/>
+        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} numberOfYears={numberOfYears}/>  
       )}
     </div>
   );
@@ -592,217 +462,6 @@ export default MapComponent;
 
 
 
-// const MapComponent = ({
-//   geoData,
-//   selectedRegion,
-//   selectedProvince,
-//   viewMode,
-//   value,
-//   legendMin = 10,
-//   legendMax = 50,
-//   labelRegion,
-//   labelProvince
-// }) => {
-//   const { min, max } = calculateMinMax(geoData, viewMode, value);
-//   const finalMin = legendMin !== null ? legendMin : min;
-//   const finalMax = legendMax !== null ? legendMax : max;
-
-//   console.log("Legend Min:", finalMin, "Legend Max:", finalMax);
-
-//   const displayedGeoData =
-//     geoData && geoData.features
-//       ? geoData
-//       : { type: "FeatureCollection", features: [] };
-
-//   return (
-//     <div className="map-box">
-//       <label className="area-head-map">
-//         {selectedRegion === "Thailand"
-//           ? "Thailand"
-//           : labelProvince
-//           ? labelProvince.replace(/_/g, " ")
-//           : labelRegion.replace(/_/g, " ")}
-//       </label>
-
-//       <div className="map-container">
-//         <MapContainer center={[13.7563, 100.5018]} zoom={6} style={{ height: "750px", width: "600px" }}>
-//           <LayersControl position="topright">
-//             <LayersControl.Overlay checked name="Thailand Background">
-//               <GeoJSON
-//                 data={mapbackgroud}
-//                 style={() => ({
-//                   fillColor: "#808080",
-//                   color: "#808080",
-//                   weight: 0.1,
-//                   fillOpacity: 0.2,
-//                 })}
-//               />
-//             </LayersControl.Overlay>
-
-//             <LayersControl.Overlay checked name={viewMode === "TrendMap" ? "Slope Value Map" : "Heatmap"}>
-//               <GeoJSON
-//                 data={displayedGeoData}
-//                 style={(feature) => style(feature, selectedRegion, selectedProvince, viewMode, finalMin, finalMax, value)}
-//                 onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value)}
-//               />
-//             </LayersControl.Overlay>
-//           </LayersControl>
-//         </MapContainer>
-//       </div>
-
-//       {/* ใช้ ColorBar ที่เหมาะสม */}
-//       {viewMode === "Heatmap" ? (
-//         <HeatmapBar selectedValue={value} min={finalMin} max={finalMax} />
-//       ) : (
-//         <TrendmapBar selectedValue={value} min={finalMin} max={finalMax} />
-//       )}
-//     </div>
-//   );
-// };
-
-// export default MapComponent;
 
 
-// const MapComponent = ({
-//   geoData,
-//   selectedRegion,
-//   selectedProvince,
-//   viewMode,
-//   value,
-//   legendMin,
-//   legendMax,
-//   labelRegion,
-//   labelProvince
-// }) => {
-//   const { min, max } = calculateMinMax(geoData, viewMode, value);
-//   const finalMin = legendMin !== null ? legendMin : min;
-//   const finalMax = legendMax !== null ? legendMax : max;
-
-//   console.log("Legend Min:", finalMin, "Legend Max:", finalMax);
-
-//   const displayedGeoData =
-//     geoData && geoData.features
-//       ? geoData
-//       : { type: "FeatureCollection", features: [] };
-
-//   return (
-//     <div className='map-box'> 
-
-//       <label className='area-head-map'>
-//   {selectedRegion === "Thailand"
-//     ? "Thailand"
-//     : labelProvince
-//     ? labelProvince.replace(/_/g, " ")
-//     : labelRegion.replace(/_/g, " ")}
-// </label>
-
-
-//     <div className="map-container">
-//       <MapContainer
-//         center={[13.7563, 100.5018]}
-//         zoom={6}
-//         style={{ height: "750px", width: "600px" }}
-//       >
-//         <LayersControl position="topright">
-//           {/* Backgroud layer */}
-//           <LayersControl.Overlay checked name="Thailand Background">
-//             <GeoJSON
-//               data={mapbackgroud}
-//               style={() => ({
-//                 fillColor: "#808080", 
-//                 color: "#808080", 
-//                 weight: 0.1,
-//                 fillOpacity: 0.2, 
-//               })}
-//             />
-//           </LayersControl.Overlay>
-
-          
-//           <LayersControl.Overlay
-//             checked
-//             name={viewMode === "TrendMap" ? "Slope Value Map" : "Heatmap"}
-//           >
-//             <GeoJSON
-//               data={displayedGeoData}
-//               style={(feature) =>
-//                 style(feature, selectedRegion, selectedProvince, viewMode, finalMin, finalMax, value)
-//               }
-//               onEachFeature={(feature, layer) =>
-//                 onEachFeature(feature, layer, viewMode, value)
-//               }
-//             />
-//           </LayersControl.Overlay>
-//         </LayersControl>
-//       </MapContainer>
-//       </div>
-//       <ColorBar
-//         viewMode={viewMode}
-//         selectedValue={value}
-//         min={finalMin}
-//         max={finalMax}
-//       />
-//     </div>
-//   );
-// };
-
-// export default MapComponent;
-
-
-// const MapComponent = ({
-//   geoData,
-//   selectedRegion,
-//   selectedProvince,
-//   viewMode,
-//   value,
-//   legendMin,
-//   legendMax,
-// }) => {
-//   const { min, max } = calculateMinMax(geoData, viewMode, value);
-//   const finalMin = legendMin !== null ? legendMin : min;
-//   const finalMax = legendMax !== null ? legendMax : max;
-
-//   console.log("Legend Min:", finalMin, "Legend Max:", finalMax);
-
-//   const displayedGeoData =
-//     geoData && geoData.features
-//       ? geoData
-//       : { type: "FeatureCollection", features: [] };
-
-//   return (
-//     <div className="map-container">
-//       <MapContainer
-//         center={[13.7563, 100.5018]}
-//         zoom={6}
-//         style={{ height: "1200px", width: "1150px" }}
-//       >
-//         <LayersControl position="topright">
-//           <LayersControl.Overlay
-//             checked
-//             name={viewMode === "TrendMap" ? "Slope Value Map" : "Heatmap"}
-//           >
-//             <GeoJSON
-//               data={displayedGeoData}
-//               style={(feature) =>
-//                 style(feature, selectedRegion, selectedProvince, viewMode, finalMin, finalMax, value)
-//               }
-//               onEachFeature={(feature, layer) =>
-//                 onEachFeature(feature, layer, viewMode, value)
-//               }
-//             />
-//           </LayersControl.Overlay>
-//         </LayersControl>
-//       </MapContainer>
-
-//       {/* ColorBar ที่อัปเดตโทนสีตาม selectedValue */}
-//       <ColorBar
-//         viewMode={viewMode}
-//         selectedValue={value}
-//         min={finalMin}
-//         max={finalMax}
-//       />
-//     </div>
-//   );
-// };
-
-// export default MapComponent;
 
