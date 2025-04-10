@@ -1,52 +1,5 @@
 import configData from './config.json';  // นำเข้าข้อมูลจาก config.json
 
-// ฟังก์ชันสำหรับโหลดข้อมูลของแต่ละ dataset ตามชื่อ dataset
-// ฟังก์ชันสำหรับโหลดข้อมูลของแต่ละ dataset ตามชื่อ dataset
-// const loadDatasetFiles = async (datasetName) => {
-//   const datasetConfig = configData.datasets[datasetName];
-
-//   if (!datasetConfig) {
-//     console.error(`Dataset '${datasetName}' not found in config.json`);
-//     return {};
-//   }
-
-//   const dataset = {};
-
-//   for (const year of datasetConfig.years) {
-//     // แทนที่ {year} ใน path และชื่อไฟล์
-//     const countryFilePath = `${datasetConfig.path}${year}/${datasetConfig.file_name_pattern.country.replace("{year}", year)}`;
-//     const regionFilePath = `${datasetConfig.path}${year}/${datasetConfig.file_name_pattern.region.replace("{year}", year)}`;
-
-//     console.log("Loading file:", countryFilePath, regionFilePath);
-
-//     try {
-//       // โหลดไฟล์ country
-//       const countryResponse = await fetch(countryFilePath);
-//       if (!countryResponse.ok) throw new Error(`Failed to fetch file: ${countryFilePath}`);
-
-//       const countryGeoJsonData = await countryResponse.json();
-//       console.log("Loaded Country GeoJSON:", countryGeoJsonData);
-
-//       // โหลดไฟล์ region
-//       const regionResponse = await fetch(regionFilePath);
-//       if (!regionResponse.ok) throw new Error(`Failed to fetch file: ${regionFilePath}`);
-
-//       const regionGeoJsonData = await regionResponse.json();
-//       console.log("Loaded Region GeoJSON:", regionGeoJsonData);
-
-//       // บันทึกข้อมูลลงใน dataset ตามปี
-//       dataset[year] = {
-//         country: countryGeoJsonData.features || [],
-//         region: regionGeoJsonData.features || []
-//       };
-
-//     } catch (error) {
-//       console.error(`Error loading file for year ${year}:`, error);
-//     }
-//   }
-
-//   return dataset;
-// };
 
 const loadDatasetFiles = async (datasetName) => {
   const datasetConfig = configData.datasets[datasetName];
@@ -82,6 +35,8 @@ const loadDatasetFiles = async (datasetName) => {
           type: "FeatureCollection",
           features: geoJsonData.features,
         };
+
+        console.log(`Dataset for year ${year}:`, dataset[year]);
       }
     } catch (error) {
       console.error(`Error loading file: ${filePath}`, error);

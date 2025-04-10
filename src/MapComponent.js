@@ -71,34 +71,62 @@ const interpolateColor = (value, min, max, scale) => {
 };
 
 const getColorScale = (selectedValue, viewMode, toneColor = "velocity-blue", isReversed = false) => {
-  const isPrecipitation = ["pre", "rx1day", "rx3day"].includes(selectedValue);
-  const isTemperature = ["Temperature Mean", "Temperature Min", "Temperature Max", "TXx", "Tnn"].includes(selectedValue);
-
   if (viewMode === "TrendMap") {
+    // ถ้าเป็น TrendMap ก็ใช้ coolwarm แล้ว reverse ตาม isReversed
+    const baseColor = [...coolwarmColor]; // สำเนาเพื่อไม่แก้ต้นฉบับ
+    if (isReversed) baseColor.reverse();
+
     return {
-      temp_color: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
-      coolwarm: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
+      temp_color: baseColor,
+      coolwarm: baseColor,
     };
   }
 
-  const colormapName = toneColor; 
+  // สำหรับ Heatmap ใช้ colormap library
   let colormapScale = colormap({
-    colormap: colormapName,
+    colormap: toneColor,
     nshades: 20,
     format: "hex",
     alpha: 1,
   }).map((color, i) => [i / 19, color]);
 
-  // ตรวจสอบว่า reverse หรือไม่
-  if (isReversed) {
-    colormapScale.reverse();
-  }
+  if (isReversed) colormapScale.reverse();
 
   return {
     temp_color: colormapScale,
     coolwarm: colormapScale,
   };
 };
+
+// const getColorScale = (selectedValue, viewMode, toneColor = "velocity-blue", isReversed = false) => {
+//   const isPrecipitation = ["pre", "rx1day", "rx3day"].includes(selectedValue);
+//   const isTemperature = ["Temperature Mean", "Temperature Min", "Temperature Max", "TXx", "Tnn"].includes(selectedValue);
+
+//   if (viewMode === "TrendMap") {
+//     return {
+//       temp_color: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
+//       coolwarm: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
+//     };
+//   }
+
+//   const colormapName = toneColor; 
+//   let colormapScale = colormap({
+//     colormap: colormapName,
+//     nshades: 20,
+//     format: "hex",
+//     alpha: 1,
+//   }).map((color, i) => [i / 19, color]);
+//   console.log("Colormap Scale:", colormapScale);
+//   // ตรวจสอบว่า reverse หรือไม่
+//   if (isReversed) {
+//     colormapScale.reverse();
+//   }
+
+//   return {
+//     temp_color: colormapScale,
+//     coolwarm: colormapScale,
+//   };
+// };
 
 
 const getColor = (value, viewMode, min, max, selectedValue, selectedToneColor, isReversed = false) => {
@@ -283,45 +311,40 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed , n
 
 
 
-const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears }) => {
-  const { coolwarm } = getColorScale(selectedValue, "TrendMap");
+const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears, isReversed }) => {
+  const { coolwarm } = getColorScale(selectedValue, "TrendMap", undefined, isReversed); // ส่ง isReversed เข้าไป
 
   if (!coolwarm || !Array.isArray(coolwarm)) {
     console.warn("Invalid colorScale in TrendmapBar", { coolwarm });
     return null;
   }
 
-  // ขยายขอบเขตเล็กน้อย
-  const stepSize = (max - min) / (steps - 3); 
-  const newMin = min - stepSize; 
-  const newMax = max + stepSize; 
+  const newMin = min;
+  const newMax = max;
+  const stepSize = (newMax - newMin) / (steps - 1);
 
-  // สร้าง labels ให้ตรงกับ tick marks
   const labels = Array.from({ length: steps }, (_, i) => {
     const value = newMin + i * stepSize;
     return {
-      label: i === Math.floor(steps / 2) ? "0" : value.toFixed(2), // ให้ 0 อยู่ตรงกลาง
-      position: (i / (steps - 1)) * 100, // ใช้ steps ในการกำหนดตำแหน่ง
+      label: i === Math.floor(steps / 2) ? "0" : value.toFixed(2),
+      position: (i / (steps - 1)) * 100,
     };
   });
 
-  // สร้างตำแหน่งของ tick marks โดยให้หัวและท้ายติดขอบ
   const tickMarksPositions = Array.from({ length: steps }, (_, i) => {
-    if (i === 0) return 0; // ตำแหน่งของ tick mark ที่แรก (ซ้ายสุด)
-    if (i === steps - 1) return 111; // ตำแหน่งของ tick mark ที่สุดท้าย (ขวาสุด)
+    if (i === 0) return 0;
+    if (i === steps - 1) return 111;
 
-    // คำนวณตำแหน่งที่เหลือของ tick marks
     const basePosition = (i / (steps - 1)) * 100;
-    return basePosition * spacingFactor;  
+    return basePosition * spacingFactor;
   });
 
-  // กำหนดหน่วยตาม selectedValue
   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
   const trendTitle = `Trend Values (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
 
   return (
     <div className="color-bar-container trendmap">
-      <div className="color-bar-title">{trendTitle}</div>  {/* แสดง title ที่ปรับปรุงแล้ว */}
+      <div className="color-bar-title">{trendTitle}</div>
 
       {/* Gradient Bar */}
       <div className="gradient-bar">
@@ -337,7 +360,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
         ))}
       </div>
 
-      {/* Tick Marks - ปรับระยะห่างตาม spacingFactor */}
+      {/* Tick Marks */}
       <div className="tick-marks">
         {tickMarksPositions.map((position, index) => (
           <div
@@ -345,7 +368,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
             className="tick-mark"
             style={{
               position: "absolute",
-              left: `${Math.min(position, 160)}%`,  // ป้องกันไม่ให้ตำแหน่งเกิน 100%
+              left: `${Math.min(position, 160)}%`,
               transform: `translateX(-50%)`,
               height: "8px",
               width: "1px",
@@ -355,7 +378,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
         ))}
       </div>
 
-      {/* Labels - ให้ตรงกับ tick marks และไม่มีค่าซ้ำกัน */}
+      {/* Labels */}
       <div className="labels">
         {labels.map(({ label, position }, index) => (
           <span
@@ -365,7 +388,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
               left: `${tickMarksPositions[index]}%`,
               transform: `translateX(-30%)`,
               fontSize: "10px",
-              marginTop: "16px", 
+              marginTop: "16px",
             }}
           >
             {label}
@@ -375,6 +398,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
     </div>
   );
 };
+
 
 
 
@@ -452,7 +476,7 @@ const MapComponent = ({
       {viewMode === "Heatmap" ? (
         <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax} selectedToneColor={selectedToneColor} isReversed={isReversed} numberOfYears={numberOfYears}/>  // Pass isReversed here
       ) : (
-        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} numberOfYears={numberOfYears}/>  
+        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} numberOfYears={numberOfYears} isReversed={isReversed}/>  
       )}
     </div>
   );

@@ -31,10 +31,6 @@ export const dummySeasonalCycleData = {
 
 //---------------------------------------- Seasonal Cycle Graph---------------------------------------------//
 export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize) => {
-  // ฟังก์ชันหลักสำหรับคำนวณค่าเฉลี่ยอุณหภูมิ
-  // `dataByYear` เป็นข้อมูล GeoJSON แยกตามปี
-  // `startYear` และ `endYear` เป็นปีเริ่มต้นและสิ้นสุดที่ต้องการคำนวณ
-  // `region` เป็นพื้นที่ที่ต้องการกรองข้อมูล (หรือ 'All' เพื่อคำนวณทุกพื้นที่)
   
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year."); // ตรวจสอบเงื่อนไขว่าปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด
@@ -370,14 +366,3 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
 return { seasonalCycleData, timeSeriesData };
 
 };
-
-
-
-
-
-// export const filterByMonth = (data, month) => {
-//   if (!month) {
-//     return data; 
-//   }
-//   return data.filter(feature => feature.properties.month === parseInt(month));
-// };

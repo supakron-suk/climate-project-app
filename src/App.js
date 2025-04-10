@@ -21,49 +21,7 @@ import { Heatmap } from './JS/Heatmap.js';
 import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 import colormap from 'colormap';
 
-//----------------------------Decoration File--------------------//
-//----------------------------Decoration File--------------------//
 
-//----------------------- DATA CRU -----------------------------//
-// import data_index_1901 from './Geo-data/Year-Dataset/data_index_polygon_1901.json';
-// import data_index_1902 from './Geo-data/Year-Dataset/data_index_polygon_1902.json';
-// import data_index_1903 from './Geo-data/Year-Dataset/data_index_polygon_1903.json';
-// import data_index_1904 from './Geo-data/Year-Dataset/data_index_polygon_1904.json';
-// import data_index_1905 from './Geo-data/Year-Dataset/data_index_polygon_1905.json';
-// import data_index_1906 from './Geo-data/Year-Dataset/data_index_polygon_1906.json';
-// import data_index_1907 from './Geo-data/Year-Dataset/data_index_polygon_1907.json';
-// import data_index_1908 from './Geo-data/Year-Dataset/data_index_polygon_1908.json';
-// import data_index_1909 from './Geo-data/Year-Dataset/data_index_polygon_1909.json';
-// import data_index_1910 from './Geo-data/Year-Dataset/data_index_polygon_1910.json';
-//import data_index_1960 from './Geo-data/Year-Dataset/test_1960.json';
-
-//----------------------- DATA ERRA -----------------------------//
-
-// const eraData = {};
-// for (let year = 1960; year <= 1970; year++) {
-//   eraData[year] = require(`./Geo-data/Era-Dataset/era_data_polygon_${year}.json`);
-// }
-
-
-
-
-// import erra_data_1960 from './Geo-data/Era-Dataset/era_data_polygon_1960.json';
-// import erra_data_1961 from './Geo-data/Era-Dataset/era_data_polygon_1961.json';
-// import erra_data_1962 from './Geo-data/Era-Dataset/era_data_polygon_1962.json'; 
-// import erra_data_1963 from './Geo-data/Era-Dataset/era_data_polygon_1963.json';
-// import erra_data_1964 from './Geo-data/Era-Dataset/era_data_polygon_1964.json';
-// import erra_data_1965 from './Geo-data/Era-Dataset/era_data_polygon_1965.json';
-// import erra_data_1966 from './Geo-data/Era-Dataset/era_data_polygon_1966.json';
-// import erra_data_1967 from './Geo-data/Era-Dataset/era_data_polygon_1967.json';
-// import erra_data_1968 from './Geo-data/Era-Dataset/era_data_polygon_1968.json';
-// import erra_data_1969 from './Geo-data/Era-Dataset/era_data_polygon_1969.json';
-// import erra_data_1970 from './Geo-data/Era-Dataset/era_data_polygon_1970.json';
-// import erra_data_1971 from './Geo-data/Era-Dataset/era_data_polygon_1971.json';
-// import erra_data_1972 from './Geo-data/Era-Dataset/era_data_polygon_1972.json';
-// import erra_data_1973 from './Geo-data/Era-Dataset/era_data_polygon_1973.json';
-// import erra_data_1974 from './Geo-data/Era-Dataset/era_data_polygon_1974.json';
-// import erra_data_1975 from './Geo-data/Era-Dataset/era_data_polygon_1975.json';
-// import erra_data_1976 from './Geo-data/Era-Dataset/era_data_polygon_1976.json';
 
 
 
@@ -85,7 +43,7 @@ function App() {
   const [selectedDataset, setSelectedDataset] = useState('');  // เก็บข้อมูล dataset ที่เลือก
   const [isLoading, setIsLoading] = useState(false);
   const [datasetData, setDatasetData] = useState(null);
-
+  const [availableRegions, setAvailableRegions] = useState({});
 
 
 
@@ -93,7 +51,7 @@ function App() {
   const [variableOptions, setVariableOptions] = useState([]);  // ตัวเลือกตัวแปรต่าง ๆ ที่จะใช้
   const [selectedYearStart, setSelectedYearStart] = useState('');
   const [selectedYearEnd, setSelectedYearEnd] = useState('');
-  const [geometries, setGeometries] = useState([]);
+
   
   
 
@@ -221,40 +179,6 @@ const getGradient = (colormapName, isReversed = false) => {
 
 
 
-//  const filteredProvinces = React.useMemo(() => {
-//   if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
-//     return []; 
-//   }
-
-//   // รวบรวมข้อมูลในช่วงปีที่เลือก
-//  const filteredFeatures = [];
-// for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-//   const yearData = dataByYear[year.toString()];
-
-//   console.log(`Checking year: ${year}`);
-//   console.log("yearData:", yearData); // ดูค่าของ yearData
-
-//   if (!yearData || !Array.isArray(yearData.features)) {
-//     console.warn(`Warning: yearData is invalid for year ${year}`);
-//     continue; // ข้ามปีที่ไม่มีข้อมูล
-//   }
-
-//   console.log("yearData.features:", yearData.features); // ดูค่าของ features ก่อนใช้งาน
-//   filteredFeatures.push(...yearData.features);
-// }
-
-
-//   // กรองข้อมูลตามภูมิภาค
-//   const provincesSet = new Set();
-//   filteredFeatures.forEach((feature) => {
-//     if (feature.properties.region === selectedRegion) {
-//       provincesSet.add(feature.properties.name); // เก็บชื่อจังหวัดใน Set เพื่อหลีกเลี่ยงข้อมูลซ้ำ
-//     }
-//   });
-
-//   return Array.from(provincesSet); // แปลง Set เป็น Array
-// }, [selectedYearStart, selectedYearEnd, selectedRegion, dataByYear]);
-
 // ฟังก์ชันสลับมุมมอง
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -340,73 +264,6 @@ const handleDatasetChange = async (e) => {
   };
 
 
-// const handleDatasetChange = async (e) => {
-//   const selected = e.target.value;
-//   setSelectedDataset(selected);
-
-//   // อัปเดต dataByYear ตาม dataset ที่เลือก
-//   if (selected === 'CRU_dataset') {
-//     setDataByYear({
-//       "1901": data_index_1901,
-//       "1902": data_index_1902,
-//       "1903": data_index_1903,
-//       "1904": data_index_1904,
-//       "1905": data_index_1905,
-//       "1906": data_index_1906,
-//       "1907": data_index_1907,
-//       "1908": data_index_1908,
-//       "1909": data_index_1909,
-//       "1910": data_index_1910,
-//     });
-
-//      setVariableOptions([
-//         { label: "Temperature Mean", value: "temperature", group: "Raw Data" },
-//         { label: "Temperature Min", value: "tmin", group: "Raw Data" },
-//         { label: "Temperature Max", value: "tmax", group: "Raw Data" },
-//         { label: "Precipitation", value: "pre", group: "Raw Data" },
-//       ]);
-//   } else if (selected === 'ERA_dataset') {
-    
-//     setDataByYear({
-//       "1960": erra_data_1960,
-//       "1961": erra_data_1961,
-//       "1962": erra_data_1962,
-//       "1963": erra_data_1963,
-//       "1964": erra_data_1964,
-//       "1965": erra_data_1965,
-//       "1966": erra_data_1966,
-//       "1967": erra_data_1967,
-//       "1968": erra_data_1968,
-//       "1969": erra_data_1969,
-//       "1970": erra_data_1970,
-//       "1971": erra_data_1971,
-//       "1972": erra_data_1972,
-//       "1973": erra_data_1973,
-//       "1974": erra_data_1974,
-//       "1975": erra_data_1975,
-//     });
-
-//     setVariableOptions([
-//         { label: "Temperature Min", value: "tmin", group: "Raw Data" },
-//         { label: "Temperature Max", value: "tmax", group: "Raw Data" },
-//         { label: "Precipitation", value: "pre", group: "Raw Data" },
-//         { label: "TXx", value: "txx", group: "Index Data" },
-//         { label: "TNn", value: "tnn", group: "Index Data" },
-//         { label: "Rx1day", value: "rx1day", group: "Index Data" },
-      
-//     ]);
-//   }
-
-//   // Reset ค่าอื่นๆ (กราฟและแผนที่)
-//   setSelectedYearStart('');
-//   setSelectedYearEnd('');
-//   setFilteredYearData(null);
-//   setTrendGeoData(null);
-//   setHeatmapData(null);
-//   setSeasonalCycle({ labels: [], datasets: [] });
-//   setChartData({ labels: [], datasets: [] });
-//   setIsApplied(false);
-// };
 
 
 const getUnit = (variable) => {
@@ -422,16 +279,7 @@ const getUnit = (variable) => {
   return units[variable] || "";
 };
 
-// const getFullDatasetName = (dataset) => {
-//   switch (dataset) {
-//     case "CRU_dataset":
-//       return "Climatic Research Unit Data";
-//     case "ERA_dataset":
-//       return "ECMWF Reanalysis v5 Data";
-//     default:
-//       return "";
-//   }
-// };
+
 
 const getFullDatasetName = (dataset, variable) => {
   let datasetName = "";
@@ -636,13 +484,29 @@ useEffect(() => {
 
 
 //---------------------------------- Index Use Effect------------------------------------//
+
 useEffect(() => {
-    if (selectedValue === 'txx' || selectedValue === 'tnn' || selectedValue === 'rx1day') {
-      setShowSeasonalCycle(false); 
-    } else {
-      setShowSeasonalCycle(true); 
-    }
-  }, [selectedValue]); 
+  if (!selectedDataset || !selectedValue) return;
+
+  const datasetConfig = configData.datasets[selectedDataset];
+  if (!datasetConfig) return;
+
+  const variableOption = datasetConfig.variable_options.find(opt => opt.value === selectedValue);
+
+  if (variableOption?.group === 'Indices Data') {
+    setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle
+  } else {
+    setShowSeasonalCycle(true);  // แสดงกราฟถ้าไม่ใช่ Indices Data
+  }
+}, [selectedDataset, selectedValue]);
+
+// useEffect(() => {
+//     if (selectedValue === 'txx' || selectedValue === 'tnn' || selectedValue === 'rx1day') {
+//       setShowSeasonalCycle(false); 
+//     } else {
+//       setShowSeasonalCycle(true); 
+//     }
+//   }, [selectedValue]); 
 
   useEffect(() => {
   if (selectedDataset === "ERA_dataset") {
@@ -766,8 +630,8 @@ useEffect(() => {
     value={selectedRegion}
   >
     <option value="Thailand">Thailand</option>
-    {configData.areas &&
-      Object.keys(configData.areas).map((region) => (
+    {configData.areas.area_thailand &&
+      Object.keys(configData.areas.area_thailand).map((region) => (
         <option key={region} value={region}>
           {region.replace(/_/g, " ")} {/* แปลง _ เป็นเว้นวรรค */}
         </option>
@@ -781,12 +645,12 @@ useEffect(() => {
   <select
     onChange={(e) => setSelectedProvince(e.target.value)} // เมื่อเลือกจังหวัดจะตั้งค่า
     value={selectedProvince}
-    disabled={!selectedRegion || !configData.areas[selectedRegion]} // ถ้าไม่เลือก Region หรือไม่มีข้อมูลพื้นที่ จะไม่สามารถเลือกได้
+    disabled={!selectedRegion || !configData.areas.area_thailand[selectedRegion]} // ถ้าไม่เลือก Region หรือไม่มีข้อมูลพื้นที่ จะไม่สามารถเลือกได้
   >
     <option value="">All Provinces</option>
     {selectedRegion &&
-      configData.areas[selectedRegion] &&
-      configData.areas[selectedRegion].map((province, index) => (
+      configData.areas.area_thailand[selectedRegion] &&
+      configData.areas.area_thailand[selectedRegion].map((province, index) => (
         <option key={index} value={province}>
           {province}
         </option>
@@ -825,7 +689,7 @@ useEffect(() => {
     <option value="" disabled hidden>
       Select Variable
     </option>
-    {["Raw Data", "Index Data"].map((group) => (
+    {["Raw Data", "Indices Data"].map((group) => (
       <optgroup key={group} label={group}>
         {variableOptions
           .filter((option) => option.group === group)
@@ -980,7 +844,7 @@ useEffect(() => {
 
           setIsApplied(true);
         }}
-        disabled={!selectedYearStart || !selectedYearEnd}
+        disabled={!selectedYearStart || !selectedYearEnd || !selectedValue}
         className="apply_button"
       >
         Apply

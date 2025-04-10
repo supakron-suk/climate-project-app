@@ -51,7 +51,7 @@ def process_year(year):
     
     # เตรียมข้อมูลภูมิภาค
     region_coords = province_coord()  # ฟังก์ชันที่ให้พิกัดของภูมิภาค
-    region_names = ["North", "North East", "South", "Center", "East", "West"]  # ชื่อภูมิภาค
+    region_names = ["North", "East", "Northeast", "Central", "South East", "South West"]  # ชื่อภูมิภาค
 
     region_features = []  # รายการเก็บฟีเจอร์ของภูมิภาคทั้งหมด
 

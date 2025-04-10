@@ -7,61 +7,119 @@ gdf = gpd.read_file("src/Geo-data/thailand-Geo.json")
 
 # รายชื่อจังหวัดภาคอีสานและภาคเหนือที่ต้องการ 
 def province_coord():
-    province_NE = [
-        "Nakhon Ratchasima", "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom",
+    province_North = [
+        "Kamphaeng Phet", "Chiang Rai", "Chiang Mai", "Tak", "Nan", "Phayao",
+        "Phichit", "Phitsanulok", "Phetchabun", "Phrae", "Mae Hong Son",
+        "Lampang", "Lamphun", "Sukhothai", "Uttaradit"
+    ]
+
+    province_East = [
+        "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Nakhon Nayok",
+        "Prachin Buri", "Rayong", "Sa Kaeo"
+    ]
+
+    province_Northeast = [
+        "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Nakhon Ratchasima",
         "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon",
         "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin",
         "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"
     ]
-    
-    province_North = [
-        "Chiang Rai", "Chiang Mai", "Nan", "Phayao", "Phrae", "Mae Hong Son", "Lampang",
-        "Lamphun", "Uttaradit"
+
+    province_Central = [
+        "Bangkok Metropolis", "Kanchanaburi", "Chai Nat", "Nakhon Pathom",
+        "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya",
+        "Ratchaburi", "Lop Buri", "Samut Prakan", "Samut Songkhram",
+        "Samut Sakhon", "Saraburi", "Sing Buri", "Suphan Buri", "Ang Thong", "Uthai Thani"
     ]
-    
-    province_South = [
-        "Krabi", "Chumphon", "Trang", "Nakhon Si Thammarat", "Narathiwat" , "Pattani", 
-        "Phangnga", "Phatthalung", "Phuket", "Yala", "Ranong", "Songkhla", "Satun",
-        "Surat Thani"
+
+    province_South_East = [
+        "Chumphon", "Nakhon Si Thammarat", "Narathiwat", "Prachuap Khiri Khan",
+        "Pattani", "Phatthalung", "Phetchaburi", "Yala", "Songkhla", "Surat Thani"
     ]
-    
-    province_Middle = [
-        "Bangkok Metropolis", "Kamphaeng Phet", "Chai Nat", "Nakhon Nayok", "Nakhon Pathom", "Nakhon Sawan",
-        "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya", "Phichit", "Phitsanulok", "Phetchabun",
-        "Lop Buri", "Samut Prakan", "Samut Songkhram", "Samut Sakhon", "Saraburi", "Sing Buri", "Sukhothai",
-        "Suphan Buri", "Ang Thong", "Uthai Thani"
+
+    province_South_West = [
+        "Krabi", "Trang", "Phangnga", "Phuket", "Ranong", "Satun"
     ]
-    
-    #ภาคตะวันออก
-    province_East = [
-        "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Prachin Buri", "Rayong", "Sa Kaeo"
-    ]
-   
-    #ภาคตะวันตก
-    province_West = [
-        "Kanchanaburi", "Tak", "Prachuap Khiri Khan", "Phetchaburi", "Ratchaburi"
-    ] 
-    
-    # ดึงพิกัดของแต่ละจังหวัดในรูปแบบ geometry
-    ne_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "North_East_region") for name in province_NE]
+
+    # จัดรูปแบบเหมือนเดิม
     north_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "North_region") for name in province_North]
-    south_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "South_region") for name in province_South]
-    middle_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "Middle_region") for name in province_Middle]
     east_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "East_region") for name in province_East]
-    west_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "West_region") for name in province_West]
+    northeast_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "Northeast_region") for name in province_Northeast]
+    central_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "Central_region") for name in province_Central]
+    south_east_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "SouthEast_region") for name in province_South_East]
+    south_west_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "SouthWest_region") for name in province_South_West]
 
-
-    # รวมข้อมูลของภาคเหนือและภาคอีสานในลิสต์
+    # รวมทั้งหมด
     region_coords = [
         north_list,
-        ne_list,
-        south_list,
-        middle_list,
         east_list,
-        west_list
+        northeast_list,
+        central_list,
+        south_east_list,
+        south_west_list
     ]
-    
+
     return region_coords
+
+
+
+
+# def province_coord():
+#     province_NE = [
+#         "Nakhon Ratchasima", "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom",
+#         "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon",
+#         "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin",
+#         "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"
+#     ]
+    
+#     province_North = [
+#         "Chiang Rai", "Chiang Mai", "Nan", "Phayao", "Phrae", "Mae Hong Son", "Lampang",
+#         "Lamphun", "Uttaradit"
+#     ]
+    
+#     province_South = [
+#         "Krabi", "Chumphon", "Trang", "Nakhon Si Thammarat", "Narathiwat" , "Pattani", 
+#         "Phangnga", "Phatthalung", "Phuket", "Yala", "Ranong", "Songkhla", "Satun",
+#         "Surat Thani"
+#     ]
+    
+#     province_Middle = [
+#         "Bangkok Metropolis", "Kamphaeng Phet", "Chai Nat", "Nakhon Nayok", "Nakhon Pathom", "Nakhon Sawan",
+#         "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya", "Phichit", "Phitsanulok", "Phetchabun",
+#         "Lop Buri", "Samut Prakan", "Samut Songkhram", "Samut Sakhon", "Saraburi", "Sing Buri", "Sukhothai",
+#         "Suphan Buri", "Ang Thong", "Uthai Thani"
+#     ]
+    
+#     #ภาคตะวันออก
+#     province_East = [
+#         "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Prachin Buri", "Rayong", "Sa Kaeo"
+#     ]
+   
+#     #ภาคตะวันตก
+#     province_West = [
+#         "Kanchanaburi", "Tak", "Prachuap Khiri Khan", "Phetchaburi", "Ratchaburi"
+#     ] 
+    
+#     # ดึงพิกัดของแต่ละจังหวัดในรูปแบบ geometry
+#     ne_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "North_East_region") for name in province_NE]
+#     north_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "North_region") for name in province_North]
+#     south_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "South_region") for name in province_South]
+#     middle_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "Middle_region") for name in province_Middle]
+#     east_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "East_region") for name in province_East]
+#     west_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "West_region") for name in province_West]
+
+
+#     # รวมข้อมูลของภาคเหนือและภาคอีสานในลิสต์
+#     region_coords = [
+#         north_list,
+#         ne_list,
+#         south_list,
+#         middle_list,
+#         east_list,
+#         west_list
+#     ]
+    
+#     return region_coords
 
 
 

@@ -29,7 +29,7 @@ region_coords = province_coord()
 fig, axs = plt.subplots(2, 3, figsize=(18, 12))
 axs = axs.flatten()
 
-region_names = ["North", "North East", "South", "Middle", "East", "West"]
+region_names = ["North", "East", "Northeast", "Central", "South East", "South West",]
 
 for i, region in enumerate(region_coords):
     # รวม geometry ของทั้ง region

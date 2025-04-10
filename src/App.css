@@ -826,8 +826,8 @@
 
 .popup-tone {
   position: absolute;
-  bottom: 100%;
-  left: 167%; /* ขยับไปขวานิดนึง จาก 50% → 60% */
+  bottom: 105%;
+  left: 110%; 
   transform: translateX(-50%) translateY(6px); /* ขยับขึ้นน้อยลงนิดนึง */
   background: rgba(60, 60, 60, 0.85); /* สีเข้มขึ้นนิดหน่อยให้ตัดกับตัวอักษร */
   color: #fff;
@@ -1005,6 +1005,7 @@
   position: relative;
   top: 75px;
   text-align: center;
+  font-weight: bold;
 } 
 
 

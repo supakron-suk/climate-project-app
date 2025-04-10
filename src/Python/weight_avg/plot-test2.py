@@ -8,14 +8,21 @@ def load_region_data(year):
     file_path = f'src/Geo-data/Era-Dataset/{year}/region_data_{year}.json'
     with open(file_path, 'r') as f:
         data = json.load(f)
-        return data['features']  # กลับข้อมูลแค่ features
+        return data['features']
 
-# ฟังก์ชันในการแปลง geometry เป็น shapely geometry และพล็อต
-def plot_geometry(geometry):
-    # สร้าง GeoDataFrame จาก geometry ที่เป็นรูปแบบ GeoJSON
+# ฟังก์ชันพล็อต geometry และใส่ชื่อ region ลงในแผนที่
+def plot_geometry(geometry, region_name):
     gdf = gpd.GeoDataFrame(geometry=[shape(geometry)], crs="EPSG:4326")
-    ax = gdf.plot(figsize=(8, 8), edgecolor='black', facecolor='none')  # พล็อตแผนที่
-    ax.set_title('Region Geometry', fontsize=15)
+
+    ax = gdf.plot(figsize=(8, 8), edgecolor='black', facecolor='lightblue', alpha=0.5)
+    ax.set_title(f'Region Geometry: {region_name}', fontsize=15)
+    
+    # คำนวณจุดกึ่งกลางของ geometry เพื่อวาง label
+    centroid = gdf.geometry.centroid.iloc[0]
+    ax.annotate(region_name, xy=(centroid.x, centroid.y), ha='center', fontsize=12, color='red')
+    
+    plt.axis('off')
+    plt.tight_layout()
     plt.show()
 
 # แสดงข้อมูล properties และพล็อต geometry ของแต่ละ feature
@@ -46,21 +53,20 @@ def display_properties_and_plot(region_data_list):
             else:
                 print("Monthly data not found.")
             
-            # พล็อต geometry ของ region
+            # พล็อต geometry พร้อมชื่อ region
             geometry = feature.get('geometry', {})
             if geometry:
-                plot_geometry(geometry)
+                plot_geometry(geometry, region_name)
             else:
                 print("No geometry data found.")
         else:
             print(f"No 'properties' found in Feature {i+1}")
 
-# แสดงข้อมูล properties และพล็อต geometry ของทุกภูมิภาคในปี 1960
+# ใช้งานจริง
 year = 1960
 region_data_list = load_region_data(year)
-
-# แสดง properties และพล็อต geometry สำหรับแต่ละ feature
 display_properties_and_plot(region_data_list)
+
 
 
 

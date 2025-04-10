@@ -5,7 +5,7 @@ export const TrendMap = (dataByYear, startYear, endYear, region, province, value
     return null;
   }
 
-  const numberOfYears = endYear - startYear + 1;
+  const numberOfYears = endYear - startYear;
   console.log(`🔍 TrendMap: Years requested = ${numberOfYears} years (${startYear} to ${endYear})`);
   // ฟกรองข้อมูลตามภูมิภาค
   const filterByRegion = (features, region) => {
