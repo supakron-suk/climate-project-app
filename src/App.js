@@ -56,12 +56,15 @@ function App() {
   
 
   //const [timeSeriesData, setTimeSeriesData] = useState(null);
-  const [selectedRegion, setSelectedRegion] = useState('Thailand');
+  const [selectedRegion, setSelectedRegion] = useState('Thailand_region');
   const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
   const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
   const [filteredYearData, setFilteredYearData] = useState(null);  // เก็บข้อมูลของช่วงปีที่เลือก
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
   const [selectedProvinceData, setSelectedProvinceData] = useState(null);
+  const [isRegionView, setIsRegionView] = useState(true);
+  const [isProvinceView, setIsProvinceView] = useState(true);
+
   //const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedData, setSelectedData] = useState([]);
@@ -138,44 +141,48 @@ const getGradient = (colormapName, isReversed = false) => {
 
 //-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
-  const filterByRegion = (data, region) => {
+  const filterByRegion = (dataByYear, region, selectedYearStart, selectedYearEnd) => {
+  const filtered = [];
 
-    if (!data || !data.features) {
-    console.warn("filterByRegion: Data is null or has no features.");
-    return []; // ป้องกัน error โดยคืนค่า array ว่าง
-  }
-
-    if (region === 'Thailand') {
-      return data.features;
-    } else {
-      return data.features.filter(feature => feature.properties.region === region);
-    }
-  };
-
- const filteredProvinces = React.useMemo(() => {
-  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
-    return []; // คืนค่ารายการว่างถ้าเงื่อนไขไม่ครบ
-  }
-
-  // รวบรวมข้อมูลในช่วงปีที่เลือก
-  const filteredFeatures = [];
   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-    const yearData = dataByYear[year.toString()];
-    if (yearData) {
-      filteredFeatures.push(...yearData.features);
+    const regionData = dataByYear[year]?.region;
+    if (regionData && regionData.features) {
+      const features = region === 'Thailand_region'
+        ? dataByYear[year]?.country?.features || []  // ถ้าเลือกประเทศไทย ใช้ country แทน region
+        : regionData.features.filter(f => f.properties.region_name === region); 
+      filtered.push(...features);
     }
   }
 
-  // กรองข้อมูลตามภูมิภาค
-  const provincesSet = new Set();
-  filteredFeatures.forEach((feature) => {
-    if (feature.properties.region === selectedRegion) {
-      provincesSet.add(feature.properties.name); 
-    }
-  });
+  return filtered;
+};
 
-  return Array.from(provincesSet); // แปลง Set เป็น Array
+
+
+const filteredProvinces = React.useMemo(() => {
+  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand_province") {
+    return [];
+  }
+
+  const regionProvinces = configData.areas.area_thailand[selectedRegion] || [];
+  const provincesSet = new Set();
+
+  for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+    const provinceData = dataByYear[year]?.province;
+
+    if (provinceData && provinceData.features) {
+      provinceData.features.forEach((feature) => {
+        const provinceName = feature.properties.name;
+        if (regionProvinces.includes(provinceName)) {
+          provincesSet.add(provinceName);
+        }
+      });
+    }
+  }
+
+  return Array.from(provincesSet);
 }, [selectedYearStart, selectedYearEnd, selectedRegion, dataByYear]);
+
 
 
 
@@ -184,22 +191,53 @@ const getGradient = (colormapName, isReversed = false) => {
     setViewMode(mode);
   };
 
+  const handleToggleView = (toRegionView) => {
+  setIsRegionView(toRegionView);
+  
 
-  const handleValueChange = (e) => {
-    const newValue = e.target.value;
-    setSelectedValue(newValue);
-    
-  setapplyLegendMin(null);
-  setapplyLegendMax(null);
-  };
+  const updatedRegion = toRegionView ? "Thailand_region" : "";
+  const updatedProvince = !toRegionView ? "Thailand_province" : "";
 
-// const handleValueChange = (e) => {
-//     setSelectedValue(e.target.value);
-//     setIsApplied(true); // Trigger useEffect
-//   };
+  // อัปเดต Heatmap
+  const heatmapResult = Heatmap(
+    dataByYear,
+    parseInt(selectedYearStart),
+    parseInt(selectedYearEnd),
+    updatedRegion,
+    updatedProvince,
+    selectedValue,
+    configData,
+    toRegionView
+  );
+  if (heatmapResult) setHeatmapData(heatmapResult);
+
+  // อัปเดต TrendMap
+  const trendResult = TrendMap(
+    dataByYear,
+    parseInt(selectedYearStart),
+    parseInt(selectedYearEnd),
+    updatedRegion,
+    updatedProvince,
+    selectedValue,
+    configData,
+    toRegionView
+  );
+  if (trendResult) {
+    setTrendGeoData(trendResult.geojson);
+    setNumberOfYears(trendResult.numberOfYears);
+  }
+
+  // รีเซต dropdown + labels
+  setSelectedRegion(updatedRegion);
+  setSelectedProvince(updatedProvince);
+  setlabelRegion(updatedRegion);
+  setlabelProvince(updatedProvince);
+
+  
+};
 
 
-// ฟังก์ชันเปลี่ยน dataset
+
 
 // ฟังก์ชันจัดการการเปลี่ยนแปลงของ dropdown
 const handleDatasetChange = async (e) => {
@@ -209,6 +247,7 @@ const handleDatasetChange = async (e) => {
 
   try {
     const dataset = await loadDatasetFiles(selected);
+    console.log("📦 Loaded dataset:", dataset);
     setDataByYear(dataset);
 
     const options = getVariableOptions(selected);
@@ -234,28 +273,6 @@ const handleDatasetChange = async (e) => {
 };
 
 
-  // const handleDatasetChange = async (e) => {
-  //   const selected = e.target.value;
-  //   setSelectedDataset(selected);  // อัปเดต dataset ที่เลือก
-
-  //   // โหลดข้อมูลจาก dataset ที่เลือก
-  //   const dataset = await loadDatasetFiles(selected);
-  //   setDataByYear(dataset);  // อัปเดตข้อมูลที่โหลดตามปี
-
-  //   // กำหนดตัวเลือกของตัวแปรตาม dataset ที่เลือก
-  //   const options = getVariableOptions(selected);
-  //   setVariableOptions(options);
-
-  //   // Reset ค่าอื่นๆ (กราฟและแผนที่)
-  //   setSelectedYearStart('');
-  //   setSelectedYearEnd('');
-  //   setFilteredYearData(null);
-  //   setTrendGeoData(null);
-  //   setHeatmapData(null);
-  //   setSeasonalCycle({ labels: [], datasets: [] });
-  //   setChartData({ labels: [], datasets: [] });
-  //   setIsApplied(false);
-  // };
 
   // ฟังก์ชันเพื่อดึงตัวเลือกของตัวแปรจาก config
   const getVariableOptions = (dataset) => {
@@ -330,60 +347,37 @@ const [datasetInfo, setDatasetInfo] = useState(null);
   }, []);  // ว่างเปล่าเพื่อให้ทำแค่ครั้งเดียวเมื่อ component ถูก mount
 
 
-// const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;  
-// console.log("process.env:", process.env);
-// console.log("Backend URL:", process.env.REACT_APP_BACKEND_URL);
-
-
-// const onFileChange = async (event) => {
-//     const file = event.target.files[0];
-//     if (file) {
-//         try {
-//             const content = await new_dataset(file);  
-//             setgetdataset(content);
-//             const result = await sendFileToBackend(file, content, BACKEND_URL);  
-//             setFilePath(result.file_path);
-//         } catch (error) {
-//             console.error("File Upload Error:", error);
-//         }
-//     }
-// };
-
-
-// let uniqueTicks = new Set();
-// const onFileChange = async (event) => {
-//         const file = event.target.files[0];
-//         if (file) {
-//             try {
-//                 const content = await new_dataset(file);
-//                 setgetdataset(content); 
-//             } catch (error) {
-//                 console.error("File Upload Error:", error);
-//             }
-//         }
-//     };
-
 //----------------------------------User Effect-------------------------------------------//
 //Useeffect--1
 // เก็บข้อมูลปีและภูมิภาคเมื่อกด Apply
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
 
+   const updatedRegion = DataApply.isRegionView
+  ? DataApply.selectedRegion
+  : "";
+
+// const updatedProvince = !DataApply.isRegionView
+//   ? DataApply.selectedProvince
+//   : "";
+    const updatedProvince = !DataApply.isRegionView ? DataApply.selectedProvince : "";
+
+
+    console.log("🗺️ [APPLY] View Mode:", DataApply.isRegionView ? "Region View" : "Province View");
+
+    console.log("➡️ Region:", updatedRegion);
+    console.log("➡️ Province:", updatedProvince);
+    console.log("➡️ Value Key:", selectedValue);
+
     const selectedYears = Object.keys(dataByYear)
       .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
       .map((year) => ({
-
-        
 
         year,
         data: filterByRegion(dataByYear[year], selectedRegion),
       }));
 
       selectedYears.forEach(({ year, data }) => {
-      // เพิ่มบรรทัดนี้เพื่อดูข้อมูลในแต่ละปี
-      // console.log(`Data for year ${year}:`, data);
-      // console.log("data in databyyear", dataByYear)
-      // console.log("data in region", selectedRegion)
     });
 
     setFilteredYearData(selectedYears);
@@ -398,9 +392,11 @@ useEffect(() => {
         dataByYear,
         parseInt(selectedYearStart),
         parseInt(selectedYearEnd),
-        selectedRegion,
-        selectedProvince,
-        selectedValue
+        updatedRegion,
+        updatedProvince,
+        DataApply.selectedValue,
+        configData,
+        DataApply.isRegionView,
       );
 
       if (trendResult) {
@@ -408,24 +404,16 @@ useEffect(() => {
         setNumberOfYears(trendResult.numberOfYears); 
       }
 
-    // const generatedGeoJSON = TrendMap(
-    //   dataByYear,
-    //   parseInt(selectedYearStart),
-    //   parseInt(selectedYearEnd),
-    //   selectedRegion,
-    //   selectedProvince,
-    //   selectedValue
-    // );
-    // console.log("Generated Trend GeoJSON:", generatedGeoJSON);
-    // if (generatedGeoJSON) setTrendGeoData(generatedGeoJSON);
 
     const averageData = Heatmap(
       dataByYear,
       parseInt(selectedYearStart),
       parseInt(selectedYearEnd),
-      selectedRegion,
-      selectedProvince,
-      selectedValue
+      updatedRegion,
+      updatedProvince,
+      DataApply.selectedValue,
+      configData,
+      DataApply.isRegionView,
     );
     if (averageData) setHeatmapData(averageData);
 
@@ -433,10 +421,13 @@ useEffect(() => {
       dataByYear,
       selectedYearStart,
       selectedYearEnd,
-      selectedRegion,
-      selectedProvince,
+      updatedRegion,
+      updatedProvince,
+      // selectedRegion,
+      // selectedProvince,
       selectedValue,
-      kernelSize
+      kernelSize,
+      configData
     );
     if (chartData) {
       setSeasonalCycle(chartData.seasonalCycleData);
@@ -445,12 +436,13 @@ useEffect(() => {
 
     setlabelYearStart(selectedYearStart);
     setlabelYearEnd(selectedYearEnd);
-    setlabelRegion(selectedRegion);
+    setlabelRegion(updatedRegion);
+    setlabelProvince(updatedProvince);
+    // setlabelRegion(selectedRegion);
 
     setIsApplied(false);
   }
 
-  console.log("config data",configData)
 }, [isApplied]);
 
 useEffect(() => {
@@ -464,23 +456,6 @@ useEffect(() => {
 }, [isApplied]);
 
 
-// useEffect(() => {
-//   const loadGeometries = async () => {
-//     if (!isApplied) return; // ถ้า isApplied เป็น false จะไม่โหลดข้อมูล geometry
-
-//     setLoading(true);
-//     try {
-//       const data = await Geometries_data(selectedDataset, selectedRegion); // เรียกฟังก์ชันเพื่อโหลดข้อมูล geometry
-//       setGeometries(data); // กำหนดค่าที่โหลดมาให้กับ geometries
-//     } catch (error) {
-//       console.error("Error loading geometries:", error); // จับ error ถ้ามี
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   loadGeometries();
-// }, [isApplied, selectedDataset, selectedRegion, selectedYearStart, selectedYearEnd]);
 
 
 //---------------------------------- Index Use Effect------------------------------------//
@@ -500,13 +475,6 @@ useEffect(() => {
   }
 }, [selectedDataset, selectedValue]);
 
-// useEffect(() => {
-//     if (selectedValue === 'txx' || selectedValue === 'tnn' || selectedValue === 'rx1day') {
-//       setShowSeasonalCycle(false); 
-//     } else {
-//       setShowSeasonalCycle(true); 
-//     }
-//   }, [selectedValue]); 
 
   useEffect(() => {
   if (selectedDataset === "ERA_dataset") {
@@ -618,46 +586,66 @@ useEffect(() => {
 
   
   
-    {/* Select Area */}
-<label className="area-label">Area</label>
-<div className="region-selector">
-  <label>Region</label>
-  <select
-    onChange={(e) => {
-      setSelectedRegion(e.target.value); // ตั้งค่าภูมิภาคที่เลือก
-      setSelectedProvince(""); // รีเซ็ตจังหวัดเมื่อเปลี่ยนภูมิภาค
-    }}
-    value={selectedRegion}
+    <label className="area-label">Area</label>
+
+
+<div className="toggle-button-group">
+  <button
+    className={`toggle-button ${isRegionView ? " active" : ""}`}
+    onClick={() => handleToggleView(true)}
   >
-    <option value="Thailand">Thailand</option>
-    {configData.areas.area_thailand &&
-      Object.keys(configData.areas.area_thailand).map((region) => (
-        <option key={region} value={region}>
-          {region.replace(/_/g, " ")} {/* แปลง _ เป็นเว้นวรรค */}
-        </option>
-      ))}
-  </select>
+    Region
+  </button>
+  <button
+    className={`toggle-button ${!isRegionView ? "active" : ""}`}
+    onClick={() => handleToggleView(false)}
+  >
+    Province
+  </button>
 </div>
 
-{/* Select Province */}
-<div className="province-selector">
-  <label>Province</label>
-  <select
-    onChange={(e) => setSelectedProvince(e.target.value)} // เมื่อเลือกจังหวัดจะตั้งค่า
-    value={selectedProvince}
-    disabled={!selectedRegion || !configData.areas.area_thailand[selectedRegion]} // ถ้าไม่เลือก Region หรือไม่มีข้อมูลพื้นที่ จะไม่สามารถเลือกได้
-  >
-    <option value="">All Provinces</option>
-    {selectedRegion &&
-      configData.areas.area_thailand[selectedRegion] &&
-      configData.areas.area_thailand[selectedRegion].map((province, index) => (
+{/* REGION View */}
+{isRegionView ? (
+  <div className="region-selector">
+    <label>Region</label>
+    <select
+      onChange={(e) => {
+        setSelectedRegion(e.target.value);
+        setSelectedProvince("");
+      }}
+      value={selectedRegion}
+    >
+      <option value="Thailand_region">Thailand</option>
+      {Object.keys(configData.areas.area_thailand).map((region) => (
+        <option key={region} value={region}>
+          {region.replace(/_/g, " ")}
+        </option>
+      ))}
+    </select>
+  </div>
+) : (
+  <div className="province-selector">
+    <label>Province</label>
+    <select
+      onChange={(e) => {
+        setSelectedProvince(e.target.value);
+        setSelectedRegion("");
+      }}
+      value={selectedProvince}
+    >
+      <option value="Thailand_province">Thailand</option>
+      {[
+        ...new Set(
+          Object.values(configData.areas.area_thailand).flat()
+        ),
+      ].map((province, index) => (
         <option key={index} value={province}>
           {province}
         </option>
       ))}
-  </select>
-</div>
-
+    </select>
+  </div>
+)}
 
     
 
@@ -833,12 +821,13 @@ useEffect(() => {
             yearStart: selectedYearStart,
             yearEnd: selectedYearEnd,
             selectedValue: selectedValue,
-            legendMin: minmaxButton === 'Actual' ? applyLegendMin : null, // ใช้เฉพาะเมื่อเลือก Actual
-            legendMax: minmaxButton === 'Actual' ? applyLegendMax : null, // ใช้เฉพาะเมื่อเลือก Actual
-            trendMin: minmaxButton === 'Trend' ? applyLegendMin : null,  // เพิ่มสำหรับ Trend
-            trendMax: minmaxButton === 'Trend' ? applyLegendMax : null,  // เพิ่มสำหรับ Trend
+            legendMin: minmaxButton === 'Actual' ? applyLegendMin : null, 
+            legendMax: minmaxButton === 'Actual' ? applyLegendMax : null, 
+            trendMin: minmaxButton === 'Trend' ? applyLegendMin : null,  
+            trendMax: minmaxButton === 'Trend' ? applyLegendMax : null,  
             selectedRegion: selectedRegion,
             selectedProvince: selectedProvince,
+            isRegionView: isRegionView,
           };
           setDataApply(appliedData);
 
@@ -945,7 +934,7 @@ useEffect(() => {
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
     <MapComponent
       key={`${viewMode}-${selectedYearStart}-${selectedYearEnd}-
-      ${selectedValue}-${isApplied}-${selectedToneColor}-${isReversed}`} 
+      ${selectedValue}-${isApplied}-${selectedToneColor}-${isReversed}-${isRegionView}`} 
 
       geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
       selectedRegion={DataApply.selectedRegion}
@@ -966,7 +955,8 @@ useEffect(() => {
       setSelectedToneColor={setSelectedToneColor}
       toneColors={toneColors}
       isReversed={isReversed}
-      numberOfYears={numberOfYears} 
+      numberOfYears={numberOfYears}
+      isRegionView={DataApply.isRegionView} 
     />
   )}
 </div>

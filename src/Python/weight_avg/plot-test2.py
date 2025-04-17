@@ -1,3 +1,141 @@
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+
+# # โหลดไฟล์ GeoJSON ที่สร้างไว้
+# region_gdf = gpd.read_file("src/Geo-data/regions_simple_manual.json")
+
+# # พล็อตแบบรวมทุก Region ใช้สีตามชื่อ region
+# fig, ax = plt.subplots(figsize=(10, 12))
+# region_gdf.plot(ax=ax, column="region", cmap="tab20", edgecolor="black", legend=True)
+
+# # ใส่ label ของแต่ละ region (centroid)
+# for idx, row in region_gdf.iterrows():
+#     centroid = row.geometry.centroid
+#     ax.text(centroid.x, centroid.y, row["region"], fontsize=9, ha='center', va='center', color='black')
+
+# plt.title("Thailand Regions (From GeoJSON)", fontsize=16)
+# plt.axis("off")
+# plt.tight_layout()
+# plt.show()
+
+
+# import geopandas as gpd
+# import matplotlib.pyplot as plt
+# from shapely.geometry import MultiPolygon, Polygon, mapping
+# import json
+# import os
+
+# # โหลด shapefile ของประเทศไทย
+# gdf = gpd.read_file("src/Geo-data/thailand-Geo.json")
+
+# # กำหนดกลุ่มจังหวัดในแต่ละภูมิภาค
+# regions = {
+#     "North": [
+#         "Kamphaeng Phet", "Chiang Rai", "Chiang Mai", "Tak", "Nan", "Phayao",
+#         "Phichit", "Phitsanulok", "Phetchabun", "Phrae", "Mae Hong Son",
+#         "Lampang", "Lamphun", "Sukhothai", "Uttaradit"
+#     ],
+#     "East": [
+#         "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Nakhon Nayok",
+#         "Prachin Buri", "Rayong", "Sa Kaeo"
+#     ],
+#     "Northeast": [
+#         "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Nakhon Ratchasima",
+#         "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon",
+#         "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin",
+#         "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"
+#     ],
+#     "Central": [
+#         "Bangkok Metropolis", "Kanchanaburi", "Chai Nat", "Nakhon Pathom",
+#         "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya",
+#         "Ratchaburi", "Lop Buri", "Samut Prakan", "Samut Songkhram",
+#         "Samut Sakhon", "Saraburi", "Sing Buri", "Suphan Buri", "Ang Thong", "Uthai Thani"
+#     ],
+#     "South_East": [
+#         "Chumphon", "Nakhon Si Thammarat", "Narathiwat", "Prachuap Khiri Khan",
+#         "Pattani", "Phatthalung", "Phetchaburi", "Yala", "Songkhla", "Surat Thani"
+#     ],
+#     "South_West": [
+#         "Krabi", "Trang", "Phangnga", "Phuket", "Ranong", "Satun"
+#     ]
+# }
+
+# # รวมขอบเขตจังหวัดเป็น MultiPolygon (แยก polygon ไม่ละลาย)
+# features = []
+# for region_name, provinces in regions.items():
+#     region_provinces = gdf[gdf['NAME_1'].isin(provinces)]
+
+#     polygons = []
+#     for geom in region_provinces.geometry:
+#         if isinstance(geom, Polygon):
+#             polygons.append(geom)
+#         elif isinstance(geom, MultiPolygon):
+#             polygons.extend(geom.geoms)  # แยก MultiPolygon ออกเป็น Polygons
+    
+#     multipolygon = MultiPolygon(polygons)
+    
+#     features.append({
+#         "type": "Feature",
+#         "geometry": mapping(multipolygon),
+#         "properties": {
+#             "region": region_name
+#         }
+#     })
+
+# # GeoJSON Object
+# geojson_obj = {
+#     "type": "FeatureCollection",
+#     "features": features
+# }
+
+# # Save ไฟล์
+# os.makedirs("src/Geo-data/", exist_ok=True)
+# with open("src/Geo-data/regions_simple_manual.json", "w", encoding="utf-8") as f:
+#     json.dump(geojson_obj, f, ensure_ascii=False, indent=2)
+
+# print("✅ สร้าง GeoJSON พร้อมขอบเขตจังหวัดในแต่ละ Region สำเร็จ")
+
+
+
+
+
+
+
+regions = {
+    "North": [
+        "Kamphaeng Phet", "Chiang Rai", "Chiang Mai", "Tak", "Nan", "Phayao",
+        "Phichit", "Phitsanulok", "Phetchabun", "Phrae", "Mae Hong Son",
+        "Lampang", "Lamphun", "Sukhothai", "Uttaradit"
+    ],
+    "East": [
+        "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Nakhon Nayok",
+        "Prachin Buri", "Rayong", "Sa Kaeo"
+    ],
+    "Northeast": [
+        "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Nakhon Ratchasima",
+        "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon",
+        "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin",
+        "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"
+    ],
+    "Central": [
+        "Bangkok Metropolis", "Kanchanaburi", "Chai Nat", "Nakhon Pathom",
+        "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya",
+        "Ratchaburi", "Lop Buri", "Samut Prakan", "Samut Songkhram",
+        "Samut Sakhon", "Saraburi", "Sing Buri", "Suphan Buri", "Ang Thong", "Uthai Thani"
+    ],
+    "South_East": [
+        "Chumphon", "Nakhon Si Thammarat", "Narathiwat", "Prachuap Khiri Khan",
+        "Pattani", "Phatthalung", "Phetchaburi", "Yala", "Songkhla", "Surat Thani"
+    ],
+    "South_West": [
+        "Krabi", "Trang", "Phangnga", "Phuket", "Ranong", "Satun"
+    ]
+}
+
+
+
+
+
 import json
 import geopandas as gpd
 import matplotlib.pyplot as plt

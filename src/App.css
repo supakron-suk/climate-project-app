@@ -1278,60 +1278,68 @@
   top: -30px; 
 }
 
-.region-selector {
+.region-selector,
+ .province-selector {
   display: flex;
   align-items: center; 
   margin-bottom: 20px; 
   position: relative;
-  top: -40px;
+  top: 10px;
+  display: flex;
+  flex-direction: column; 
+  align-items: center; 
+  margin: 20px 0; 
+  z-index: 100;
 }
 
-.region-selector label {
+.region-selector label,
+.province-selector label {
   margin-right: 240px; 
   font-size: 16px; 
   margin-bottom: 10px;
 }
 
 /* สไตล์สำหรับ select */
-.region-selector select {
+.region-selector select,
+.province-selector select {
   width: 250px;
   padding: 10px;
   font-size: 16px;
   margin-right: 90px;
-  border: 1px solid #ccc; /* ขอบของ dropdown */
-  border-radius: 8px; /* มุมมนของ dropdown */
-  background-color: #f9f9f9; /* สีพื้นหลังของ dropdown */
-  color: #333; /* สีข้อความ */
-  cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
-  text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+  border: 1px solid #ccc; 
+  border-radius: 8px; 
+  background-color: #f9f9f9; 
+  color: #333; 
+  cursor: pointer; 
+  text-align: center;
 }
 
-.province-selector{
+/* .province-selector{
   position: relative;
   margin-bottom: 10px;
   left: 200px;
   z-index: 1000;
-}
+} */
 
-.region-selector{
+/* .region-selector{
   display: flex;
-  flex-direction: column; /* จัดเรียง label และ select ให้อยู่ในแนวตั้ง */
-  align-items: center; /* ทำให้อยู่ตรงกลางแนวนอน */
-  margin: 20px 0; /* เพิ่มระยะห่างระหว่าง dropdown */
-}
+  flex-direction: column; 
+  align-items: center; 
+  margin: 20px 0; 
+} */
 
 
-.province-selector label {
-  font-size: 16px; /* ขนาดตัวอักษรสำหรับ label */
-  margin-bottom: 10px; /* ระยะห่างระหว่าง label และ select */
-  margin-left: -230px;
+/* .province-selector label {
+  font-size: 16px; 
+  margin-bottom: 10px; 
+  margin-left: -200px;
   position: relative;
   top: -60px;
   left: 50px;
-}
+} */
 
 
-.province-selector select {
+/* .province-selector select {
   width: 250px; 
   padding: 12px; 
   font-size: 16px; 
@@ -1345,7 +1353,7 @@
   position: relative;
   left: 20px;
   top: -10px;
-}
+} */
 
 .region-selector select:disabled,
 .province-selector select:disabled {
@@ -1358,6 +1366,40 @@
   font-size: 20px; 
   text-align: left; 
 }
+
+
+.toggle-button-group {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 10px;
+  position: absolute;
+  top: 65%;
+}
+
+.toggle-button {
+  padding: 10px 25px;
+  font-size: 16px;
+  border: 2px solid #4caf50;
+  background-color: #f1f1f1;
+  color: #333;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.toggle-button:hover {
+  background-color: #e0f7e9;
+}
+
+.toggle-button.active {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+
+
 /*-------------Region, Province Selector---------------*/
 
 

@@ -30,46 +30,46 @@ export const dummySeasonalCycleData = {
 };
 
 //---------------------------------------- Seasonal Cycle Graph---------------------------------------------//
-export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize) => {
+export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize, configData) => {
   
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year."); // ตรวจสอบเงื่อนไขว่าปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด
-    return null; // หยุดทำงานหากเงื่อนไขไม่ถูกต้อง
+    return null; 
   }
   const monthlyAverages = Array(12 * (endYear - startYear + 1)).fill(0); 
-  // สร้างอาร์เรย์เก็บผลรวมค่าอุณหภูมิรายเดือนในแต่ละปี
   const monthlyCounts = Array(12 * (endYear - startYear + 1)).fill(0); 
-  // สร้างอาร์เรย์เก็บจำนวนข้อมูลที่ถูกบันทึกในแต่ละเดือน
 
+  const provinceListInRegion = region !== 'Thailand' 
+    ? configData.areas.area_thailand[region] || []
+    : [];
   const filterRegion_Province = (features, region, province = null) => {
-    // ฟังก์ชันสำหรับกรองข้อมูล GeoJSON ตาม region และ province
-    let filteredFeatures = features;
+  if (province && province !== 'Thailand_province') {
+    // เลือกจาก province dropdown โดยตรง
+    return features.filter((feature) => feature.properties.name === province);
+  }
 
-    if (region !== 'Thailand') {
-      filteredFeatures = filteredFeatures.filter(
-        (feature) => feature.properties.region === region
-      );
-    }
+  if (region && region !== 'Thailand_region') {
+    const provinceList = configData.areas.area_thailand[region] || [];
+    return features.filter((feature) =>
+      provinceList.includes(feature.properties.name)
+    );
+  }
 
-    if (province) {
-      filteredFeatures = filteredFeatures.filter(
-        (feature) => feature.properties.name === province
-      );
-    }
+  // ✅ ถ้าเลือก Thailand ทั้งหมด
+  return features;
+};
 
-    return filteredFeatures;
-  };
+  
 
   let overallCount = 0; // ตัวแปรเก็บจำนวนข้อมูลทั้งหมดที่ผ่านการประมวลผล
   let yearlyMeans = {}; // ตัวแปรเก็บค่าเฉลี่ยรายปี
   let provinceData = {}; // ตัวแปรเก็บข้อมูลเฉพาะจังหวัดที่เลือก
 
   for (let year = startYear; year <= endYear; year++) {
-    // ลูปผ่านแต่ละปี
-    const geojson = dataByYear[year]; // ดึงข้อมูล GeoJSON ตามปีที่กำลังลูป
-    if (!geojson) {
-      console.warn(`No data available for year ${year}`);
-      continue; // ข้ามปีที่ไม่มีข้อมูล
+    const geojson = dataByYear[year]?.province; // ต้องใช้เฉพาะ .province
+    if (!geojson || !geojson.features) {
+      console.warn(`No province data available for year ${year}`);
+      continue;
     }
 
     const filteredFeatures = filterRegion_Province(geojson.features, region, province); 
@@ -79,8 +79,7 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   const { name, month } = feature.properties;
   const value = feature.properties[selectedIndex]; // ดึงค่าของ selectedIndex
 
-  // Log ข้อมูลที่เลือกใน console
-  //console.log(`Year: ${year}, Month: ${month}, Region: ${region}, Province: ${name}, ${selectedIndex}: ${value}`);
+  
 
   if (!provinceData[name]) {
     provinceData[name] = [];

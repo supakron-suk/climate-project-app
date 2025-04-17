@@ -1,3 +1,4 @@
+#province.py
 import geopandas as gpd
 import numpy as np
 from shapely.geometry import Polygon, MultiPolygon
@@ -50,16 +51,59 @@ def province_coord():
     south_west_list = [(name, gdf[gdf['NAME_1'] == name].geometry.unary_union, "SouthWest_region") for name in province_South_West]
 
     # รวมทั้งหมด
+    def merge_geometries(province_names):
+        region_gdf = gdf[gdf['NAME_1'].isin(province_names)]
+        return region_gdf.unary_union  # รวมเป็น MultiPolygon เดียว
+
     region_coords = [
-        north_list,
-        east_list,
-        northeast_list,
-        central_list,
-        south_east_list,
-        south_west_list
+        merge_geometries([
+            "Kamphaeng Phet", "Chiang Rai", "Chiang Mai", "Tak", "Nan", "Phayao",
+            "Phichit", "Phitsanulok", "Phetchabun", "Phrae", "Mae Hong Son",
+            "Lampang", "Lamphun", "Sukhothai", "Uttaradit"
+        ]),
+        merge_geometries([
+            "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Nakhon Nayok",
+            "Prachin Buri", "Rayong", "Sa Kaeo"
+        ]),
+        merge_geometries([
+            "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Nakhon Ratchasima",
+            "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon",
+            "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin",
+            "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"
+        ]),
+        merge_geometries([
+            "Bangkok Metropolis", "Kanchanaburi", "Chai Nat", "Nakhon Pathom",
+            "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya",
+            "Ratchaburi", "Lop Buri", "Samut Prakan", "Samut Songkhram",
+            "Samut Sakhon", "Saraburi", "Sing Buri", "Suphan Buri", "Ang Thong", "Uthai Thani"
+        ]),
+        merge_geometries([
+            "Chumphon", "Nakhon Si Thammarat", "Narathiwat", "Prachuap Khiri Khan",
+            "Pattani", "Phatthalung", "Phetchaburi", "Yala", "Songkhla", "Surat Thani"
+        ]),
+        merge_geometries([
+            "Krabi", "Trang", "Phangnga", "Phuket", "Ranong", "Satun"
+        ])
     ]
 
-    return region_coords
+    return {
+    "North": province_North,
+    "East": province_East,
+    "Northeast": province_Northeast,
+    "Central": province_Central,
+    "SouthEast": province_South_East,
+    "SouthWest": province_South_West
+}
+    # region_coords = [
+    #     north_list,
+    #     east_list,
+    #     northeast_list,
+    #     central_list,
+    #     south_east_list,
+    #     south_west_list
+    # ]
+
+    # return region_coords
 
 
 

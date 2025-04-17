@@ -1,111 +1,119 @@
 // Trendmap.js
-export const TrendMap = (dataByYear, startYear, endYear, region, province, valueKey) => {
+
+// ไม่ต้อง import configData ถ้ามีใน app.js
+export const TrendMap = (
+  dataByYear,
+  startYear,
+  endYear,
+  region,
+  province,
+  valueKey,
+  configData,
+  isRegionView
+) => {
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year.");
     return null;
   }
 
-  const numberOfYears = endYear - startYear;
-  console.log(`🔍 TrendMap: Years requested = ${numberOfYears} years (${startYear} to ${endYear})`);
-  // ฟกรองข้อมูลตามภูมิภาค
-  const filterByRegion = (features, region) => {
-    if (region === 'Thailand') return features; 
-    return features.filter((feature) => feature.properties.region === region);
-  };
+  const trends = [];
+  const geometryMap = {};
 
-  // ฟังก์ชันสำหรับกรองข้อมูลตามจังหวัด
-  const filterByProvince = (features, province) => {
-    if (!province) return features; // ถ้าไม่ได้ระบุจังหวัด ให้คืนค่าทุกจังหวัด
-    return features.filter((feature) => feature.properties.name === province);
-  };
-
-  const trends = []; // ใช้เก็บข้อมูลเทรนด์
-  const geometryMap = {}; // ใช้เก็บข้อมูลตำแหน่งทางภูมิศาสตร์ (geometry)
-
-  // วนลูปปีที่อยู่ในช่วงที่กำหนด
   for (let year = startYear; year <= endYear; year++) {
-    const geojson = dataByYear[year]; // ดึงข้อมูล GeoJSON ตามปี
-    if (!geojson) continue; // ข้ามปีที่ไม่มีข้อมูล
+    const yearData = dataByYear[year];
+    const geojson = isRegionView
+      ? yearData?.region
+      : yearData?.province;
 
-    // กรองข้อมูลตามภูมิภาคและจังหวัด
-    let filteredFeatures = filterByRegion(geojson.features, region);
-    filteredFeatures = filterByProvince(filteredFeatures, province);
+    if (!geojson || !geojson.features) continue;
 
-    // วนลูปข้อมูลที่กรองแล้ว
+    let filteredFeatures = geojson.features;
+
+      if (isRegionView) {
+    if (region !== "Thailand_region") {
+      filteredFeatures = filteredFeatures.filter(
+        (feature) => feature.properties.region_name === region
+      );
+    }
+  } else {
+    if (province && province !== "Thailand_province") {
+      filteredFeatures = filteredFeatures.filter(
+        (feature) => feature.properties.name === province
+      );
+    }
+  }
+
+
     filteredFeatures.forEach((feature) => {
-      const { [valueKey]: value, month, name, region: featureRegion } = feature.properties;
+      const name = isRegionView
+        ? feature.properties.region_name
+        : feature.properties.name;
 
-      // ตรวจสอบว่าข้อมูล value และเดือนมีค่าถูกต้อง
-      if (typeof value === 'number' && month >= 1 && month <= 12) {
-        trends.push({ year, name, value, month, region: featureRegion });
-        // เก็บข้อมูลตำแหน่งทางภูมิศาสตร์ของแต่ละพื้นที่
+      const value = isRegionView
+        ? feature.properties.annual?.[valueKey]
+        : feature.properties[valueKey];
+
+      if (typeof value === 'number') {
+        trends.push({ year, name, value });
         if (!geometryMap[name]) geometryMap[name] = feature.geometry;
       }
     });
   }
 
-  // ถ้าไม่มีข้อมูลเทรนด์ แจ้งเตือนและคืนค่า null
   if (trends.length === 0) {
     console.warn("No trends data available.");
     return null;
   }
 
-  // จัดกลุ่มข้อมูลเทรนด์ตามพื้นที่ (name)
-  const groupedTrends = trends.reduce((acc, curr) => {
-    const key = curr.name; // ใช้ชื่อพื้นที่เป็นคีย์
-    if (!acc[key]) acc[key] = [];
-    acc[key].push({ year: curr.year, value: curr.value, month: curr.month }); // เก็บปี, value, และเดือน
+  const groupedTrends = trends.reduce((acc, { year, name, value }) => {
+    if (!acc[name]) acc[name] = [];
+    acc[name].push({ year, value });
     return acc;
   }, {});
 
-  // คำนวณค่าเฉลี่ยของ value ในแต่ละปี
   const yearlyTrends = Object.entries(groupedTrends).map(([area, data]) => {
     const yearlyData = {};
-    
-    // เฉลี่ยข้อมูล value รายเดือนเป็นรายปี
     data.forEach(({ year, value }) => {
-      if (!yearlyData[year]) {
-        yearlyData[year] = { sum: 0, count: 0 };
-      }
+      if (!yearlyData[year]) yearlyData[year] = { sum: 0, count: 0 };
       yearlyData[year].sum += value;
-      yearlyData[year].count += 1;
+      yearlyData[year].count++;
     });
 
-    // คำนวณค่าเฉลี่ยในแต่ละปี
-    const yearlyAverages = Object.entries(yearlyData).map(([year, { sum, count }]) => {
-      return { year: parseInt(year), value: sum / count };
-    });
+    const yearlyAverages = Object.entries(yearlyData).map(([year, { sum, count }]) => ({
+      year: parseInt(year),
+      value: sum / count,
+    }));
 
     return { area, yearlyAverages };
   });
 
-  // คำนวณค่า slope ของแต่ละพื้นที่ และสร้างข้อมูล GeoJSON
   const features = yearlyTrends.map(({ area, yearlyAverages }) => {
-    const slope = calculateModifiedTheilSenSlope(yearlyAverages, 'value'); // คำนวณ slope จากข้อมูลที่เป็นรายปี
-    const roundedSlope = parseFloat(slope.toFixed(2)); // ปัดค่า slope ให้มีทศนิยม 2 ตำแหน่ง
+    const slope = calculateModifiedTheilSenSlope(yearlyAverages, 'value');
+    const roundedSlope = parseFloat(slope.toFixed(2));
     return {
-      type: "Feature", // ระบุประเภทข้อมูล GeoJSON
-      geometry: geometryMap[area], // นำข้อมูลตำแหน่งทางภูมิศาสตร์มาใส่
+      type: "Feature",
+      geometry: geometryMap[area],
       properties: {
-        name: area, // ชื่อพื้นที่
-        slope_value: roundedSlope, // ค่า slope
-        region: trends.find((t) => t.name === area).region, // ระบุภูมิภาค
+        name: area,
+        slope_value: roundedSlope,
+        level: isRegionView ? "region" : "province",
       },
     };
   });
 
-  // สร้างข้อมูล GeoJSON สำหรับเทรนด์
-  const geojson_Trendmap = {
-    type: "FeatureCollection", // ระบุประเภทข้อมูลเป็น FeatureCollection
-    features, // ใส่ข้อมูล Feature ที่สร้างไว้
-  };
+    const levelSet = new Set(features.map(f => f.properties.level));
+  console.log("📈 TrendMap level types in features:", [...levelSet]);
+  console.log("📈 TrendMap feature count:", features.length);
 
   return {
-    geojson: geojson_Trendmap,
-    numberOfYears: numberOfYears
+    geojson: {
+      type: "FeatureCollection",
+      features,
+    },
+    numberOfYears: endYear - startYear,
   };
-  
 };
+
 
 // ฟังก์ชันสำหรับคำนวณ Modified Theil-Sen Slope
 const calculateModifiedTheilSenSlope = (data, valueKey) => {

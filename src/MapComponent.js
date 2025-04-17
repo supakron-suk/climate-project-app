@@ -98,35 +98,7 @@ const getColorScale = (selectedValue, viewMode, toneColor = "velocity-blue", isR
   };
 };
 
-// const getColorScale = (selectedValue, viewMode, toneColor = "velocity-blue", isReversed = false) => {
-//   const isPrecipitation = ["pre", "rx1day", "rx3day"].includes(selectedValue);
-//   const isTemperature = ["Temperature Mean", "Temperature Min", "Temperature Max", "TXx", "Tnn"].includes(selectedValue);
 
-//   if (viewMode === "TrendMap") {
-//     return {
-//       temp_color: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
-//       coolwarm: isPrecipitation ? coolwarmColor_reverse : coolwarmColor,
-//     };
-//   }
-
-//   const colormapName = toneColor; 
-//   let colormapScale = colormap({
-//     colormap: colormapName,
-//     nshades: 20,
-//     format: "hex",
-//     alpha: 1,
-//   }).map((color, i) => [i / 19, color]);
-//   console.log("Colormap Scale:", colormapScale);
-//   // ตรวจสอบว่า reverse หรือไม่
-//   if (isReversed) {
-//     colormapScale.reverse();
-//   }
-
-//   return {
-//     temp_color: colormapScale,
-//     coolwarm: colormapScale,
-//   };
-// };
 
 
 const getColor = (value, viewMode, min, max, selectedValue, selectedToneColor, isReversed = false) => {
@@ -151,7 +123,7 @@ const calculateMinMax = (geoData, viewMode, value) => {
       : feature.properties[value];
 
     // 🔍 Debug log: ดูว่า value ที่เรียกมีอยู่จริงไหม
-    console.log(`[Feature ${index}] ${viewMode} | value key = "${value}" | val =`, val);
+    // console.log(`[Feature ${index}] ${viewMode} | value key = "${value}" | val =`, val);
 
     return val;
   })
@@ -176,45 +148,30 @@ const calculateMinMax = (geoData, viewMode, value) => {
   return { min, max }; // 
 };
 
-// const calculateMinMax = (geoData, viewMode, value) => {
-//   if (!geoData || !geoData.features) return { min: 10, max: 50 };
-
-//   const values = geoData.features
-//     .map((feature) => 
-//       viewMode === "TrendMap"
-//         ? feature.properties.slope_value
-//         : feature.properties[value]
-//     )
-//     .filter((val) => val !== undefined && val !== null && !isNaN(val));
-
-//   if (values.length === 0) return { min: 10, max: 50 };
-
-//   let min = Math.min(...values);
-//   let max = Math.max(...values);
-
-//   if (viewMode === "TrendMap") {
-//     const range = Math.max(Math.abs(min), Math.abs(max));
-//     return { min: -range, max: range };
-//   }
-
-  
-//   if (["temperature", "tmin", "tmax", "txx", "tnn"].includes(value)) {
-//     return { min: 10, max: 50 };
-//   } 
-//   if (["pre", "rx1day"].includes(value)) {
-//     return { min: 10, max: 300 };
-//   }
-
-//   return { min, max };
-// };
-
-
-const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue, selectedToneColor, isReversed) => {
+const style = (
+  feature,
+  selectedRegion,
+  selectedProvince,
+  viewMode,
+  min,
+  max,
+  selectedValue,
+  selectedToneColor,
+  isReversed,
+  isRegionView
+) => {
   const dataValue = viewMode === "TrendMap"
     ? feature.properties.slope_value
     : feature.properties[selectedValue];
 
-  const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
+  const isProvinceFeature = feature.properties.level === "province";
+  const isRegionFeature = feature.properties.level === "region";
+
+  // เงื่อนไขที่ให้แสดงผลบนแผนที่
+  const shouldShow =
+    isRegionView
+      ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion)
+      : (selectedProvince === "Thailand_province" || feature.properties.name === selectedProvince);
 
   return {
     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
@@ -222,14 +179,55 @@ const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, se
     opacity: 1,
     color: "black",
     dashArray: "0",
-    fillOpacity:
-      (selectedRegion === "Thailand" || feature.properties.region === selectedRegion) &&
-      (!selectedProvince || feature.properties.name === selectedProvince)
-        ? 0.9
-        : 0,
+    fillOpacity: shouldShow ? 0.9 : 0,
   };
 };
 
+
+// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue, selectedToneColor, isReversed) => {
+//   const dataValue = viewMode === "TrendMap"
+//     ? feature.properties.slope_value
+//     : feature.properties[selectedValue];
+
+//   const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
+
+//   // ใช้ region หรือ province view เพื่อคุม fillOpacity
+//   const showFeature =
+//     (selectedRegion === "Thailand" && !selectedProvince) || // Thailand ทั้งประเทศ
+//     (feature.properties.name === selectedProvince) ||       // ตรงจังหวัดที่เลือก
+//     (feature.properties.name === selectedRegion) ||         // หรือกรณี region มีชื่อเหมือนกัน
+//     (feature.properties.region === selectedRegion);         // region จาก properties
+
+//   return {
+//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
+//     weight: 0.3,
+//     opacity: 1,
+//     color: "black",
+//     dashArray: "0",
+//     fillOpacity: showFeature ? 0.9 : 0, // แสดงเฉพาะพื้นที่ที่ตรงกับเงื่อนไข
+//   };
+// };
+
+// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue, selectedToneColor, isReversed) => {
+//   const dataValue = viewMode === "TrendMap"
+//     ? feature.properties.slope_value
+//     : feature.properties[selectedValue];
+
+//   const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
+
+//   return {
+//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
+//     weight: 0.3,
+//     opacity: 1,
+//     color: "black",
+//     dashArray: "0",
+//     fillOpacity:
+//       (selectedRegion === "Thailand" || feature.properties.region === selectedRegion) &&
+//       (!selectedProvince || feature.properties.name === selectedProvince)
+//         ? 0.9
+//         : 0,
+//   };
+// };
 const onEachFeature = (feature, layer, viewMode, value) => {
   const valueText = viewMode === "TrendMap"
     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
@@ -239,14 +237,38 @@ const onEachFeature = (feature, layer, viewMode, value) => {
       ? feature.properties[value].toFixed(2)
       : 'N/A';
 
-  const label = viewMode === "TrendMap" ? "Slope Value" : value.charAt(0).toUpperCase() + value.slice(1);
+  // ✅ ป้องกัน error ถ้า value เป็น undefined
+  const label = viewMode === "TrendMap"
+    ? "Slope Value"
+    : (typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : "Value");
+
+  const regionLabel = feature.properties.region || feature.properties.region_name || "Unknown";
 
   layer.bindPopup(
     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
-     <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
+     <b>Region:</b> ${regionLabel}<br/>
      <b>${label}:</b> ${valueText}`
   );
 };
+
+
+// const onEachFeature = (feature, layer, viewMode, value) => {
+//   const valueText = viewMode === "TrendMap"
+//     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
+//       ? feature.properties.slope_value.toFixed(2)
+//       : 'N/A'
+//     : feature.properties[value] !== undefined && feature.properties[value] !== null
+//       ? feature.properties[value].toFixed(2)
+//       : 'N/A';
+
+//   const label = viewMode === "TrendMap" ? "Slope Value" : value.charAt(0).toUpperCase() + value.slice(1);
+
+//   layer.bindPopup(
+//     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
+//      <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
+//      <b>${label}:</b> ${valueText}`
+//   );
+// };
 
 
 const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed , numberOfYears}) => {
@@ -400,8 +422,6 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
 };
 
 
-
-
 const MapComponent = ({
   geoData,
   selectedRegion,
@@ -421,6 +441,7 @@ const MapComponent = ({
   toneColors,
   isReversed,  
   numberOfYears,
+  isRegionView
 }) => {
   const { min: calculatedMin, max: calculatedMax } = calculateMinMax(geoData, viewMode, value);
   
@@ -438,7 +459,7 @@ const MapComponent = ({
   return (
     <div className="map-box">
       <label className="area-head-map">
-        {selectedRegion === "Thailand"
+        {selectedRegion === "Thailand_region"
           ? "Thailand"
           : labelProvince
           ? labelProvince.replace(/_/g, " ")
@@ -464,7 +485,7 @@ const MapComponent = ({
               <GeoJSON
                 data={displayedGeoData}
                 style={(feature) => style(feature, selectedRegion, selectedProvince, 
-                  viewMode, defaultMin, defaultMax, value, selectedToneColor, isReversed)}  // Pass isReversed here
+                  viewMode, defaultMin, defaultMax, value, selectedToneColor, isReversed, isRegionView )}  // Pass isReversed here
                 onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value)}
               />
             </LayersControl.Overlay>
