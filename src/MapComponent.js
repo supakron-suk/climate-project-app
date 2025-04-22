@@ -168,10 +168,14 @@ const style = (
   const isRegionFeature = feature.properties.level === "region";
 
   // เงื่อนไขที่ให้แสดงผลบนแผนที่
-  const shouldShow =
-    isRegionView
-      ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion)
-      : (selectedProvince === "Thailand_province" || feature.properties.name === selectedProvince);
+
+  const shouldShow = isRegionView
+  ? (selectedRegion === "Thailand_region" || feature.properties.name === selectedRegion)
+  : (selectedProvince === "Thailand" || feature.properties.name === selectedProvince);
+  // const shouldShow =
+  //   isRegionView
+  //     ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion)
+  //     : (selectedProvince === "Thailand_province" || feature.properties.name === selectedProvince);
 
   return {
     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
@@ -182,52 +186,6 @@ const style = (
     fillOpacity: shouldShow ? 0.9 : 0,
   };
 };
-
-
-// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue, selectedToneColor, isReversed) => {
-//   const dataValue = viewMode === "TrendMap"
-//     ? feature.properties.slope_value
-//     : feature.properties[selectedValue];
-
-//   const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
-
-//   // ใช้ region หรือ province view เพื่อคุม fillOpacity
-//   const showFeature =
-//     (selectedRegion === "Thailand" && !selectedProvince) || // Thailand ทั้งประเทศ
-//     (feature.properties.name === selectedProvince) ||       // ตรงจังหวัดที่เลือก
-//     (feature.properties.name === selectedRegion) ||         // หรือกรณี region มีชื่อเหมือนกัน
-//     (feature.properties.region === selectedRegion);         // region จาก properties
-
-//   return {
-//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
-//     weight: 0.3,
-//     opacity: 1,
-//     color: "black",
-//     dashArray: "0",
-//     fillOpacity: showFeature ? 0.9 : 0, // แสดงเฉพาะพื้นที่ที่ตรงกับเงื่อนไข
-//   };
-// };
-
-// const style = (feature, selectedRegion, selectedProvince, viewMode, min, max, selectedValue, selectedToneColor, isReversed) => {
-//   const dataValue = viewMode === "TrendMap"
-//     ? feature.properties.slope_value
-//     : feature.properties[selectedValue];
-
-//   const { temp_color, coolwarm } = getColorScale(selectedValue, viewMode, selectedToneColor, isReversed);
-
-//   return {
-//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
-//     weight: 0.3,
-//     opacity: 1,
-//     color: "black",
-//     dashArray: "0",
-//     fillOpacity:
-//       (selectedRegion === "Thailand" || feature.properties.region === selectedRegion) &&
-//       (!selectedProvince || feature.properties.name === selectedProvince)
-//         ? 0.9
-//         : 0,
-//   };
-// };
 const onEachFeature = (feature, layer, viewMode, value) => {
   const valueText = viewMode === "TrendMap"
     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
@@ -237,7 +195,7 @@ const onEachFeature = (feature, layer, viewMode, value) => {
       ? feature.properties[value].toFixed(2)
       : 'N/A';
 
-  // ✅ ป้องกัน error ถ้า value เป็น undefined
+  
   const label = viewMode === "TrendMap"
     ? "Slope Value"
     : (typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : "Value");
@@ -251,24 +209,6 @@ const onEachFeature = (feature, layer, viewMode, value) => {
   );
 };
 
-
-// const onEachFeature = (feature, layer, viewMode, value) => {
-//   const valueText = viewMode === "TrendMap"
-//     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
-//       ? feature.properties.slope_value.toFixed(2)
-//       : 'N/A'
-//     : feature.properties[value] !== undefined && feature.properties[value] !== null
-//       ? feature.properties[value].toFixed(2)
-//       : 'N/A';
-
-//   const label = viewMode === "TrendMap" ? "Slope Value" : value.charAt(0).toUpperCase() + value.slice(1);
-
-//   layer.bindPopup(
-//     `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
-//      <b>Region:</b> ${feature.properties.region || 'Unknown'}<br/>
-//      <b>${label}:</b> ${valueText}`
-//   );
-// };
 
 
 const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed , numberOfYears}) => {
@@ -332,23 +272,24 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed , n
 };
 
 
-
 const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears, isReversed }) => {
-  const { coolwarm } = getColorScale(selectedValue, "TrendMap", undefined, isReversed); // ส่ง isReversed เข้าไป
+  const { coolwarm } = getColorScale(selectedValue, "TrendMap", undefined, isReversed);
 
   if (!coolwarm || !Array.isArray(coolwarm)) {
     console.warn("Invalid colorScale in TrendmapBar", { coolwarm });
     return null;
   }
 
-  const newMin = min;
-  const newMax = max;
-  const stepSize = (newMax - newMin) / (steps - 1);
+  // 🧠 ปรับให้เป็นช่วงสมมาตรรอบ 0
+  const symmetricRange = Math.max(Math.abs(min), Math.abs(max));
+  const adjustedMin = -symmetricRange;
+  const adjustedMax = symmetricRange;
+  const stepSize = (adjustedMax - adjustedMin) / (steps - 1);
 
   const labels = Array.from({ length: steps }, (_, i) => {
-    const value = newMin + i * stepSize;
+    const value = adjustedMin + i * stepSize;
     return {
-      label: i === Math.floor(steps / 2) ? "0" : value.toFixed(2),
+      label: value === 0 ? "0" : value.toFixed(2),
       position: (i / (steps - 1)) * 100,
     };
   });
@@ -368,7 +309,6 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
     <div className="color-bar-container trendmap">
       <div className="color-bar-title">{trendTitle}</div>
 
-      {/* Gradient Bar */}
       <div className="gradient-bar">
         {coolwarm.map(([_, color], index) => (
           <div
@@ -382,7 +322,6 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
         ))}
       </div>
 
-      {/* Tick Marks */}
       <div className="tick-marks">
         {tickMarksPositions.map((position, index) => (
           <div
@@ -400,9 +339,8 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
         ))}
       </div>
 
-      {/* Labels */}
       <div className="labels">
-        {labels.map(({ label, position }, index) => (
+        {labels.map(({ label }, index) => (
           <span
             key={index}
             style={{
@@ -421,9 +359,98 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
   );
 };
 
+// const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears, isReversed }) => {
+//   const { coolwarm } = getColorScale(selectedValue, "TrendMap", undefined, isReversed); // ส่ง isReversed เข้าไป
+
+//   if (!coolwarm || !Array.isArray(coolwarm)) {
+//     console.warn("Invalid colorScale in TrendmapBar", { coolwarm });
+//     return null;
+//   }
+
+//   const newMin = min;
+//   const newMax = max;
+//   const stepSize = (newMax - newMin) / (steps - 1);
+
+//   const labels = Array.from({ length: steps }, (_, i) => {
+//     const value = newMin + i * stepSize;
+//     return {
+//       label: i === Math.floor(steps / 2) ? "0" : value.toFixed(2),
+//       position: (i / (steps - 1)) * 100,
+//     };
+//   });
+
+//   const tickMarksPositions = Array.from({ length: steps }, (_, i) => {
+//     if (i === 0) return 0;
+//     if (i === steps - 1) return 111;
+
+//     const basePosition = (i / (steps - 1)) * 100;
+//     return basePosition * spacingFactor;
+//   });
+
+//   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+//   const trendTitle = `Trend Values (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
+
+//   return (
+//     <div className="color-bar-container trendmap">
+//       <div className="color-bar-title">{trendTitle}</div>
+
+//       {/* Gradient Bar */}
+//       <div className="gradient-bar">
+//         {coolwarm.map(([_, color], index) => (
+//           <div
+//             key={index}
+//             className="color-segment"
+//             style={{
+//               backgroundColor: color,
+//               flex: 1,
+//             }}
+//           />
+//         ))}
+//       </div>
+
+//       {/* Tick Marks */}
+//       <div className="tick-marks">
+//         {tickMarksPositions.map((position, index) => (
+//           <div
+//             key={index}
+//             className="tick-mark"
+//             style={{
+//               position: "absolute",
+//               left: `${Math.min(position, 160)}%`,
+//               transform: `translateX(-50%)`,
+//               height: "8px",
+//               width: "1px",
+//               backgroundColor: "black",
+//             }}
+//           />
+//         ))}
+//       </div>
+
+//       {/* Labels */}
+//       <div className="labels">
+//         {labels.map(({ label, position }, index) => (
+//           <span
+//             key={index}
+//             style={{
+//               position: "absolute",
+//               left: `${tickMarksPositions[index]}%`,
+//               transform: `translateX(-30%)`,
+//               fontSize: "10px",
+//               marginTop: "16px",
+//             }}
+//           >
+//             {label}
+//           </span>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
 
 const MapComponent = ({
   geoData,
+  fullGeoData,
   selectedRegion,
   selectedProvince,
   viewMode,
@@ -443,7 +470,7 @@ const MapComponent = ({
   numberOfYears,
   isRegionView
 }) => {
-  const { min: calculatedMin, max: calculatedMax } = calculateMinMax(geoData, viewMode, value);
+  const { min: calculatedMin, max: calculatedMax } = calculateMinMax(fullGeoData, viewMode, value);
   
   // Use the values of legendMin and legendMax from Actual and Trend
   const defaultMin = viewMode === "TrendMap" 
@@ -455,6 +482,9 @@ const MapComponent = ({
     : (legendMax ?? calculatedMax);
 
   const displayedGeoData = geoData?.features ? geoData : { type: "FeatureCollection", features: [] };
+
+  console.log("🌍 fullGeoData features count:", fullGeoData?.features?.length);
+  console.log("🌈 min/max used:", defaultMin, defaultMax)
 
   return (
     <div className="map-box">

@@ -9,6 +9,7 @@
 import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import './App.css';
 import MapComponent from './MapComponent'; // นำเข้า MapComponent
@@ -20,7 +21,7 @@ import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap } from './JS/Heatmap.js';
 import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 import colormap from 'colormap';
-
+import { spi_process, SPIChartData } from './JS/spi_set.js';
 
 
 
@@ -30,9 +31,9 @@ import configData from './config/config.json';
 
 
 //----------------------------------------------------------------------------//
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; //import module for create graph
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js'; 
 import { CrosshairPlugin } from 'chartjs-plugin-crosshair';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin); //ลงทะเบียน func ต่างๆ ของ module chart เพราะเราจะใช้แค่ Linechart
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement,Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin); 
 
 
 //------------------------IMPORT FUCTION-------------------------------------//
@@ -70,6 +71,11 @@ function App() {
   const [selectedData, setSelectedData] = useState([]);
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
+  const [spiChartData, setSPIChartData] = useState(null);
+  const [showSPIBarChart, setShowSPIBarChart] = useState(false);
+  const [showRegularCharts, setShowRegularCharts] = useState(true);
+  const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
+
 
 //const [filteredDataByRange, setFilteredDataByRange] = useState(null);
 const [isApplied, setIsApplied] = useState(false);
@@ -79,11 +85,14 @@ const [trendGeoData, setTrendGeoData] = useState(null);
 const [numberOfYears, setNumberOfYears] = useState(null);
 const [heatmapData, setHeatmapData] = useState(null);
 const [selectedValue, setSelectedValue] = useState('temperature');
+
+const [variableDescription, setVariableDescription] = useState('');
+
 //----------------------------Select map----------------------------//
 const [viewMode, setViewMode] = useState("Heatmap"); // "Heatmap" หรือ "TrendMap"
 //--------------------------------Select Index of Variable---------------------------//
 const [selectedIndex, setSelectedIndex] = useState(null);
-const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
+
 
 //-------------------------------User Select Min/Max Legend Bar-----------------------//
 const [minmaxButton, setminmaxButton] = useState(null);
@@ -93,8 +102,15 @@ const [legendMax, setLegendMax] = useState();
 
 const [actualMin, setActualMin] = useState(null);
 const [actualMax, setActualMax] = useState(null);
-const [trendMin, setTrendMin] = useState(null);
-const [trendMax, setTrendMax] = useState(null);
+
+const [globalLegendMin, setGlobalLegendMin] = useState(null);
+const [globalLegendMax, setGlobalLegendMax] = useState(null);
+const [globalTrendMin, setGlobalTrendMin] = useState(null);
+const [globalTrendMax, setGlobalTrendMax] = useState(null);
+
+const [fullHeatmapData, setFullHeatmapData] = useState(null);
+const [fullTrendData, setFullTrendData] = useState(null);
+
 
 const [trendLegendMin, setTrendLegendMin] = useState(null);
 const [trendLegendMax, setTrendLegendMax] = useState(null);
@@ -113,6 +129,8 @@ const [labelYearEnd, setlabelYearEnd] = useState(null);
 const [labelRegion, setlabelRegion] = useState("");
 const [labelProvince, setlabelProvince] = useState("");
 const [DataApply, setDataApply] = useState("");
+
+const [labelVariable, setLabelVariable] = useState("");
 
 //-----------------------------------------Tone color state---------------------------//
 
@@ -160,7 +178,7 @@ const getGradient = (colormapName, isReversed = false) => {
 
 
 const filteredProvinces = React.useMemo(() => {
-  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand_province") {
+  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
     return [];
   }
 
@@ -185,6 +203,22 @@ const filteredProvinces = React.useMemo(() => {
 
 
 
+const extractMinMaxFromGeoJSON = (geojson, key) => {
+  if (!geojson || !geojson.features) return { min: 0, max: 1 };
+
+  const values = geojson.features
+    .map(f => f?.properties?.[key])
+    .filter(v => v !== undefined && v !== null && !isNaN(v));
+
+  if (values.length === 0) return { min: 0, max: 1 };
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  return { min, max };
+};
+
+
 
 // ฟังก์ชันสลับมุมมอง
   const toggleViewMode = (mode) => {
@@ -196,36 +230,46 @@ const filteredProvinces = React.useMemo(() => {
   
 
   const updatedRegion = toRegionView ? "Thailand_region" : "";
-  const updatedProvince = !toRegionView ? "Thailand_province" : "";
+  const updatedProvince = !toRegionView ? "Thailand" : "";
 
   // อัปเดต Heatmap
   const heatmapResult = Heatmap(
     dataByYear,
     parseInt(selectedYearStart),
     parseInt(selectedYearEnd),
-    updatedRegion,
-    updatedProvince,
+    "Thailand_region",     
+    "Thailand",
     selectedValue,
     configData,
     toRegionView
   );
-  if (heatmapResult) setHeatmapData(heatmapResult);
+  if (heatmapResult) {
+  setHeatmapData(heatmapResult);
+  setFullHeatmapData(heatmapResult);
+  const { min, max } = extractMinMaxFromGeoJSON(heatmapResult, selectedValue);
+  setGlobalLegendMin(min);
+  setGlobalLegendMax(max);
+}
 
   // อัปเดต TrendMap
   const trendResult = TrendMap(
     dataByYear,
     parseInt(selectedYearStart),
     parseInt(selectedYearEnd),
-    updatedRegion,
-    updatedProvince,
+    "Thailand_region",     
+    "Thailand",
     selectedValue,
     configData,
     toRegionView
   );
   if (trendResult) {
-    setTrendGeoData(trendResult.geojson);
-    setNumberOfYears(trendResult.numberOfYears);
-  }
+  setTrendGeoData(trendResult.geojson);
+  setNumberOfYears(trendResult.numberOfYears);
+  setFullTrendData(trendResult.geojson);
+  const { min, max } = extractMinMaxFromGeoJSON(trendResult.geojson, "slope_value");
+  setGlobalTrendMin(min);
+  setGlobalTrendMax(max);
+}
 
   // รีเซต dropdown + labels
   setSelectedRegion(updatedRegion);
@@ -272,16 +316,50 @@ const handleDatasetChange = async (e) => {
   }
 };
 
+//---------------------------spi FUNC zone --------------------------------/
+const getFilteredFeatures = (
+  dataByYear,
+  configData,
+  selectedYearStart,
+  selectedYearEnd,
+  updatedProvince,
+  updatedRegion
+) => {
+  const allFeatures = [];
 
+  for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+    const geojson = dataByYear[year]?.province;
+    if (geojson && geojson.features) {
+      const filtered = geojson.features.filter((feature) => {
+        const name = feature.properties.name;
+        if (updatedProvince && updatedProvince !== 'Thailand') {
+          return name === updatedProvince;
+        } else if (updatedRegion && updatedRegion !== 'Thailand_region') {
+          const list = configData.areas.area_thailand[updatedRegion] || [];
+          return list.includes(name);
+        }
+        return true; // แสดงข้อมูลทั่วประเทศ
+      });
+
+      // 🛠️ เพิ่ม year เข้าไปใน properties ของแต่ละ feature
+      filtered.forEach((f) => {
+        f.properties.year = year;
+      });
+
+      allFeatures.push(...filtered);
+    }
+  }
+
+  return allFeatures;
+};
+
+//---------------------------spi FUNC zone --------------------------------/
 
   // ฟังก์ชันเพื่อดึงตัวเลือกของตัวแปรจาก config
   const getVariableOptions = (dataset) => {
     if (!dataset) return [];
     return configData.datasets[dataset]?.variable_options || [];
   };
-
-
-
 
 const getUnit = (variable) => {
   const units = {
@@ -298,53 +376,20 @@ const getUnit = (variable) => {
 
 
 
-const getFullDatasetName = (dataset, variable) => {
-  let datasetName = "";
-  
+const getFullDatasetName = (dataset) => {
   switch (dataset) {
     case "CRU_dataset":
-      datasetName = "Climatic Research Unit Data";
-      break;
-    case "ERA_dataset":
-      datasetName = "ECMWF Reanalysis v5 Data";
-      break;
+      return "Climatic Research Unit Data";
+    case "ERA dataset":
+      return "ECMWF Reanalysis v5 Data";
     default:
-      return "";
+      return dataset;
   }
-
-  // ตรวจสอบว่า selectedVariable มีค่าหรือไม่
-  return variable ? `${datasetName} (${variable})` : datasetName;
 };
 
+
+
 //---------------------- value change when change dataset------------------------------//
-
-//-------------------------- New dataset function-------------------------------------//
-
-const [datasetInfo, setDatasetInfo] = useState(null);
-
-  useEffect(() => {
-    // ใช้ค่า BACKEND_URL จาก .env
-    const apiUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
-
-    // ฟังก์ชันเพื่อดึงข้อมูลจาก Flask API
-    const fetchDatasetInfo = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/dataset-info`);  // เรียก API ใช้ URL ที่เก็บใน .env
-        if (response.ok) {
-          const data = await response.json();
-          setDatasetInfo(data);  // เก็บข้อมูลไว้ใน state
-          console.log('Dataset Info:', data);  // แสดงข้อมูลใน console.log
-        } else {
-          console.log('Failed to fetch dataset:', response.status);
-        }
-      } catch (error) {
-        console.log('Error fetching dataset:', error);
-      }
-    };
-
-    // เรียกใช้ฟังก์ชันเมื่อ component โหลด
-    fetchDatasetInfo();
-  }, []);  // ว่างเปล่าเพื่อให้ทำแค่ครั้งเดียวเมื่อ component ถูก mount
 
 
 //----------------------------------User Effect-------------------------------------------//
@@ -387,13 +432,44 @@ useEffect(() => {
       data.forEach((feature) => provinces.add(feature.properties.name))
     );
     setProvinces(Array.from(provinces));
+
+    //-------------------------------------spi USE EFFECT----------------------------------------------//
+
+
+        const features = getFilteredFeatures(
+  dataByYear,
+  configData,
+  selectedYearStart,
+  selectedYearEnd,
+  updatedProvince,
+  updatedRegion
+);
+
+if (selectedValue === 'spi' || selectedValue === 'spei') {
+  const spiResult = spi_process(features, selectedValue, configData);
+  console.log(`🔍 SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
+  setSPIChartData(SPIChartData(spiResult));
+  setShowSPIBarChart(true);          
+  setShowRegularCharts(false);       
+  setShowSeasonalCycle(false);
+} else {
+  setShowSPIBarChart(false);         
+  setShowRegularCharts(true);        
+  setShowSeasonalCycle(true);
+}
+
+
+
+    //-------------------------------------spi USE EFFECT----------------------------------------------//
     
     const trendResult = TrendMap(
         dataByYear,
         parseInt(selectedYearStart),
         parseInt(selectedYearEnd),
-        updatedRegion,
-        updatedProvince,
+        "Thailand_region",     
+        "Thailand",
+        // updatedRegion,
+        // updatedProvince,
         DataApply.selectedValue,
         configData,
         DataApply.isRegionView,
@@ -402,6 +478,11 @@ useEffect(() => {
       if (trendResult) {
         setTrendGeoData(trendResult.geojson);
         setNumberOfYears(trendResult.numberOfYears); 
+        setFullTrendData(trendResult.geojson);
+
+        const { min, max } = extractMinMaxFromGeoJSON(trendResult.geojson, "slope_value");
+        setGlobalTrendMin(min);
+        setGlobalTrendMax(max);
       }
 
 
@@ -409,13 +490,22 @@ useEffect(() => {
       dataByYear,
       parseInt(selectedYearStart),
       parseInt(selectedYearEnd),
-      updatedRegion,
-      updatedProvince,
+      // updatedRegion,
+      // updatedProvince,
+      "Thailand_region",     
+      "Thailand",   
       DataApply.selectedValue,
       configData,
       DataApply.isRegionView,
     );
-    if (averageData) setHeatmapData(averageData);
+    if (averageData) {
+      setHeatmapData(averageData);
+       setFullHeatmapData(averageData);
+
+      const { min, max } = extractMinMaxFromGeoJSON(averageData, DataApply.selectedValue);
+  setGlobalLegendMin(min);
+  setGlobalLegendMax(max);
+    }
 
     const chartData = calculatemean(
       dataByYear,
@@ -440,10 +530,40 @@ useEffect(() => {
     setlabelProvince(updatedProvince);
     // setlabelRegion(selectedRegion);
 
+
+    const datasetKey = selectedDataset;
+    const dataset = configData?.datasets?.[datasetKey];
+
+    if (dataset && dataset.variable_options) {
+      const variable = dataset.variable_options.find((v) => v.value === selectedValue);
+      if (variable?.description) {
+        setVariableDescription(variable.description);
+      } else {
+        setVariableDescription('');
+      }
+    }
+
+    if (dataset && dataset.variable_options) {
+  const variable = dataset.variable_options.find((v) => v.value === selectedValue);
+  if (variable?.description) {
+    setVariableDescription(variable.description);
+  } else {
+    setVariableDescription('');
+  }
+
+  if (variable?.label) {
+    setLabelVariable(variable.label); 
+  }
+}
+
+
+
     setIsApplied(false);
   }
 
 }, [isApplied]);
+
+
 
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
@@ -633,7 +753,7 @@ useEffect(() => {
       }}
       value={selectedProvince}
     >
-      <option value="Thailand_province">Thailand</option>
+      <option value="Thailand">Thailand</option>
       {[
         ...new Set(
           Object.values(configData.areas.area_thailand).flat()
@@ -858,22 +978,19 @@ useEffect(() => {
     <div className="content-container">
     {/* <h1>DashBoard</h1> */}
   <div className={`dashboard-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-      <div className="dashboard-header">
-        {selectedDataset && labelRegion && (
-          <>
-            <label className="dataset-head-dashboard">
-  {getFullDatasetName(selectedDataset)}
-</label>
 
-          </>
-        )}
-      </div>
-
-  <div className='dashboard-content'>
- 
- 
-
+    <div className="dashboard-header">
+  {selectedDataset && labelVariable && (
+  <label className="dataset-head-dashboard">
+    {getFullDatasetName(selectedDataset)} ({labelVariable})
+  </label>
+)}
 </div>
+
+
+
+    <div className='dashboard-content'>
+      
   
 {/* Button select map */}
 <div className="map-buttons">
@@ -926,10 +1043,7 @@ useEffect(() => {
 
   </div>
 </div>
-
-
-
-      
+    
       
   {(viewMode === "TrendMap" || viewMode === "Heatmap") && (
     <MapComponent
@@ -937,16 +1051,17 @@ useEffect(() => {
       ${selectedValue}-${isApplied}-${selectedToneColor}-${isReversed}-${isRegionView}`} 
 
       geoData={viewMode === "TrendMap" ? trendGeoData : heatmapData} 
+      fullGeoData={viewMode === "TrendMap" ? fullTrendData : fullHeatmapData}
       selectedRegion={DataApply.selectedRegion}
       selectedProvinceData={DataApply.selectedProvinceData} 
       setSelectedProvinceData={setSelectedProvinceData}
       selectedProvince={DataApply.selectedProvince}
       viewMode={viewMode}
       value={DataApply.selectedValue}
-      legendMin={DataApply.legendMin}  
-      legendMax={DataApply.legendMax}  
-      trendMin={DataApply.trendMin}    
-      trendMax={DataApply.trendMax}
+      legendMin={DataApply.legendMin ?? globalLegendMin}
+      legendMax={DataApply.legendMax ?? globalLegendMax}
+      trendMin={DataApply.trendMin ?? globalTrendMin}
+      trendMax={DataApply.trendMax ?? globalTrendMax}
       selectedYearStart={DataApply.selectedYearStart}
       selectedYearEnd={DataApply.selectedYearEnd}    
       labelRegion={labelRegion}
@@ -962,7 +1077,7 @@ useEffect(() => {
 </div>
 
 
-
+{showRegularCharts && (
 <div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
         {/* Time series chart */}
   <div className={`time-series-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
@@ -1101,10 +1216,12 @@ useEffect(() => {
 
   </div>
 </div>
+)}
 
+{showSeasonalCycle && (
 <div className={`seasonal-cycle-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
   {/* Seasonal Cycle chart */}
-  {showSeasonalCycle && (
+
     <div className={`seasonal-cycle-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
       <h3>Seasonal Cycle</h3>
 
@@ -1195,12 +1312,69 @@ useEffect(() => {
         }}
       />
     </div>
-  )}
 </div>
-</div>
-      
-    
+)}
+
+
+{showSPIBarChart && spiChartData && (
+  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+    <div className="spi-chart-group">
+      {spiChartData.datasets.map((dataset) => (
+        <div key={dataset.label} className="spi-sub-chart">
+          <h3>{dataset.label}</h3>
+          <Bar
+            data={{
+              labels: spiChartData.labels,
+              datasets: [dataset],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: {
+                  min: -3,
+                  max: 3,
+                  title: {
+                    display: true,
+                    text: 'SPI',
+                  },
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Year-Month',
+                  },
+                  ticks: {
+                    maxTicksLimit: 20,
+                    autoSkip: true,
+                  },
+                },
+              },
+            }}
+          />
+        </div>
+      ))}
+    </div>
   </div>
+)}
+
+
+</div>
+
+{/* <div className="dashboard-footer" title="Variable Description"> 
+  {variableDescription && (
+    <div className="variable-description">
+      <p>{variableDescription}</p>
+    </div>
+  )}
+</div> */}
+</div>
+
+
+  </div>
+  
   </div>
 );
 };

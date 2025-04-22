@@ -318,36 +318,15 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
+  align-items: stretch;
   position: relative; 
   overflow-y: auto; 
   overflow-x: hidden;
   transition: all 0.3s ease-in-out;
 }
-/* .dashboard-box{
-  width: auto; 
-  max-width: 1460px; 
-  height: auto;
-  max-height: 610px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 20px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative; 
-  margin-top: 310px;
-  margin-right: -90px;
 
-   overflow-y: auto; 
-   overflow-x: hidden; 
-} */
-
-
-.dashboard-title{
+/* .dashboard-title{
   position: relative;
   right: 36%;
   top: -4%;
@@ -355,7 +334,7 @@
   font-size: 2rem; 
   font-weight: bold; 
   color: #2c3e50; 
-}
+} */
 
 .dashboard-header {
   position: absolute;
@@ -380,10 +359,35 @@
   font-weight: bold;
   white-space: nowrap;
   position: relative;
-  right: -45%; 
+  right: -35%;
+  z-index: 2; 
 }
 
+/*--------------Description box---------------------*/
+.dashboard-footer {
+  max-width: 1005%;
+  background-color: #f0f0f0;
+  border-top: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* ✅ จัดให้อยู่ตรงกลาง */
+}
+
+
+.variable-description p {
+  font-size: 16px;
+  color: #222;
+  font-weight: bold;
+  margin: 0;
+  
+}
+/*--------------Description box---------------------*/
+
+
 .dashboard-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -603,12 +607,76 @@
   margin-left: 1px;  
 }
 
+/*-------------spi chart---------------------------------*/
+
+.spi-chart-wrapper {
+  max-width: 2000px;
+  margin: 60px auto 40px;
+  padding: 0 0px;
+  padding-bottom: 5%;
+  z-index: 1;
+  transition: padding-left 0.3s ease;
+  padding-right: 5%;
+  
+}
+
+.spi-chart-wrapper.sidebar-open {
+  padding-right: 600px; /* ความกว้าง sidebar ด้านซ้าย */
+}
+
+.spi-chart-wrapper.sidebar-closed {
+  padding-right: 650px; 
+}
 
 
+.spi-chart-group {
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-sizing: border-box;
+  border: 3px solid #ccc;
+}
+
+.spi-sub-chart {
+  margin-bottom: 40px;
+  width: 705px;
+}
+
+.spi-sub-chart.sidebar-open {
+  width: 500px;
+}
+
+.spi-sub-chart h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  text-align: center;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .spi-chart-wrapper {
+    padding: 0 12px;
+    margin: 30px auto;
+  }
+
+  .spi-sub-chart {
+    margin-bottom: 24px;
+    min-width: 1400px;
+  }
+
+  canvas {
+    max-height: 260px !important;
+  }
+}
+
+
+/*-------------spi chart---------------------------------*/
 
 .right-map {
   position: absolute; 
-  top: 15%;
+  top: 10%;
   left: 30%;
 }
 
@@ -1399,29 +1467,4 @@
 }
 
 
-
-/*-------------Region, Province Selector---------------*/
-
-
-/* -----------------Select map Button----------------- */
-
-
-/* ปุ่ม toggle */
-/* .sidebar-toggle {
-  position: absolute;
-  top: 50px;
-  left: 10px;
-  background-color: #000;
-  color: white;
-  padding: 10px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  z-index: 1000;
-  transition: left 0.3s ease-in-out;
-}  */
-
-/* .sidebar-toggle.open {
-  left: 370px; 
-} */
 

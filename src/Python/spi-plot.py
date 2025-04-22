@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # กำหนดช่วงปีที่ต้องการดึงข้อมูล
-years = range(1960, 1981)  # 1960 - 1970
+years = range(1970, 2001)  # 1960 - 1970
 spi_columns = ['spi3', 'spi6', 'spi12', 'spi24']  # SPI Scales
 
 # สร้าง DataFrame เปล่าเพื่อเก็บผลลัพธ์

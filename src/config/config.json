@@ -3,61 +3,139 @@
     "ERA dataset": {
       "path": "/Geo-data/Era-Dataset/",
       "year_start": 1960,
-      "year_end": 1965,
+      "year_end": 1969,
       "file_name_pattern": {
         "country": "country_data_{year}.json",
         "region": "region_data_{year}.json",
         "province": "province_data_{year}.json"
       },
       "variable_options": [
-        { "label": "Precipitation (raw)", "value": "pre", "group": "Raw Data" },
-        { "label": "Temperature Min (raw)", "value": "tmin", "group": "Raw Data" },
-        { "label": "Temperature Max (raw)", "value": "tmax", "group": "Raw Data" },
-        { "label": "TXx (Index)", "value": "txx", "group": "Index Data" },
-        { "label": "TNn (Index)", "value": "tnn", "group": "Index Data" },
-        { "label": "Rx1day (Index)", "value": "rx1day", "group": "Index Data" }
+        { "label": "Precipitation (raw)", "value": "pre", "group": "Raw Data"
+        , "description": "Mean monthly or annual rainfall" },
+
+        { "label": "Temperature Max", "value": "tmax", "group": "Raw Data"
+        , "description": "Monthly and annual average maximum temperatures" },
+
+        { "label": "Temperature Min", "value": "tmin", "group": "Raw Data" 
+        , "description": "Monthly and annual average minimum temperatures"},
+
+        { "label": "SPI (Index)", "value": "spi", "group": "Indices Data", 
+        "multi_scale": ["spi3", "spi6", "spi12", "spi24"] },
+
+        { "label": "SPEI (Index)", "value": "spei", "group": "Indices Data", 
+        "multi_scale": ["spei3", "spei6", "spei12", "spei24"] },
+        
+        { "label": "CDD (Index)", "value": "cdd", "group": "Indices Data" },
+        { "label": "CDDCOLD18 (Index)", "value": "cddcold18", "group": "Indices Data" },
+        { "label": "CSDI (Index)", "value": "csdi", "group": "Indices Data" },
+        { "label": "CSDI3 (Index)", "value": "csdi3", "group": "Indices Data" },
+        { "label": "CWD (Index)", "value": "cwd", "group": "Indices Data" },
+        { "label": "DTR (Index)", "value": "dtr", "group": "Indices Data" },
+        { "label": "FD (Index)", "value": "fd", "group": "Indices Data" },
+        { "label": "GDDGROW10 (Index)", "value": "gddgrow10", "group": "Indices Data" },
+        { "label": "GSL (Index)", "value": "gsl", "group": "Indices Data" },
+        { "label": "HDDHEAT18 (Index)", "value": "hddheat18", "group": "Indices Data" },
+        { "label": "ID (Index)", "value": "id", "group": "Indices Data" },
+        { "label": "PRCPTOT (Total Precipitation)", "value": "prcptot", "group": "Indices Data" },
+        { "label": "R10MM (Index)", "value": "r10mm", "group": "Indices Data" },
+        { "label": "R20MM (Index)", "value": "r20mm", "group": "Indices Data" },
+        { "label": "R30MM (Index)", "value": "r30mm", "group": "Indices Data" },
+        { "label": "R95P (Index)", "value": "r95p", "group": "Indices Data" },
+        { "label": "R95PTOT (Index)", "value": "r95ptot", "group": "Indices Data" },
+        { "label": "R99P (Index)", "value": "r99p", "group": "Indices Data" },
+        { "label": "R99PTOT (Index)", "value": "r99ptot", "group": "Indices Data" },
+        { "label": "RX1DAY (Index)", "value": "rx1day", "group": "Indices Data" },
+        { "label": "RX3DAY (Index)", "value": "rx3day", "group": "Indices Data" },
+        { "label": "RX5DAY (Index)", "value": "rx5day", "group": "Indices Data" },
+        { "label": "SDII (Index)", "value": "sdii", "group": "Indices Data" },
+        { "label": "SU (Index)", "value": "su", "group": "Indices Data" },
+        { "label": "TMGE10 (Index)", "value": "tmge10", "group": "Indices Data" },
+        { "label": "TMGE5 (Index)", "value": "tmge5", "group": "Indices Data" },
+        { "label": "TMLT10 (Index)", "value": "tmlt10", "group": "Indices Data" },
+        { "label": "TMLT5 (Index)", "value": "tmlt5", "group": "Indices Data" },
+        { "label": "TMM (Index)", "value": "tmm", "group": "Indices Data" },
+        { "label": "TN10P (Index)", "value": "tn10p", "group": "Indices Data" },
+        { "label": "TN90P (Index)", "value": "tn90p", "group": "Indices Data" },
+        { "label": "TNLT2 (Index)", "value": "tnlt2", "group": "Indices Data" },
+        { "label": "TNLTM2 (Index)", "value": "tnltm2", "group": "Indices Data" },
+        { "label": "TNLTM20 (Index)", "value": "tnltm20", "group": "Indices Data" },
+        { "label": "TNM (Index)", "value": "tnm", "group": "Indices Data" },
+        { "label": "TNN (Index)", "value": "tnn", "group": "Indices Data" },
+        { "label": "TNX (Index)", "value": "tnx", "group": "Indices Data" },
+        { "label": "TR (Index)", "value": "tr", "group": "Indices Data" },
+        { "label": "TX10P (Index)", "value": "tx10p", "group": "Indices Data" },
+        { "label": "TX2TN2 (Index)", "value": "tx2tn2", "group": "Indices Data" },
+        { "label": "TX90P (Index)", "value": "tx90p", "group": "Indices Data" },
+        { "label": "TXB2TNB2 (Index)", "value": "txb2tnb2", "group": "Indices Data" },
+        { "label": "TXGE30 (Index)", "value": "txge30", "group": "Indices Data" },
+        { "label": "TXGE35 (Index)", "value": "txge35", "group": "Indices Data" },
+        { "label": "TXGT50P (Index)", "value": "txgt50p", "group": "Indices Data" },
+        { "label": "TXM (Index)", "value": "txm", "group": "Indices Data" },
+        { "label": "TXN (Index)", "value": "txn", "group": "Indices Data" },
+        { "label": "TXX (Index)", "value": "txx", "group": "Indices Data" },
+        { "label": "WSDI (Index)", "value": "wsdi", "group": "Indices Data" },
+        { "label": "WSDI3 (Index)", "value": "wsdi3", "group": "Indices Data" }
+      ]
+    },
+    "CRU dataset": {
+      "path": "/Geo-data/Year-Dataset/",
+      "year_start": 1901,
+      "year_end": 1910,
+      "file_name_pattern": {
+        "country": "country_data_{year}.json",
+        "region": "region_data_{year}.json"
+        
+      },
+      "variable_options": [
+        { "label": "Precipitation", "value": "pre", "group": "Raw Data", "description": "Mean monthly or annual rainfall" },
+        { "label": "Temperature Max", "value": "tmax", "group": "Raw Data", "description": "Monthly and annual average maximum temperatures" },
+        { "label": "Temperature Min", "value": "tmin", "group": "Raw Data", "description": "Monthly and annual average minimum temperatures" },
+        {
+      "label": "SPI (Index)",
+      "value": "spi",
+      "group": "Indices Data",
+      "multi_scale": ["spi3", "spi6", "spi12", "spi24"],
+      "description": "Standardized Precipitation Index across multiple time scales"
+    },
+    {
+      "label": "SPEI (Index)",
+      "value": "spei",
+      "group": "Indices Data",
+      "multi_scale": ["spei3", "spei6", "spei12", "spei24"],
+      "description": "Standardized Precipitation-Evapotranspiration Index across multiple time scales"
+    }
       ]
     }
+
   },
-
   "dropdown_options": [
-    { "value": "ERA dataset", "label": "ERA Dataset" }
-  ],
-
+    { "value": "ERA dataset", "label": "ERA Dataset" },
+    { "value": "CRU dataset", "label": "CRU Dataset" }],
   "areas": {
-  "area_thailand": {
-    "North": [
-      "Kamphaeng Phet", "Chiang Rai", "Chiang Mai", "Tak", "Nan", "Phayao",
-      "Phichit", "Phitsanulok", "Phetchabun", "Phrae", "Mae Hong Son",
-      "Lampang", "Lamphun", "Sukhothai", "Uttaradit"
-    ],
-    "East": [
-      "Chanthaburi", "Chachoengsao", "Chon Buri", "Trat", "Nakhon Nayok",
-      "Prachin Buri", "Rayong", "Sa Kaeo"
-    ],
-    "North_East": [
-      "Kalasin", "Khon Kaen", "Chaiyaphum", "Nakhon Phanom", "Nakhon Ratchasima",
-      "Bueng Kan", "Buri Ram", "Maha Sarakham", "Mukdahan", "Yasothon",
-      "Roi Et", "Loei", "Si Sa Ket", "Sakon Nakhon", "Surin",
-      "Nong Khai", "Nong Bua Lam Phu", "Udon Thani", "Ubon Ratchathani", "Amnat Charoen"
-    ],
-    "Central": [
-      "Bangkok Metropolis", "Kanchanaburi", "Chai Nat", "Nakhon Pathom",
-      "Nakhon Sawan", "Nonthaburi", "Pathum Thani", "Phra Nakhon Si Ayutthaya",
-      "Ratchaburi", "Lop Buri", "Samut Prakan", "Samut Songkhram",
-      "Samut Sakhon", "Saraburi", "Sing Buri", "Suphan Buri", "Ang Thong", "Uthai Thani"
-    ],
-    "South_East": [
-      "Chumphon", "Nakhon Si Thammarat", "Narathiwat", "Prachuap Khiri Khan",
-      "Pattani", "Phatthalung", "Phetchaburi", "Yala", "Songkhla", "Surat Thani"
-    ],
-    "South_West": [
-      "Krabi", "Trang", "Phangnga", "Phuket", "Ranong", "Satun"
-    ]
+    "area_thailand": {
+      "North": ["Kamphaeng Phet","Chiang Rai","Chiang Mai","Tak","Nan","Phayao","Phichit",
+      "Phitsanulok","Phetchabun","Phrae","Mae Hong Son","Lampang","Lamphun","Sukhothai","Uttaradit"],
+
+      "East": ["Chanthaburi","Chachoengsao","Chon Buri","Trat","Nakhon Nayok","Prachin Buri",
+      "Rayong","Sa Kaeo"],
+
+      "Northeast": ["Kalasin","Khon Kaen","Chaiyaphum","Nakhon Phanom","Nakhon Ratchasima",
+      "Bueng Kan","Buri Ram","Maha Sarakham","Mukdahan","Yasothon","Roi Et","Loei","Si Sa Ket",
+      "Sakon Nakhon","Surin","Nong Khai","Nong Bua Lam Phu","Udon Thani","Ubon Ratchathani","Amnat Charoen"],
+
+      "Central": ["Bangkok Metropolis","Kanchanaburi","Chai Nat","Nakhon Pathom","Nakhon Sawan",
+      "Nonthaburi","Pathum Thani","Phra Nakhon Si Ayutthaya","Ratchaburi","Lop Buri",
+      "Samut Prakan","Samut Songkhram","Samut Sakhon","Saraburi","Sing Buri","Suphan Buri",
+      "Ang Thong","Uthai Thani"],
+
+      "SouthEast": ["Chumphon","Nakhon Si Thammarat","Narathiwat","Prachuap Khiri Khan",
+      "Pattani","Phatthalung","Phetchaburi","Yala","Songkhla","Surat Thani"],
+
+      "SouthWest": ["Krabi","Trang","Phangnga","Phuket","Ranong","Satun"]
+    }
   }
 }
 
-}
 
 
 

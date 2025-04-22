@@ -143,7 +143,7 @@ from shapely.geometry import shape
 
 # ฟังก์ชันในการอ่านไฟล์ region_data_{year}.json
 def load_region_data(year):
-    file_path = f'src/Geo-data/Era-Dataset/{year}/region_data_{year}.json'
+    file_path = f'src/Geo-data/Era-Dataset/{year}/era_region_{year}.json'
     with open(file_path, 'r') as f:
         data = json.load(f)
         return data['features']

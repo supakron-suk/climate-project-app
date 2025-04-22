@@ -1,7 +1,10 @@
-// ข้อมูล dummyTimeSeriesData สำหรับแสดงในกราฟ
+// Graph.js
+import { spi_process } from './spi_set';
+
+
 //---------------------------------------- Time series Graph---------------------------------------------//
 export const dummyTimeSeriesData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  labels: [],
   datasets: [
     {
       label: '',
@@ -29,7 +32,16 @@ export const dummySeasonalCycleData = {
   ],
 };
 
-//---------------------------------------- Seasonal Cycle Graph---------------------------------------------//
+
+//---------------------------------------- SPI Bar Chart Dummy Graph ---------------------------------------------//
+
+
+//---------------------------------------- Dummy seasonal Graph---------------------------------------------//
+
+
+
+//---------------------------------------- Dummy spi Graph---------------------------------------------//
+
 export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize, configData) => {
   
   if (startYear > endYear) {
@@ -43,7 +55,7 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
     ? configData.areas.area_thailand[region] || []
     : [];
   const filterRegion_Province = (features, region, province = null) => {
-  if (province && province !== 'Thailand_province') {
+  if (province && province !== 'Thailand') {
     // เลือกจาก province dropdown โดยตรง
     return features.filter((feature) => feature.properties.name === province);
   }
@@ -64,6 +76,7 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   let overallCount = 0; // ตัวแปรเก็บจำนวนข้อมูลทั้งหมดที่ผ่านการประมวลผล
   let yearlyMeans = {}; // ตัวแปรเก็บค่าเฉลี่ยรายปี
   let provinceData = {}; // ตัวแปรเก็บข้อมูลเฉพาะจังหวัดที่เลือก
+  let spiRawData = [];
 
   for (let year = startYear; year <= endYear; year++) {
     const geojson = dataByYear[year]?.province; // ต้องใช้เฉพาะ .province
@@ -75,10 +88,17 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
     const filteredFeatures = filterRegion_Province(geojson.features, region, province); 
     // กรองข้อมูลตาม region และ province ที่เลือก
 
+    //----------------------SPI Process-----------------------------//
+    // if (selectedIndex === 'spi' || selectedIndex === 'spei') {
+    //   const { spi_process } = require('./spi_set');
+    //   const spiResult = spi_process(filteredFeatures, selectedIndex, configData);
+    //   console.log(`🔍 SPI Raw Data for in calculatemean ${selectedIndex.toUpperCase()}:`, spiResult);
+    //   spiRawData.push(...spiResult);
+    // }
+
     filteredFeatures.forEach((feature) => {
   const { name, month } = feature.properties;
   const value = feature.properties[selectedIndex]; // ดึงค่าของ selectedIndex
-
   
 
   if (!provinceData[name]) {
@@ -362,6 +382,75 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
   },
 };
 
-return { seasonalCycleData, timeSeriesData };
+const spi_graph_Data = (spiRawData) => {
+  if (!spiRawData || spiRawData.length === 0) return null;
+
+  // รวมข้อมูลตามปี + เดือน + สเกล
+  const grouped = {};
+  spiRawData.forEach(({ year, month, scale, value }) => {
+    const key = `${year}-${month.toString().padStart(2, '0')}`;
+    if (!grouped[key]) grouped[key] = {};
+    grouped[key][scale] = value;
+  });
+
+  const labels = Object.keys(grouped); // ['1960-01', '1960-02', ...]
+  const scales = [...new Set(spiRawData.map((d) => d.scale))]; // ['spi3', 'spi6', ...]
+
+  const datasets = scales.map((scale) => ({
+    label: scale.toUpperCase(),
+    data: labels.map((label) => grouped[label]?.[scale] ?? null),
+    backgroundColor:
+      scale === 'spi3' ? '#4dabf7' :
+      scale === 'spi6' ? '#74c0fc' :
+      scale === 'spi12' ? '#a5d8ff' :
+      scale === 'spi24' ? '#d0ebff' :
+      '#ccc',
+  }));
+
+  return {
+    labels,
+    datasets,
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          min: -3,
+          max: 3,
+          title: {
+            display: true,
+            text: "SPI Value",
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Year-Month",
+          },
+          ticks: {
+            maxTicksLimit: 15,
+            callback: function (value, index, ticks) {
+              return labels[index];
+            },
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `${context.dataset.label}: ${context.raw?.toFixed(2)}`;
+            },
+          },
+        },
+      },
+    },
+  };
+};
+
+
+return { seasonalCycleData, timeSeriesData};
 
 };

@@ -36,7 +36,7 @@ export const TrendMap = (
       );
     }
   } else {
-    if (province && province !== "Thailand_province") {
+    if (province && province !== "Thailand") {
       filteredFeatures = filteredFeatures.filter(
         (feature) => feature.properties.name === province
       );

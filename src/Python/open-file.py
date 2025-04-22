@@ -23,7 +23,7 @@
 
 
 
-# import xarray as xr
+import xarray as xr
 # import matplotlib.pyplot as plt
 # import cartopy.crs as ccrs
 # import cartopy.feature as cfeature
@@ -57,16 +57,16 @@
 
 
 # import xarray as xr
-import geopandas as gpd
+# import geopandas as gpd
 
-gdf = gpd.read_file('src/Geo-data/thailand-Geo.json')
+# gdf = gpd.read_file('src/Geo-data/thailand-Geo.json')
 
 
-print(gdf)
+# print(gdf)
 # # เปิดไฟล์ NetCDF
-# ds = xr.open_dataset("src/Python/prepare_dataset/dataset/tmin.day.ltm.1991-2020.nc")
+ds = xr.open_dataset("src/dataset-nc/TH_pr_ERA5_day.1960-2022.nc")
 
-# print(ds)
+print(ds)
 
 
 

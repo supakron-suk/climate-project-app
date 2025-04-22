@@ -24,7 +24,7 @@ export const Heatmap = (
 
     let filteredFeatures = geojson.features;
 
-    // ✅ ใช้ logic แบบเดียวกับ TrendMap
+    // ใช้ logic แบบเดียวกับ TrendMap
     if (isRegionView) {
       if (region && region !== "Thailand_region") {
         filteredFeatures = filteredFeatures.filter(
@@ -32,7 +32,7 @@ export const Heatmap = (
         );
       }
     } else {
-      if (province && province !== "Thailand_province") {
+      if (province && province !== "Thailand") {
         filteredFeatures = filteredFeatures.filter(
           (feature) => feature.properties.name === province
         );
@@ -78,9 +78,11 @@ export const Heatmap = (
     })),
   };
 
-  const levelSet = new Set(averagedGeoJSON.features.map(f => f.properties.level));
-  console.log("🔥 Heatmap level types in features:", [...levelSet]);
-  console.log("🔥 Heatmap feature count:", averagedGeoJSON.features.length);
+  // const levelSet = new Set(averagedGeoJSON.features.map(f => f.properties.level));
+  // console.log("Heatmap level types in features:", [...levelSet]);
+  // console.log("Heatmap feature count:", averagedGeoJSON.features.length);
+  console.log("Heatmap data returned:", averagedGeoJSON);
+  
 
   return averagedGeoJSON;
 };
