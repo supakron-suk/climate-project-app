@@ -32,7 +32,7 @@ export const Heatmap = (
         );
       }
     } else {
-      if (province && province !== "Thailand") {
+      if (province && province !== "Thailand" && province !== "Thailand_province") {
         filteredFeatures = filteredFeatures.filter(
           (feature) => feature.properties.name === province
         );

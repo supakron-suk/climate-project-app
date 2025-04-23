@@ -44,16 +44,16 @@ export const dummySeasonalCycleData = {
 
 export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize, configData) => {
   
+  let annualValuesByYear = {};
+
   if (startYear > endYear) {
-    console.error("Start year must be less than or equal to end year."); // ตรวจสอบเงื่อนไขว่าปีเริ่มต้นต้องไม่มากกว่าปีสิ้นสุด
+    console.error("Start year must be less than or equal to end year."); 
     return null; 
   }
   const monthlyAverages = Array(12 * (endYear - startYear + 1)).fill(0); 
   const monthlyCounts = Array(12 * (endYear - startYear + 1)).fill(0); 
 
-  const provinceListInRegion = region !== 'Thailand' 
-    ? configData.areas.area_thailand[region] || []
-    : [];
+  
   const filterRegion_Province = (features, region, province = null) => {
   if (province && province !== 'Thailand') {
     // เลือกจาก province dropdown โดยตรง
@@ -61,74 +61,119 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   }
 
   if (region && region !== 'Thailand_region') {
-    const provinceList = configData.areas.area_thailand[region] || [];
-    return features.filter((feature) =>
-      provinceList.includes(feature.properties.name)
-    );
+    // กรองข้อมูลโดยใช้ region_name จาก properties ของแต่ละ feature
+    return features.filter((feature) => feature.properties.region_name === region);
   }
 
-  // ✅ ถ้าเลือก Thailand ทั้งหมด
   return features;
 };
 
+
   
 
-  let overallCount = 0; // ตัวแปรเก็บจำนวนข้อมูลทั้งหมดที่ผ่านการประมวลผล
+  
   let yearlyMeans = {}; // ตัวแปรเก็บค่าเฉลี่ยรายปี
   let provinceData = {}; // ตัวแปรเก็บข้อมูลเฉพาะจังหวัดที่เลือก
-  let spiRawData = [];
+  
 
   for (let year = startYear; year <= endYear; year++) {
-    const geojson = dataByYear[year]?.province; // ต้องใช้เฉพาะ .province
+    let geojson = null;
+
+    // console.log(`Year: ${year}, Data for year:`, dataByYear[year]);
+
+
+// ไม่ว่าจะอยู่ใน view ไหน ถ้าเลือก Thailand ให้ใช้ country
+const isThailand =
+  province === "Thailand" || region === "Thailand_region";
+
+if (isThailand) {
+  geojson = dataByYear[year]?.country;
+} else if (region && region !== "Thailand_region") {
+  geojson = dataByYear[year]?.region;
+} else if (province && province !== "Thailand") {
+  geojson = dataByYear[year]?.province;
+}
+
+
+// console.log(`📁 year: ${year}, source:`, 
+//   isThailand ? "country" : region ? "region" : "province");
+
+
+
     if (!geojson || !geojson.features) {
-      console.warn(`No province data available for year ${year}`);
+      console.warn(`No valid geojson data available for year ${year}`);
       continue;
     }
 
-    const filteredFeatures = filterRegion_Province(geojson.features, region, province); 
+    let features = [];
+if (geojson.features) {
+  features = Array.isArray(geojson.features) ? geojson.features : [geojson.features];
+} else if (geojson.type === "Feature") {
+  features = [geojson];
+} else {
+  console.warn(`❌ Invalid geojson structure for year ${year}:`, geojson);
+  continue;
+}
+
+    const filteredFeatures = filterRegion_Province(features, region, province);
+
+    // console.log(`📅 Year: ${year}, Dataset used:`, geojson);
     // กรองข้อมูลตาม region และ province ที่เลือก
 
-    //----------------------SPI Process-----------------------------//
-    // if (selectedIndex === 'spi' || selectedIndex === 'spei') {
-    //   const { spi_process } = require('./spi_set');
-    //   const spiResult = spi_process(filteredFeatures, selectedIndex, configData);
-    //   console.log(`🔍 SPI Raw Data for in calculatemean ${selectedIndex.toUpperCase()}:`, spiResult);
-    //   spiRawData.push(...spiResult);
-    // }
+      filteredFeatures.forEach((feature) => {
+        const { name } = feature.properties;
 
-    filteredFeatures.forEach((feature) => {
-  const { name, month } = feature.properties;
-  const value = feature.properties[selectedIndex]; // ดึงค่าของ selectedIndex
+
+
+        // ดึง annual value สำหรับ Time Series
+         let annualValue = null;
+        if (feature.properties.annual && feature.properties.annual[selectedIndex] !== undefined) {
+          annualValue = feature.properties.annual[selectedIndex];
+        }
+
+        // ดึง monthly array สำหรับ Seasonal Cycle
+        let monthlyValues = null;
+      if (feature.properties.monthly && Array.isArray(feature.properties.monthly[selectedIndex])) {
+        monthlyValues = feature.properties.monthly[selectedIndex];
+      }
+
+      if (annualValue !== null) {
+        const yearlySum = annualValue; 
+        yearlyMeans[year] = (yearlyMeans[year] || 0) + yearlySum;
+      }
+
+      if (monthlyValues !== null) {
+        monthlyValues.forEach((value, monthIndex) => {
+          const idx = (year - startYear) * 12 + monthIndex;
+          monthlyAverages[idx] += value; 
+          monthlyCounts[idx] += 1; 
+        });
+      }
+
+      });
+
+  }
+
+
   
-
-  if (!provinceData[name]) {
-    provinceData[name] = [];
+const averagedYearlyMeans = {};
+for (let year in annualValuesByYear) {
+  const values = annualValuesByYear[year];
+  if (Array.isArray(values) && values.length > 0) {
+    averagedYearlyMeans[year] = values.reduce((a, b) => a + b, 0) / values.length;
   }
-  provinceData[name].push({ year, month, [selectedIndex]: value });
+}
 
-  if (month >= 1 && month <= 12 && typeof value === 'number') {
-    const index = (year - startYear) * 12 + (month - 1);
-    monthlyAverages[index] += value;
-    monthlyCounts[index] += 1;
-    overallCount += 1;
-  }
-});
 
-    const yearlySum = monthlyAverages
-      .slice((year - startYear) * 12, (year - startYear + 1) * 12)
-      // แยกผลรวมค่าอุณหภูมิรายเดือนในปีนั้น ๆ
-      .reduce((sum, val, i) => {
-        const value = monthlyCounts[(year - startYear) * 12 + i] > 0 
-          ? val / monthlyCounts[(year - startYear) * 12 + i] 
-          : 0; 
-        return sum + value; // รวมค่าเฉลี่ยรายเดือนทั้งหมด
-      }, 0);
+  const annualArray = [];
+for (let year = startYear; year <= endYear; year++) {
+  annualArray.push({
+    year,
+    value: yearlyMeans[year] !== undefined ? yearlyMeans[year] : null,
+  });
+}
+// console.log("📊 Full annual array:", annualArray);
 
-    const yearlyMean = yearlySum / 12; 
-    // หาค่าเฉลี่ยรายปีโดยการหารผลรวมด้วย 12 เดือน
-    yearlyMeans[year] = yearlyMean; 
-    // บันทึกค่าเฉลี่ยรายปีใน yearlyMeans
-  }
 
   const result = monthlyAverages.map((sum, index) =>
     monthlyCounts[index] > 0 ? sum / monthlyCounts[index] : null
@@ -137,9 +182,6 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
 
   const validValues = result.filter((value) => value !== null); 
   // กรองเฉพาะค่าที่ไม่ใช่ null ใน result
-  const overallMean =
-    validValues.reduce((sum, value) => sum + value, 0) / validValues.length; 
-  // คำนวณค่าเฉลี่ยรวมของทุกเดือน
 
   const monthlyData = []; 
   // อาร์เรย์สำหรับเก็บข้อมูลรายเดือน
@@ -171,9 +213,9 @@ const calculateYAxisBounds = (data) => {
   const validData = data.filter((value) => typeof value === "number" && !isNaN(value)); // กรองค่าที่ valid
   const min = Math.min(...validData);
   const max = Math.max(...validData);
-  const padding = (max - min) * 0.2; // เพิ่ม padding 10% ให้กราฟดูสวยงาม
+  const padding = (max - min) * 0.2; 
   return {
-    min: min - padding > 0 ? min - padding : 0, // ไม่ให้ต่ำกว่าศูนย์ถ้าเป็นข้อมูลบวก
+    min: min - padding > 0 ? min - padding : 0, 
     max: max + padding,
   };
 };
@@ -234,13 +276,9 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
 
   //----------------------------------------------------//
   // สร้างข้อมูลรายปีจากรายเดือน
-const annualData = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
-  const startIndex = i * 12; // index ของเดือนแรกในปีนั้น
-  const endIndex = startIndex + 12; // index ของเดือนสุดท้ายในปีนั้น
-  const yearlyValues = result.slice(startIndex, endIndex); // ข้อมูล 12 เดือนในปีนั้น
-  const yearlyAverage = yearlyValues.reduce((sum, val) => sum + val, 0) / yearlyValues.length; // ค่าเฉลี่ยรายปี
-  return yearlyAverage;
-});
+
+
+
 
 // สร้าง Labels รายปี
 const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
@@ -249,7 +287,10 @@ const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
 });
 
 // คำนวณ bounds ใหม่สำหรับข้อมูลรายปี
-const annualBounds = calculateYAxisBounds(annualData);
+const annualBounds = calculateYAxisBounds(annualArray.map(item => item.value));
+
+
+
 
 const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') => {
   // สร้าง Gaussian Kernel ตามสมการ K(x*, xi)
@@ -302,7 +343,10 @@ const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') =>
 };
 
 // **ให้ User กำหนดค่า kernelSize**
-const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 'reflect');
+const annualGaussianAverage = gaussianFilterWithPadding(annualArray.map(item => item.value), kernelSize, 'reflect');
+// console.log("📊 Kernel Size:", kernelSize);
+// console.log("📊 annual data :", annualArray);
+// console.log("📊 Gaussian Filter Data:", annualGaussianAverage);
   //----------------------------------------------------//
 
   const timeSeriesData = {
@@ -310,7 +354,7 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
   datasets: [
     {
       label: `Annual Average`,
-      data: annualData,
+      data:  annualArray.map(item => item.value),  
       borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
       fill: true,
@@ -382,74 +426,8 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualData, kernelSize, 
   },
 };
 
-const spi_graph_Data = (spiRawData) => {
-  if (!spiRawData || spiRawData.length === 0) return null;
-
-  // รวมข้อมูลตามปี + เดือน + สเกล
-  const grouped = {};
-  spiRawData.forEach(({ year, month, scale, value }) => {
-    const key = `${year}-${month.toString().padStart(2, '0')}`;
-    if (!grouped[key]) grouped[key] = {};
-    grouped[key][scale] = value;
-  });
-
-  const labels = Object.keys(grouped); // ['1960-01', '1960-02', ...]
-  const scales = [...new Set(spiRawData.map((d) => d.scale))]; // ['spi3', 'spi6', ...]
-
-  const datasets = scales.map((scale) => ({
-    label: scale.toUpperCase(),
-    data: labels.map((label) => grouped[label]?.[scale] ?? null),
-    backgroundColor:
-      scale === 'spi3' ? '#4dabf7' :
-      scale === 'spi6' ? '#74c0fc' :
-      scale === 'spi12' ? '#a5d8ff' :
-      scale === 'spi24' ? '#d0ebff' :
-      '#ccc',
-  }));
-
-  return {
-    labels,
-    datasets,
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          min: -3,
-          max: 3,
-          title: {
-            display: true,
-            text: "SPI Value",
-          },
-        },
-        x: {
-          title: {
-            display: true,
-            text: "Year-Month",
-          },
-          ticks: {
-            maxTicksLimit: 15,
-            callback: function (value, index, ticks) {
-              return labels[index];
-            },
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              return `${context.dataset.label}: ${context.raw?.toFixed(2)}`;
-            },
-          },
-        },
-      },
-    },
-  };
-};
-
+console.log("📊 Time Series Data:", timeSeriesData);
+console.log("📈 Seasonal Cycle Data:", seasonalCycleData);
 
 return { seasonalCycleData, timeSeriesData};
 

@@ -3,7 +3,7 @@
     "ERA dataset": {
       "path": "/Geo-data/Era-Dataset/",
       "year_start": 1960,
-      "year_end": 1969,
+      "year_end": 1970,
       "file_name_pattern": {
         "country": "country_data_{year}.json",
         "region": "region_data_{year}.json",
@@ -78,7 +78,7 @@
       ]
     },
     "CRU dataset": {
-      "path": "/Geo-data/Year-Dataset/",
+      "path": "/Geo-data/Cru-Dataset/",
       "year_start": 1901,
       "year_end": 1910,
       "file_name_pattern": {

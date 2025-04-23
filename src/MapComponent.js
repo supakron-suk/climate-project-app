@@ -483,8 +483,8 @@ const MapComponent = ({
 
   const displayedGeoData = geoData?.features ? geoData : { type: "FeatureCollection", features: [] };
 
-  console.log("🌍 fullGeoData features count:", fullGeoData?.features?.length);
-  console.log("🌈 min/max used:", defaultMin, defaultMax)
+  // console.log("🌍 fullGeoData features count:", fullGeoData?.features?.length);
+  // console.log("🌈 min/max used:", defaultMin, defaultMax)
 
   return (
     <div className="map-box">

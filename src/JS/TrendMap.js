@@ -36,7 +36,7 @@ export const TrendMap = (
       );
     }
   } else {
-    if (province && province !== "Thailand") {
+    if (province && province !== "Thailand" && province !== "Thailand_province") {
       filteredFeatures = filteredFeatures.filter(
         (feature) => feature.properties.name === province
       );
@@ -102,8 +102,8 @@ export const TrendMap = (
   });
 
     const levelSet = new Set(features.map(f => f.properties.level));
-  console.log("📈 TrendMap level types in features:", [...levelSet]);
-  console.log("📈 TrendMap feature count:", features.length);
+  // console.log("📈 TrendMap level types in features:", [...levelSet]);
+  // console.log("📈 TrendMap feature count:", features.length);
 
   return {
     geojson: {

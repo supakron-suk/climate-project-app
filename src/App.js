@@ -70,6 +70,7 @@ function App() {
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedData, setSelectedData] = useState([]);
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
+  // const [Timeseries, set] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
   const [spiChartData, setSPIChartData] = useState(null);
   const [showSPIBarChart, setShowSPIBarChart] = useState(false);
@@ -317,43 +318,9 @@ const handleDatasetChange = async (e) => {
 };
 
 //---------------------------spi FUNC zone --------------------------------/
-const getFilteredFeatures = (
-  dataByYear,
-  configData,
-  selectedYearStart,
-  selectedYearEnd,
-  updatedProvince,
-  updatedRegion
-) => {
-  const allFeatures = [];
+// รับพาราม เตอร์ต่าง ๆ แล้วคืนข้อมูล multi‑scale map
 
-  for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-    const geojson = dataByYear[year]?.province;
-    if (geojson && geojson.features) {
-      const filtered = geojson.features.filter((feature) => {
-        const name = feature.properties.name;
-        if (updatedProvince && updatedProvince !== 'Thailand') {
-          return name === updatedProvince;
-        } else if (updatedRegion && updatedRegion !== 'Thailand_region') {
-          const list = configData.areas.area_thailand[updatedRegion] || [];
-          return list.includes(name);
-        }
-        return true; // แสดงข้อมูลทั่วประเทศ
-      });
 
-      // 🛠️ เพิ่ม year เข้าไปใน properties ของแต่ละ feature
-      filtered.forEach((f) => {
-        f.properties.year = year;
-      });
-
-      allFeatures.push(...filtered);
-    }
-  }
-
-  return allFeatures;
-};
-
-//---------------------------spi FUNC zone --------------------------------/
 
   // ฟังก์ชันเพื่อดึงตัวเลือกของตัวแปรจาก config
   const getVariableOptions = (dataset) => {
@@ -398,13 +365,18 @@ const getFullDatasetName = (dataset) => {
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
 
+
+
+    for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+    console.log(`📅 Year ${year} - Province GeoJSON:`, dataByYear[year]?.province);
+    console.log(`📅 Year ${year} - Region GeoJSON:`, dataByYear[year]?.region);
+    console.log(`📅 Year ${year} - Country GeoJSON:`, dataByYear[year]?.country);
+  }
+
    const updatedRegion = DataApply.isRegionView
   ? DataApply.selectedRegion
   : "";
 
-// const updatedProvince = !DataApply.isRegionView
-//   ? DataApply.selectedProvince
-//   : "";
     const updatedProvince = !DataApply.isRegionView ? DataApply.selectedProvince : "";
 
 
@@ -414,6 +386,7 @@ useEffect(() => {
     console.log("➡️ Province:", updatedProvince);
     console.log("➡️ Value Key:", selectedValue);
 
+   
     const selectedYears = Object.keys(dataByYear)
       .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
       .map((year) => ({
@@ -423,6 +396,9 @@ useEffect(() => {
       }));
 
       selectedYears.forEach(({ year, data }) => {
+        
+        
+
     });
 
     setFilteredYearData(selectedYears);
@@ -435,29 +411,29 @@ useEffect(() => {
 
     //-------------------------------------spi USE EFFECT----------------------------------------------//
 
+    if (selectedValue === 'spi' || selectedValue === 'spei') {
+  const spiResult = spi_process(
+    dataByYear,
+    selectedYearStart,
+    selectedYearEnd,
+    selectedValue,          // 'spi' หรือ 'spei'
+    selectedRegion,
+    configData,
+    selectedDataset
+  );
 
-        const features = getFilteredFeatures(
-  dataByYear,
-  configData,
-  selectedYearStart,
-  selectedYearEnd,
-  updatedProvince,
-  updatedRegion
-);
-
-if (selectedValue === 'spi' || selectedValue === 'spei') {
-  const spiResult = spi_process(features, selectedValue, configData);
   console.log(`🔍 SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
-  setSPIChartData(SPIChartData(spiResult));
-  setShowSPIBarChart(true);          
-  setShowRegularCharts(false);       
-  setShowSeasonalCycle(false);
+
+  setSPIChartData(SPIChartData(spiResult));  // แปลงข้อมูลไปเป็น chart data
+  setShowSPIBarChart(true);                  // แสดง SPI bar chart
+  setShowRegularCharts(false);               // ซ่อน time series
+  setShowSeasonalCycle(false);               // ซ่อน seasonal cycle
 } else {
-  setShowSPIBarChart(false);         
-  setShowRegularCharts(true);        
+  // ถ้าไม่ใช่ SPI/SPEI ให้แสดงกราฟแบบปกติ
+  setShowSPIBarChart(false);
+  setShowRegularCharts(true);
   setShowSeasonalCycle(true);
 }
-
 
 
     //-------------------------------------spi USE EFFECT----------------------------------------------//
@@ -513,16 +489,17 @@ if (selectedValue === 'spi' || selectedValue === 'spei') {
       selectedYearEnd,
       updatedRegion,
       updatedProvince,
-      // selectedRegion,
-      // selectedProvince,
       selectedValue,
       kernelSize,
       configData
     );
     if (chartData) {
+      console.log("📊 Time Series Data:", chartData);
       setSeasonalCycle(chartData.seasonalCycleData);
       setChartData(chartData.timeSeriesData);
     }
+
+    // setKey(prevKey => prevKey + 1);
 
     setlabelYearStart(selectedYearStart);
     setlabelYearEnd(selectedYearEnd);
