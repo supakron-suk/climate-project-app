@@ -32,21 +32,26 @@ export const Heatmap = (
         );
       }
     } else {
-      if (province && province !== "Thailand" && province !== "Thailand_province") {
+      if (province && province !== "Thailand") {
         filteredFeatures = filteredFeatures.filter(
-          (feature) => feature.properties.name === province
+          (feature) => feature.properties.province_name === province
         );
       }
     }
 
     filteredFeatures.forEach((feature) => {
       const name = isRegionView
-        ? feature.properties.region_name
-        : feature.properties.name;
+        ? feature.properties.region_name || feature.properties.name
+        : feature.properties.province_name || feature.properties.name;
+
 
       const value = isRegionView
-        ? feature.properties.annual?.[valueKey]
-        : feature.properties[valueKey];
+    ? feature.properties.annual?.[valueKey] ?? feature.properties[valueKey]
+    : feature.properties.annual?.[valueKey] ?? feature.properties[valueKey];
+
+      // const value = isRegionView
+      //   ? feature.properties.annual?.[valueKey] || feature.properties[valueKey]
+      //   : feature.properties.annual?.[valueKey] || feature.properties[valueKey];
 
       const geometry = feature.geometry;
 

@@ -64,15 +64,21 @@ function App() {
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
   const [selectedProvinceData, setSelectedProvinceData] = useState(null);
   const [isRegionView, setIsRegionView] = useState(true);
-  const [isProvinceView, setIsProvinceView] = useState(true);
-
+  
   //const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedData, setSelectedData] = useState([]);
+  // const [selectedYear, setSelectedYear] = useState('');
+  // const [selectedData, setSelectedData] = useState([]);
+
+  const [isExpand, setIsExpand] = useState(false);
+  const [isSPIExpand, setIsSPIExpand] = useState(false);
+
+
+
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
   // const [Timeseries, set] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
   const [spiChartData, setSPIChartData] = useState(null);
+  const [isSpiOpen, setIsSpiOpen] = useState(true);
   const [showSPIBarChart, setShowSPIBarChart] = useState(false);
   const [showRegularCharts, setShowRegularCharts] = useState(true);
   const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
@@ -160,21 +166,59 @@ const getGradient = (colormapName, isReversed = false) => {
 
 //-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
-  const filterByRegion = (dataByYear, region, selectedYearStart, selectedYearEnd) => {
+ const filterByArea = (dataByYear, region, province, startYear, endYear) => {
   const filtered = [];
 
-  for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-    const regionData = dataByYear[year]?.region;
-    if (regionData && regionData.features) {
-      const features = region === 'Thailand_region'
-        ? dataByYear[year]?.country?.features || []  // ถ้าเลือกประเทศไทย ใช้ country แทน region
-        : regionData.features.filter(f => f.properties.region_name === region); 
+  for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
+    let features = [];
+
+    if (province && province !== "Thailand") {
+      const provinceData = dataByYear[year]?.province;
+      if (provinceData?.features) {
+        features = provinceData.features.filter(
+          (f) => f.properties.province_name === province
+        );
+      }
+    } else if (region && region !== "Thailand_region") {
+      const regionData = dataByYear[year]?.region;
+      if (regionData?.features) {
+        features = regionData.features.filter(
+          (f) => f.properties.region_name === region
+        );
+      }
+    } else {
+      const countryData = dataByYear[year]?.country;
+      if (countryData?.features) {
+        features = countryData.features;
+      }
+    }
+
+    if (Array.isArray(features)) {
       filtered.push(...features);
+    } else if (features) {
+      filtered.push(features);
     }
   }
 
   return filtered;
 };
+
+
+//   const filterByRegion = (dataByYear, region, selectedYearStart, selectedYearEnd) => {
+//   const filtered = [];
+
+//   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+//     const regionData = dataByYear[year]?.region;
+//     if (regionData && regionData.features) {
+//       const features = region === 'Thailand_region'
+//         ? dataByYear[year]?.country?.features || []  // ถ้าเลือกประเทศไทย ใช้ country แทน region
+//         : regionData.features.filter(f => f.properties.region_name === region); 
+//       filtered.push(...features);
+//     }
+//   }
+
+//   return filtered;
+// };
 
 
 
@@ -191,7 +235,7 @@ const filteredProvinces = React.useMemo(() => {
 
     if (provinceData && provinceData.features) {
       provinceData.features.forEach((feature) => {
-        const provinceName = feature.properties.name;
+        const provinceName = feature.properties.province_name;
         if (regionProvinces.includes(provinceName)) {
           provincesSet.add(provinceName);
         }
@@ -292,7 +336,7 @@ const handleDatasetChange = async (e) => {
 
   try {
     const dataset = await loadDatasetFiles(selected);
-    console.log("📦 Loaded dataset:", dataset);
+    console.log("Loaded dataset:", dataset);
     setDataByYear(dataset);
 
     const options = getVariableOptions(selected);
@@ -367,11 +411,11 @@ useEffect(() => {
 
 
 
-    for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-    console.log(`📅 Year ${year} - Province GeoJSON:`, dataByYear[year]?.province);
-    console.log(`📅 Year ${year} - Region GeoJSON:`, dataByYear[year]?.region);
-    console.log(`📅 Year ${year} - Country GeoJSON:`, dataByYear[year]?.country);
-  }
+  //   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+  //   console.log(`Year ${year} - Province GeoJSON:`, dataByYear[year]?.province);
+  //   console.log(`Year ${year} - Region GeoJSON:`, dataByYear[year]?.region);
+  //   console.log(`Year ${year} - Country GeoJSON:`, dataByYear[year]?.country);
+  // }
 
    const updatedRegion = DataApply.isRegionView
   ? DataApply.selectedRegion
@@ -380,20 +424,20 @@ useEffect(() => {
     const updatedProvince = !DataApply.isRegionView ? DataApply.selectedProvince : "";
 
 
-    console.log("🗺️ [APPLY] View Mode:", DataApply.isRegionView ? "Region View" : "Province View");
+    console.log("[APPLY] View Mode:", DataApply.isRegionView ? "Region View" : "Province View");
 
-    console.log("➡️ Region:", updatedRegion);
-    console.log("➡️ Province:", updatedProvince);
-    console.log("➡️ Value Key:", selectedValue);
+    console.log("Region:", updatedRegion);
+    console.log("Province:", updatedProvince);
+    console.log("Value Key:", selectedValue);
 
    
     const selectedYears = Object.keys(dataByYear)
-      .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
-      .map((year) => ({
+  .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
+  .map((year) => ({
+    year,
+    data: filterByArea(dataByYear, updatedRegion, updatedProvince, selectedYearStart, selectedYearEnd),
+  }));
 
-        year,
-        data: filterByRegion(dataByYear[year], selectedRegion),
-      }));
 
       selectedYears.forEach(({ year, data }) => {
         
@@ -405,35 +449,43 @@ useEffect(() => {
 
     const provinces = new Set();
     selectedYears.forEach(({ data }) =>
-      data.forEach((feature) => provinces.add(feature.properties.name))
+      data.forEach((feature) => provinces.add(feature.properties.province_name))
     );
     setProvinces(Array.from(provinces));
 
     //-------------------------------------spi USE EFFECT----------------------------------------------//
 
     if (selectedValue === 'spi' || selectedValue === 'spei') {
+  const updatedRegion = isRegionView ? selectedRegion : "Thailand_region";
+  const updatedProvince = !isRegionView ? selectedProvince : "Thailand";
+
   const spiResult = spi_process(
     dataByYear,
     selectedYearStart,
     selectedYearEnd,
-    selectedValue,          // 'spi' หรือ 'spei'
-    selectedRegion,
+    selectedValue,
+    updatedRegion,
+    updatedProvince,
     configData,
     selectedDataset
   );
 
   console.log(`🔍 SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
 
-  setSPIChartData(SPIChartData(spiResult));  // แปลงข้อมูลไปเป็น chart data
-  setShowSPIBarChart(true);                  // แสดง SPI bar chart
-  setShowRegularCharts(false);               // ซ่อน time series
-  setShowSeasonalCycle(false);               // ซ่อน seasonal cycle
+  setSPIChartData(SPIChartData(spiResult, kernelSize));
+  setShowSPIBarChart(true);                  
+  setShowRegularCharts(false);              
+  setShowSeasonalCycle(false);
+  setIsSpiOpen(true);
 } else {
-  // ถ้าไม่ใช่ SPI/SPEI ให้แสดงกราฟแบบปกติ
   setShowSPIBarChart(false);
   setShowRegularCharts(true);
   setShowSeasonalCycle(true);
+  setIsSpiOpen(false);
 }
+
+
+
 
 
     //-------------------------------------spi USE EFFECT----------------------------------------------//
@@ -491,7 +543,9 @@ useEffect(() => {
       updatedProvince,
       selectedValue,
       kernelSize,
-      configData
+      configData,
+      selectedDataset,
+      selectedValue
     );
     if (chartData) {
       console.log("📊 Time Series Data:", chartData);
@@ -507,31 +561,35 @@ useEffect(() => {
     setlabelProvince(updatedProvince);
     // setlabelRegion(selectedRegion);
 
-
+    
     const datasetKey = selectedDataset;
     const dataset = configData?.datasets?.[datasetKey];
 
     if (dataset && dataset.variable_options) {
       const variable = dataset.variable_options.find((v) => v.value === selectedValue);
-      if (variable?.description) {
-        setVariableDescription(variable.description);
-      } else {
-        setVariableDescription('');
+
+      if (variable) {
+  const isSPI = selectedValue === "spi" || selectedValue === "spei";
+
+  if (variable.type === "yearly" || isSPI) {
+    console.log("Hide Seasonal Cycle because Yearly or SPI/SPEI variable");
+    setShowSeasonalCycle(false);
+  } else {
+    setShowSeasonalCycle(true);
+  }
+
+        if (variable.description) {
+          setVariableDescription(variable.description);
+        } else {
+          setVariableDescription('');
+        }
+
+        if (variable.label) {
+          setLabelVariable(variable.label);
+        }
       }
     }
 
-    if (dataset && dataset.variable_options) {
-  const variable = dataset.variable_options.find((v) => v.value === selectedValue);
-  if (variable?.description) {
-    setVariableDescription(variable.description);
-  } else {
-    setVariableDescription('');
-  }
-
-  if (variable?.label) {
-    setLabelVariable(variable.label); 
-  }
-}
 
 
 
@@ -557,20 +615,20 @@ useEffect(() => {
 
 //---------------------------------- Index Use Effect------------------------------------//
 
-useEffect(() => {
-  if (!selectedDataset || !selectedValue) return;
+// useEffect(() => {
+//   if (!selectedDataset || !selectedValue) return;
 
-  const datasetConfig = configData.datasets[selectedDataset];
-  if (!datasetConfig) return;
+//   const datasetConfig = configData.datasets[selectedDataset];
+//   if (!datasetConfig) return;
 
-  const variableOption = datasetConfig.variable_options.find(opt => opt.value === selectedValue);
+//   const variableOption = datasetConfig.variable_options.find(opt => opt.value === selectedValue);
 
-  if (variableOption?.group === 'Indices Data') {
-    setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle
-  } else {
-    setShowSeasonalCycle(true);  // แสดงกราฟถ้าไม่ใช่ Indices Data
-  }
-}, [selectedDataset, selectedValue]);
+//   if (variableOption?.group === 'Indices Data') {
+//     setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle
+//   } else {
+//     setShowSeasonalCycle(true);  // แสดงกราฟถ้าไม่ใช่ Indices Data
+//   }
+// }, [selectedDataset, selectedValue]);
 
 
   useEffect(() => {
@@ -774,7 +832,21 @@ useEffect(() => {
     <option value="" disabled hidden>
       Select Variable
     </option>
-    {["Raw Data", "Indices Data"].map((group) => (
+    {["monthly", "yearly"].map((type) => (
+  <optgroup
+    key={type}
+    label={type === "monthly" ? "Monthly" : "Yearly"}
+  >
+    {variableOptions
+      .filter((option) => option.type === type)
+      .map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+  </optgroup>
+))}
+    {/* {["Raw Data", "Indices Data"].map((group) => (
       <optgroup key={group} label={group}>
         {variableOptions
           .filter((option) => option.group === group)
@@ -784,7 +856,7 @@ useEffect(() => {
             </option>
           ))}
       </optgroup>
-    ))}
+    ))} */}
   </select>
 </div>
 
@@ -954,7 +1026,7 @@ useEffect(() => {
 
     <div className="content-container">
     {/* <h1>DashBoard</h1> */}
-  <div className={`dashboard-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+  <div className={`dashboard-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} `}>
 
     <div className="dashboard-header">
   {selectedDataset && labelVariable && (
@@ -969,13 +1041,16 @@ useEffect(() => {
     <div className='dashboard-content'>
       
   
-{/* Button select map */}
+
+
+    <div className={`right-map ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
+
+
+  {/* Button select map */}
 <div className="map-buttons">
   <button onClick={() => toggleViewMode("Heatmap")}>Actual Map</button>
   <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
 </div>
-
-    <div className="right-map">
 
     <div className="tonecolor-wrapper">
   <div className="change_tonecolor">Color</div>
@@ -1055,9 +1130,31 @@ useEffect(() => {
 
 
 {showRegularCharts && (
-<div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+<div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
         {/* Time series chart */}
-  <div className={`time-series-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+
+  <div className="expand-time-series-button">
+    <button
+      onClick={() => setIsExpand(prev => !prev)}
+      style={{
+        backgroundColor: "#4682b4",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        padding: "6px 12px",
+        fontSize: "13px",
+        cursor: "pointer",
+        marginBottom: "10px",
+      }}
+    >
+      {isExpand ? "Collapse" : "Expand"}
+    </button>
+  </div>
+
+
+
+
+  <div className={`time-series-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
     {labelYearStart && labelYearEnd ? (
       <h3 className="time-series-head">
         Time Series ({labelYearStart} - {labelYearEnd}) 
@@ -1196,10 +1293,10 @@ useEffect(() => {
 )}
 
 {showSeasonalCycle && (
-<div className={`seasonal-cycle-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+<div className={`seasonal-cycle-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
   {/* Seasonal Cycle chart */}
 
-    <div className={`seasonal-cycle-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+    <div className={`seasonal-cycle-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
       <h3>Seasonal Cycle</h3>
 
       
@@ -1292,61 +1389,129 @@ useEffect(() => {
 </div>
 )}
 
-
 {showSPIBarChart && spiChartData && (
-  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-    <div className="spi-chart-group">
-      {spiChartData.datasets.map((dataset) => (
-        <div key={dataset.label} className="spi-sub-chart">
-          <h3>{dataset.label}</h3>
-          <Bar
-            data={{
-              labels: spiChartData.labels,
-              datasets: [dataset],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-              },
-              scales: {
-                y: {
-                  min: -3,
-                  max: 3,
-                  title: {
-                    display: true,
-                    text: 'SPI',
-                  },
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Year-Month',
-                  },
-                  ticks: {
-                    maxTicksLimit: 20,
-                    autoSkip: true,
-                  },
-                },
-              },
-            }}
-          />
-        </div>
-      ))}
+  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "expanded" : ""}`}>
+
+
+
+
+    <div className={`spi-chart-group ${isSPIExpand ? "expanded" : ""}`}>
+
+
+        <div className="expand-spi-chart-button">
+        <button
+          onClick={() => setIsSPIExpand(prev => !prev)}
+          style={{
+            backgroundColor: "#4682b4",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            padding: "6px 12px",
+            fontSize: "13px",
+            cursor: "pointer",
+            marginBottom: "10px",
+          }}
+        >
+          {isSPIExpand ? "Collapse" : "Expand"}
+        </button>
+      </div>
+
+      {
+        // วนหาเฉพาะชุด bar chart (label ไม่ลงท้ายด้วย "Moving Avg")
+        spiChartData.datasets
+          .filter((d) => !d.label.toLowerCase().includes("moving avg"))
+          .map((barDataset) => {
+            // หาชุดเส้นที่ตรงกับ scale เดียวกัน
+            const matchingLine = spiChartData.datasets.find(
+              (d) => d.label.toLowerCase().includes("moving avg") &&
+                     d.label.toLowerCase().includes(barDataset.label.toLowerCase())
+            );
+
+            return (
+              <div key={barDataset.label} className="spi-sub-chart">
+                <h3>{barDataset.label}</h3>
+                <Bar
+                  data={{
+                    labels: spiChartData.labels,
+                    datasets: matchingLine
+                      ? [barDataset, matchingLine] // รวมเส้นกับแท่ง
+                      : [barDataset],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: { display: true },
+                    },
+                    scales: {
+                      y: {
+                        min: -3,
+                        max: 3,
+                        title: {
+                          display: true,
+                          text: 'SPI',
+                        },
+                      },
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Year',
+                        },
+                        ticks: {
+                          autoSkip: false,
+                          maxRotation: 0,
+                          minRotation: 0,
+                          font: {
+                            size: 10,
+                          },
+                          callback: function (val) {
+                            const label = this.getLabelForValue(val);
+                            const [year, month] = label.split("-");
+                            const labels = this.getLabels();
+                            const yearsOnly = labels.filter(lbl => lbl.endsWith("-01"));
+                            const totalYears = yearsOnly.length;
+
+                            let interval = 1;
+                            if (totalYears <= 11) interval = 1;
+                            else if (totalYears <= 70) interval = 5;
+                            else interval = 10;
+
+                            if (month === "01") {
+                              const numericYear = parseInt(year, 10);
+                              return numericYear % interval === 0 ? year : "";
+                            }
+
+                            return "";
+                          },
+                        },
+                        grid: {
+                          display: false,
+                        },
+                      },
+                    },
+                  }}
+                />
+              </div>
+            );
+          })
+      }
     </div>
   </div>
 )}
 
 
+
 </div>
 
-{/* <div className="dashboard-footer" title="Variable Description"> 
+<div className={`dashboard-footer ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSpiOpen ? "spi-open" : "spi-closed"} ${isExpand ? "expanded" : ""}`} title="Variable Description">
   {variableDescription && (
     <div className="variable-description">
-      <p>{variableDescription}</p>
+      <p dangerouslySetInnerHTML={{ __html: variableDescription }}></p>
     </div>
   )}
-</div> */}
+</div>
+
+
+
 </div>
 
 

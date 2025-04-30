@@ -170,8 +170,8 @@ const style = (
   // เงื่อนไขที่ให้แสดงผลบนแผนที่
 
   const shouldShow = isRegionView
-  ? (selectedRegion === "Thailand_region" || feature.properties.name === selectedRegion)
-  : (selectedProvince === "Thailand" || feature.properties.name === selectedProvince);
+  ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion || feature.properties.name === selectedRegion)
+  : (selectedProvince === "Thailand" || feature.properties.province_name === selectedProvince || feature.properties.name === selectedProvince);
   // const shouldShow =
   //   isRegionView
   //     ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion)
@@ -200,10 +200,11 @@ const onEachFeature = (feature, layer, viewMode, value) => {
     ? "Slope Value"
     : (typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : "Value");
 
-  const regionLabel = feature.properties.region || feature.properties.region_name || "Unknown";
+  const labelName = feature.properties.province_name || feature.properties.name || "Unknown";
+  const regionLabel = feature.properties.region_name || feature.properties.name || "Unknown";
 
   layer.bindPopup(
-    `<b>Province:</b> ${feature.properties.name || 'Unknown'}<br/>
+    `<b>Province:</b> ${labelName}<br/>
      <b>Region:</b> ${regionLabel}<br/>
      <b>${label}:</b> ${valueText}`
   );
@@ -280,7 +281,7 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
     return null;
   }
 
-  // 🧠 ปรับให้เป็นช่วงสมมาตรรอบ 0
+  //  ปรับให้เป็นช่วงสมมาตรรอบ 0
   const symmetricRange = Math.max(Math.abs(min), Math.abs(max));
   const adjustedMin = -symmetricRange;
   const adjustedMax = symmetricRange;

@@ -42,7 +42,7 @@ export const dummySeasonalCycleData = {
 
 //---------------------------------------- Dummy spi Graph---------------------------------------------//
 
-export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize, configData) => {
+export const calculatemean = (dataByYear, startYear, endYear, region, province, selectedIndex, kernelSize, configData, selectedDataset, selectedValue) => {
   
   let annualValuesByYear = {};
 
@@ -57,7 +57,7 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   const filterRegion_Province = (features, region, province = null) => {
   if (province && province !== 'Thailand') {
     // เลือกจาก province dropdown โดยตรง
-    return features.filter((feature) => feature.properties.name === province);
+    return features.filter((feature) => feature.properties.province_name === province);
   }
 
   if (region && region !== 'Thailand_region') {
@@ -94,9 +94,6 @@ if (isThailand) {
   geojson = dataByYear[year]?.province;
 }
 
-
-// console.log(`📁 year: ${year}, source:`, 
-//   isThailand ? "country" : region ? "region" : "province");
 
 
 
@@ -199,15 +196,26 @@ for (let year = startYear; year <= endYear; year++) {
   //------------------------------------GRAPH ZONE------------------------------------------------------//
   
 
-  const indexLabels = {
-   temperature: { label: 'Value', unit: '°C' },
-    tmin: { label: 'Value', unit: '°C' },
-    tmax: { label: 'Value', unit: '°C' },
-    txx: { label: 'Value', unit: '°C' },
-    tnn: { label: 'Value', unit: '°C' },
-    pre: { label: 'Value', unit: 'mm' },
-    rx1day: { label: 'Value', unit: 'mm' },
-};
+//   const indexLabels = {
+//    temperature: { label: 'Value', unit: '°C' },
+//     tmin: { label: 'Value', unit: '°C' },
+//     tmax: { label: 'Value', unit: '°C' },
+//     txx: { label: 'Value', unit: '°C' },
+//     tnn: { label: 'Value', unit: '°C' },
+//     pre: { label: 'Value', unit: 'mm' },
+//     rx1day: { label: 'Value', unit: 'mm' },
+// };
+
+// const selectedIndexLabel = indexLabels[selectedIndex]?.label || 'Unknown Data';
+// const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
+
+const variableOption = configData.datasets[selectedDataset]?.variable_options?.find(
+  (opt) => opt.value === selectedValue
+);
+
+const selectedIndexUnit = variableOption?.unit || '';
+
+
 
 const calculateYAxisBounds = (data) => {
   const validData = data.filter((value) => typeof value === "number" && !isNaN(value)); // กรองค่าที่ valid
@@ -220,8 +228,7 @@ const calculateYAxisBounds = (data) => {
   };
 };
 
-const selectedIndexLabel = indexLabels[selectedIndex]?.label || 'Unknown Data';
-const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
+
 
   const Seasonal_Cycle = (monthlyData) => {
     const seasonalCycle = Array.from({ length: 12 }, () => []); 
@@ -245,7 +252,7 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   datasets: [
     {
-      label: `${selectedIndexLabel} (${selectedIndexUnit})`,
+      label: `Value (${selectedIndexUnit})`,
       data: seasonalMeans,
       borderColor: 'black',
       backgroundColor: 'rgba(75,192,192,0.2)',
@@ -259,7 +266,7 @@ const selectedIndexUnit = indexLabels[selectedIndex]?.unit || '';
       y: {
         title: {
           display: true,
-          text: `${selectedIndexLabel} (${selectedIndexUnit})`,
+          text: `Value (${selectedIndexUnit})`,
         },
         min: seasonalBounds.min,
         max: seasonalBounds.max,
@@ -414,7 +421,7 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualArray.map(item => 
         },
         title: {
           display: true,
-          text: `${selectedIndexLabel} (${selectedIndexUnit})`,
+          text: `Value (${selectedIndexUnit})`,
           font: {
             size: 28,
           },

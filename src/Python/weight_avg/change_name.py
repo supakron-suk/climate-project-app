@@ -2,16 +2,16 @@
 # import os
 # import shutil
 
-# def move_and_rename_geojson(start_year=1960, end_year=1970):
-#     src_base = "src/Geo-data/Era-Dataset"
-#     dest_base = "public/Geo-data/Era-Dataset"
+# def move_and_rename_geojson(start_year=1960, end_year=2022):
+#     src_base = "src/Geo-data/Year-Dataset"
+#     dest_base = "public/Geo-data/Cru-Dataset"
 
 #     total_years = end_year - start_year + 1
 
 #     for idx, year in enumerate(range(start_year, end_year + 1), start=1):
 #         progress = int((idx / total_years) * 100)
 
-#         src_filename = f"era_province_{year}.json"
+#         src_filename = f"cru_province_{year}.json"
 #         src_path = os.path.join(src_base, src_filename)
 
 #         if not os.path.exists(src_path):
@@ -31,7 +31,7 @@
 #         print(f"[{progress}%] ✅ Moved: {src_path} -> {dest_path}")
 
 # # เรียกใช้
-# move_and_rename_geojson(1960, 1970)
+# move_and_rename_geojson(1901, 2023)
 
 #-----------------------------------------------------------------------------------------
 #----------------------------------- Country Code----------------------------------------
@@ -79,56 +79,95 @@
 
  
 #----------------------------------- Region Code----------------------------------------
+# import json
+# import os
+
+# def load_region_data(year):
+#     file_path = f'public/Geo-data/Era-Dataset/{year}/region_data_{year}.json'
+#     with open(file_path, 'r') as f:
+#         return json.load(f), file_path  # คืน path ด้วยไว้ใช้เขียนกลับ
+
+# def rename_keys_in_feature(feature):
+#     if 'properties' in feature:
+#         props = feature['properties']
+
+#         # เปลี่ยนคีย์ใน 'annual'
+#         if 'annual' in props and isinstance(props['annual'], dict):
+#             props['annual'] = {
+#                 ('tmin' if k == 'tmn' else 'tmax' if k == 'tmx' else k): v
+#                 for k, v in props['annual'].items()
+#             }
+
+#         # เปลี่ยนคีย์ใน 'monthly'
+#         if 'monthly' in props and isinstance(props['monthly'], dict):
+#             props['monthly'] = {
+#                 ('tmin' if k == 'tmn' else 'tmax' if k == 'tmx' else k): v
+#                 for k, v in props['monthly'].items()
+#             }
+
+# def process_and_save(years):
+#     for i, year in enumerate(years):
+#         data, path = load_region_data(year)
+
+#         if 'features' in data:
+#             for feature in data['features']:
+#                 rename_keys_in_feature(feature)
+
+#             # เขียนกลับไฟล์
+#             with open(path, 'w') as f:
+#                 json.dump(data, f, indent=2)
+#             print(f"✅ Updated {year} ({i+1}/{len(years)})")
+#         else:
+#             print(f"⚠️  Skipped {year}, no 'features' found.")
+
+# # เรียกใช้งาน
+# years = list(range(1960, 1971))  
+# process_and_save(years)
+#----------------------------------- Region Code----------------------------------------
+
 import json
 import os
 
-def load_region_data(year):
-    file_path = f'public/Geo-data/Era-Dataset/{year}/region_data_{year}.json'
-    with open(file_path, 'r') as f:
-        return json.load(f), file_path  # คืน path ด้วยไว้ใช้เขียนกลับ
+def load_province_data(year):
+    file_path = f'public/Geo-data/Cru-Dataset/{year}/province_data_{year}.json'
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return json.load(f), file_path
 
 def rename_keys_in_feature(feature):
     if 'properties' in feature:
         props = feature['properties']
 
-        # เปลี่ยนคีย์ใน 'annual'
-        if 'annual' in props and isinstance(props['annual'], dict):
-            props['annual'] = {
-                ('tmin' if k == 'tmn' else 'tmax' if k == 'tmx' else k): v
-                for k, v in props['annual'].items()
-            }
-
-        # เปลี่ยนคีย์ใน 'monthly'
-        if 'monthly' in props and isinstance(props['monthly'], dict):
-            props['monthly'] = {
-                ('tmin' if k == 'tmn' else 'tmax' if k == 'tmx' else k): v
-                for k, v in props['monthly'].items()
-            }
+        # ✅ เปลี่ยนคีย์ region_name ➔ province_name เท่านั้น
+        if 'region_name' in props:
+            props['province_name'] = props.pop('region_name')
 
 def process_and_save(years):
     for i, year in enumerate(years):
-        data, path = load_region_data(year)
+        data, path = load_province_data(year)
 
         if 'features' in data:
             for feature in data['features']:
                 rename_keys_in_feature(feature)
 
             # เขียนกลับไฟล์
-            with open(path, 'w') as f:
-                json.dump(data, f, indent=2)
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+
             print(f"✅ Updated {year} ({i+1}/{len(years)})")
         else:
             print(f"⚠️  Skipped {year}, no 'features' found.")
 
 # เรียกใช้งาน
-years = list(range(1960, 1971))  # ปี 1960 - 1969
+years = list(range(1901, 2024))  
 process_and_save(years)
-#----------------------------------- Region Code----------------------------------------
+
+
+
 # import json
 # import os
 
 # def load_province_data(year):
-#     file_path = f'public/Geo-data/Era-Dataset/{year}/province_data_{year}.json'
+#     file_path = f'public/Geo-data/Cru-Dataset/{year}/province_data_{year}.json'
 #     with open(file_path, 'r') as f:
 #         return json.load(f), file_path  # คืน path เพื่อเขียนกลับ
 
@@ -167,7 +206,7 @@ process_and_save(years)
 #             print(f"⚠️  Skipped {year}, no 'features' found.")
 
 # # เรียกใช้งาน
-# years = list(range(1960, 1971))  # แก้ข้อมูลปี 1960 - 1969
+# years = list(range(1901, 2024))  # แก้ข้อมูลปี 1960 - 1969
 # process_and_save(years)
 
 

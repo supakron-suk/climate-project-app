@@ -302,23 +302,22 @@
   align-items: center;
   height: 100vh;
   width: 100%;
-  padding: 20px;
+  padding: 5px;
   box-sizing: border-box;
 }
 
 .dashboard-box {
   width: 90vw; 
-  height: 85vh; 
-  max-width: 1460px; 
-  max-height: 90vh;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 20px;
+  height: 91vh; 
+  max-width: 1500px; 
+  max-height: 900px;
+  border: 5px solid #6f6f6f;
+  border-radius: 20px;
   background-color: #f9f9f9;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: stretch;
   position: relative; 
   overflow-y: auto; 
@@ -326,15 +325,6 @@
   transition: all 0.3s ease-in-out;
 }
 
-/* .dashboard-title{
-  position: relative;
-  right: 36%;
-  top: -4%;
-  transform: translateX(-50%);
-  font-size: 2rem; 
-  font-weight: bold; 
-  color: #2c3e50; 
-} */
 
 .dashboard-header {
   position: absolute;
@@ -364,17 +354,30 @@
 }
 
 /*--------------Description box---------------------*/
-.dashboard-footer {
+.dashboard-footer.sidebar-open {
   max-width: 1005%;
-  background-color: #f0f0f0;
+  background-color: #f9f9f9;
   border-top: 2px solid #ccc;
   padding: 8px 16px;
   font-size: 14px;
   display: flex;
   align-items: center;
-  justify-content: center; /* ✅ จัดให้อยู่ตรงกลาง */
+  justify-content: center; 
+  margin-top: 170px;
 }
 
+
+.dashboard-footer.sidebar-closed {
+  max-width: 1005%;
+  background-color: #f9f9f9;
+  border-top: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  margin-top: -1px;
+}
 
 .variable-description p {
   font-size: 16px;
@@ -391,6 +394,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   width: 100%;
 }
 
@@ -398,19 +402,19 @@
 .dashboard-box.sidebar-open {
   margin-left: 9px; 
   transition: margin-left 0.2s ease-in-out;
-  width: 1300px;  
-  height: 800px;
-  left: 22%;
-  margin-top: 5%;
+  max-width: 1300px;  
+  max-height: 850px;
+  left: 20%;
+  margin-top: 2%;
 }
 
 .dashboard-box.sidebar-closed {
   margin-left: -2px; 
   width: 1500px; 
   transition: margin-left 0.2s ease-in-out;
-  margin-top: 3%;
   overflow-y: auto; 
   overflow-x: hidden;
+  margin-top: 4%;
 }
 
 
@@ -424,7 +428,8 @@
   margin-left: -560px;
   margin-top: 100px;
   position: relative;
-  top: -50px;
+  top: -12%;
+  right: -3%;
   width: 55%;
   padding-bottom: 80px;
 } 
@@ -436,10 +441,11 @@
   margin: -80px 0; 
   background: #fff;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
-  margin-left: -560px;
-  margin-top: 100px;
+  /* margin-left: -560px;
+  margin-top: 100px; */
   position: relative;
-  top: -7%;
+  right: 19%;
+  top: 9.5%;
   width: 55%;
 }
 
@@ -454,7 +460,8 @@
   margin-left: -650px;
   margin-top: 100px;
   position: relative;
-  top: -50px;
+  top: -10%;
+  left: 1%;
   width: 50%;
   padding-bottom: 80px; 
 } 
@@ -469,7 +476,8 @@
   margin-left: -650px;
   margin-top: 100px;
   position: relative;
-  top: -60px;
+  top: -10%;
+  left: 1%;
   width: 50%;
 }
 
@@ -617,20 +625,32 @@
   z-index: 1;
   transition: padding-left 0.3s ease;
   padding-right: 5%;
+  position: relative;
+  /* top: -5%; */
+
   
 }
 
 .spi-chart-wrapper.sidebar-open {
-  padding-right: 600px; /* ความกว้าง sidebar ด้านซ้าย */
+  padding-right: 600px;
+  margin-bottom: -260px;
+  top: -7%; 
 }
 
 .spi-chart-wrapper.sidebar-closed {
   padding-right: 650px; 
+  margin-bottom: -100px;
+  top: -5.5%;
 }
 
 
 .spi-chart-group {
   width: 100%;
+  max-height: 920px;            /* ✅ ความสูงสูงสุดของกล่องกราฟ */
+  overflow-y: auto;             
+  overflow-x: hidden;           
+  display: block;               
+
   background: #fff;
   border-radius: 12px;
   padding: 20px;
@@ -639,9 +659,12 @@
   border: 3px solid #ccc;
 }
 
+
+
 .spi-sub-chart {
   margin-bottom: 40px;
   width: 705px;
+  flex-shrink: 0;
 }
 
 .spi-sub-chart.sidebar-open {
@@ -672,14 +695,20 @@
 }
 
 
+
 /*-------------spi chart---------------------------------*/
 
-.right-map {
-  position: absolute; 
-  top: 10%;
-  left: 30%;
+.right-map.sidebar-open {
+  position: relative; 
+  top: 8%;
+  left: 11%;
 }
 
+.right-map.sidebar-closed {
+  position: relative; 
+  top: 7%;
+  left: 6.5%;
+} 
 /*---------------User Select Value Legend Bar----------------*/
 
 .legend-bar-button {
@@ -845,9 +874,9 @@
 }
 
 .map-buttons {
-  position: absolute; 
-  top: 170px;
-  left: 900px; 
+  position: relative; 
+  top: 150%;
+  left: 150px; 
   z-index: 1000; 
   display: flex;
   flex-direction: row; 
@@ -872,32 +901,69 @@
 
 /*--------------------------change color tone map---------------------------*/
 .tonecolor-wrapper {
-  position: absolute;
-  top: 779.5px;
-  right: 37.8%;
+  position: relative;  
+  right: -63%;
+  top: 1415%;
+  display: inline-block; 
   z-index: 999;
 }
 
-/* กล่องหลักที่แสดงคำว่า color */
+/* .tonecolor-wrapper {
+  position: absolute;
+  top: -50px;
+  right: -20%;
+  z-index: 999;
+} */
+
+
+
+/* กล่องหลักที่แสดงคำว่า Color */
 .change_tonecolor {
   background: #fff;
   color: #061fff;
   padding: 2px 6px;
-  border: none; 
+  border: none;
   font-size: 13px;
-  font-weight: 300; 
   font-family: sans-serif;
   cursor: pointer;
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.05); 
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-
+/* Popup กล่องสี */
 .popup-tone {
   position: absolute;
+  top: 100%; 
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(60, 60, 60, 0.85);
+  color: #fff;
+  padding: 12px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: sans-serif;
+  white-space: normal;
+  width: 90px;
+  max-width: 90vw;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* เมื่อ Hover */
+.tonecolor-wrapper:hover .popup-tone {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* .popup-tone {
+  position: absolute;
   bottom: 105%;
-  left: 110%; 
-  transform: translateX(-50%) translateY(6px); /* ขยับขึ้นน้อยลงนิดนึง */
-  background: rgba(60, 60, 60, 0.85); /* สีเข้มขึ้นนิดหน่อยให้ตัดกับตัวอักษร */
+  left: 10px; 
+  transform: translateX(-50%) translateY(6px); 
+  background: rgba(60, 60, 60, 0.85); 
   color: #fff;
   padding: 12px 8px; 
   border-radius: 6px;
@@ -909,20 +975,18 @@
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
-}
+} */
 
 
-/* แสดง popup เมื่อ hover ที่กล่องหลัก */
-.tonecolor-wrapper:hover .popup-tone {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0); 
-  pointer-events: auto;
-}
+
 
 
 /*--------------------------change color tone map---------------------------*/
 
-.map-box {
+
+
+
+ .map-box {
   border: 3px solid #ccc; 
   border-radius: 10px;  
   padding: 15px;  
@@ -932,13 +996,13 @@
   align-items: center;
   box-shadow: 2px 2px 8px rgba(105, 69, 69, 0.1); 
   height: 886px;
-  position: relative;
-  top: -75%;
-  left: 42%;
+  position: absolute; 
+   top: -6.5%;
+  left: 0%; 
   margin-left: 85px;
   margin-top: -4%;
-  margin-bottom: 5%;
-}
+  /* margin-bottom: 5%; */
+ } 
 
 .area-head-map{
   margin-bottom: -30px;
@@ -951,7 +1015,7 @@
 
 .map-container{
   position: relative;
-  margin-top: 60px;
+  margin-top: 50px;
 }
 /* .map-container {
   position: relative;
@@ -963,15 +1027,6 @@
 
 /*-------------Variable, Index Selector---------------*/
 /*----------------------Dashboard box-----------------------------*/
-
-
-
-/* .thai-map {
-  position: relative; 
-  width: 800px;
-  height: 700px;
-  
-} */
 
 
 /*----------------Color Value Bar------------------*/
@@ -1382,46 +1437,6 @@
   text-align: center;
 }
 
-/* .province-selector{
-  position: relative;
-  margin-bottom: 10px;
-  left: 200px;
-  z-index: 1000;
-} */
-
-/* .region-selector{
-  display: flex;
-  flex-direction: column; 
-  align-items: center; 
-  margin: 20px 0; 
-} */
-
-
-/* .province-selector label {
-  font-size: 16px; 
-  margin-bottom: 10px; 
-  margin-left: -200px;
-  position: relative;
-  top: -60px;
-  left: 50px;
-} */
-
-
-/* .province-selector select {
-  width: 250px; 
-  padding: 12px; 
-  font-size: 16px; 
-  border: 1px solid #ccc; 
-  border-radius: 8px; 
-  background-color: #f9f9f9; 
-  color: #333; 
-  cursor: pointer; 
-  text-align: center; 
-  margin-left: -50px;
-  position: relative;
-  left: 20px;
-  top: -10px;
-} */
 
 .region-selector select:disabled,
 .province-selector select:disabled {
@@ -1467,4 +1482,86 @@
 }
 
 
+/*----------------Expand Zone------------------------*/
+/*---------Expand Time series ----------------------*/
+.expand-time-series-button {
+  position: absolute;
+  left: 90%;
+  top: 20px; /* ปรับตามที่เหมาะกับ time series chart */
+  transform: translateX(-50%);
+  z-index: 1px;
+}
+
+.time-series-box.expanded {
+  width: 93% !important; /* หรือ max-width: 1200px */
+  margin-left: auto;
+  margin-right: auto;
+  /* margin-top: 2%; */
+}
+
+/* ตัวกราฟขยายแนวนอน */
+.time-series-chart.expanded {
+  width: 100% !important;
+}
+
+.right-map.sidebar-closed.expanded { 
+  position: static;
+  width: 70%;
+  transform: translate(525px, 590px);
+
+}
+
+.right-map.sidebar-open.expanded { 
+  position: static;
+  width: 70%;
+  transform: translate(550px, 594px);
+
+}
+
+.seasonal-cycle-box.sidebar-closed.expanded{
+  left: 1% !important;
+  top: -9.5% !important;
+}
+
+.seasonal-cycle-box.sidebar-open.expanded{
+  left: -16% !important;
+  top: 10.5% !important;
+}
+
+
+.dashboard-footer.sidebar-closed.expanded, .dashboard-footer.sidebar-open.expanded {
+  width: 100%;
+  background-color: #f9f9f9;
+  border-top: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: 75%;
+}
+
+/* .dashboard-footer.sidebar-open.expanded {
+  width: 100%;
+  background-color: #f9f9f9;
+  border-top: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: 75%;
+} */
+/*---------Expand Time series ----------------------*/
+/*---------Expand spi graph ------------------------*/
+
+.expand-spi-chart-button {
+  position: absolute;
+  left: 50%;
+  top: 20px; /* ปรับตามที่เหมาะกับ spi chart */
+  transform: translateX(-50%);
+}
+/*---------Expand spi graph ------------------------*/
 
