@@ -18,7 +18,7 @@ import { dummyTimeSeriesData,
          calculatemean,
        } from './JS/Graph';
 import {TrendMap} from './JS/TrendMap.js';
-import { Heatmap } from './JS/Heatmap.js';
+import { Heatmap, spi_Heatmap} from './JS/Heatmap.js';
 import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 import colormap from 'colormap';
 import { spi_process, SPIChartData } from './JS/spi_set.js';
@@ -31,9 +31,40 @@ import configData from './config/config.json';
 
 
 //----------------------------------------------------------------------------//
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js'; 
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, registerables ,Title, Tooltip, Legend } from 'chart.js'; 
 import { CrosshairPlugin } from 'chartjs-plugin-crosshair';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement,Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin); 
+
+const movingAvgLegendPlugin = {
+  id: 'customLegend',
+  afterDraw(chart, args, options) {
+    const { ctx, chartArea: { top, right } } = chart;
+
+    const hasMovingAvg = chart.data.datasets.some(d =>
+      d.label.toLowerCase().includes('moving avg')
+    );
+    if (!hasMovingAvg) return;
+
+    ctx.save();
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = 'purple';
+
+    const legendX = right - 100;
+    const legendY = top + 10;
+
+    ctx.beginPath();
+    ctx.moveTo(legendX, legendY);
+    ctx.lineTo(legendX + 20, legendY);
+    ctx.strokeStyle = 'purple';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillText('Moving Avg', legendX + 25, legendY + 4);
+    ctx.restore();
+  }
+};
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement,
+  Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin, ...registerables, movingAvgLegendPlugin); 
 
 
 //------------------------IMPORT FUCTION-------------------------------------//
@@ -43,8 +74,8 @@ function App() {
   // config Line test
   const [selectedDataset, setSelectedDataset] = useState('');  // เก็บข้อมูล dataset ที่เลือก
   const [isLoading, setIsLoading] = useState(false);
-  const [datasetData, setDatasetData] = useState(null);
-  const [availableRegions, setAvailableRegions] = useState({});
+  // const [datasetData, setDatasetData] = useState(null);
+  // const [availableRegions, setAvailableRegions] = useState({});
 
 
 
@@ -55,33 +86,36 @@ function App() {
 
   
   
-
-  //const [timeSeriesData, setTimeSeriesData] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState('Thailand_region');
   const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
-  const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
+  // const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
   const [filteredYearData, setFilteredYearData] = useState(null);  // เก็บข้อมูลของช่วงปีที่เลือก
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
   const [selectedProvinceData, setSelectedProvinceData] = useState(null);
   const [isRegionView, setIsRegionView] = useState(true);
   
-  //const [selectedMonth, setSelectedMonth] = useState(''); // เก็บเดือนที่เลือก
-  // const [selectedYear, setSelectedYear] = useState('');
-  // const [selectedData, setSelectedData] = useState([]);
 
   const [isExpand, setIsExpand] = useState(false);
   const [isSPIExpand, setIsSPIExpand] = useState(false);
+  const [availableScales, setAvailableScales] = useState([]);
+  const [selectedScale, setSelectedScale] = useState([]);
+  const [spiChartData, setSPIChartData] = useState(null);
+  const [isSpiOpen, setIsSpiOpen] = useState(true);
+  const [showSPIBarChart, setShowSPIBarChart] = useState(false);
+  const [displayMapScale, setDisplayMapScale] = useState("");
 
+//--------------------spi and spi state-----------------------------------//
 
 
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
   // const [Timeseries, set] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
-  const [spiChartData, setSPIChartData] = useState(null);
-  const [isSpiOpen, setIsSpiOpen] = useState(true);
-  const [showSPIBarChart, setShowSPIBarChart] = useState(false);
+  // const [spiChartData, setSPIChartData] = useState(null);
+  // const [isSpiOpen, setIsSpiOpen] = useState(true);
+  // const [showSPIBarChart, setShowSPIBarChart] = useState(false);
   const [showRegularCharts, setShowRegularCharts] = useState(true);
   const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
+  const [isSeasonalHidden, setIsSeasonalHidden] = useState(false);
 
 
 //const [filteredDataByRange, setFilteredDataByRange] = useState(null);
@@ -98,7 +132,7 @@ const [variableDescription, setVariableDescription] = useState('');
 //----------------------------Select map----------------------------//
 const [viewMode, setViewMode] = useState("Heatmap"); // "Heatmap" หรือ "TrendMap"
 //--------------------------------Select Index of Variable---------------------------//
-const [selectedIndex, setSelectedIndex] = useState(null);
+// const [selectedIndex, setSelectedIndex] = useState(null);
 
 
 //-------------------------------User Select Min/Max Legend Bar-----------------------//
@@ -144,7 +178,7 @@ const [labelVariable, setLabelVariable] = useState("");
 const [selectedToneColor, setSelectedToneColor] = useState("blackbody");
 const toneColors = ["velocity-blue", "blackbody", "jet", "viridis"];
 const [isReversed, setIsReversed] = useState(false);
-const [isReversePopupVisible, setIsReversePopupVisible] = useState(false);
+// const [isReversePopupVisible, setIsReversePopupVisible] = useState(false);
 
 const getGradient = (colormapName, isReversed = false) => {
   const colors = colormap({
@@ -157,6 +191,8 @@ const getGradient = (colormapName, isReversed = false) => {
   const gradientColors = isReversed ? colors.reverse() : colors;
   return `linear-gradient(to right, ${gradientColors.join(", ")})`;
 };
+
+
 //-----------------------------------------Tone color state---------------------------//
 
 
@@ -202,23 +238,6 @@ const getGradient = (colormapName, isReversed = false) => {
 
   return filtered;
 };
-
-
-//   const filterByRegion = (dataByYear, region, selectedYearStart, selectedYearEnd) => {
-//   const filtered = [];
-
-//   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-//     const regionData = dataByYear[year]?.region;
-//     if (regionData && regionData.features) {
-//       const features = region === 'Thailand_region'
-//         ? dataByYear[year]?.country?.features || []  // ถ้าเลือกประเทศไทย ใช้ country แทน region
-//         : regionData.features.filter(f => f.properties.region_name === region); 
-//       filtered.push(...features);
-//     }
-//   }
-
-//   return filtered;
-// };
 
 
 
@@ -286,7 +305,7 @@ const extractMinMaxFromGeoJSON = (geojson, key) => {
     "Thailand",
     selectedValue,
     configData,
-    toRegionView
+    toRegionView,
   );
   if (heatmapResult) {
   setHeatmapData(heatmapResult);
@@ -467,12 +486,27 @@ useEffect(() => {
     updatedRegion,
     updatedProvince,
     configData,
-    selectedDataset
+    selectedDataset,
+    selectedScale
   );
 
   console.log(`🔍 SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
 
-  setSPIChartData(SPIChartData(spiResult, kernelSize));
+  const mapSPIData = spi_Heatmap(
+    dataByYear,
+    selectedYearStart,
+    selectedYearEnd,
+    selectedValue,
+    displayMapScale,
+    updatedRegion,
+    updatedProvince,
+    isRegionView
+  );
+
+  // ✅ log ค่าที่ดึงมาได้
+  console.log(`🗺️ SPI Heatmap Summary:`, mapSPIData);
+
+  setSPIChartData(SPIChartData(spiResult, kernelSize, selectedValue));
   setShowSPIBarChart(true);                  
   setShowRegularCharts(false);              
   setShowSeasonalCycle(false);
@@ -525,6 +559,7 @@ useEffect(() => {
       DataApply.selectedValue,
       configData,
       DataApply.isRegionView,
+      displayMapScale,
     );
     if (averageData) {
       setHeatmapData(averageData);
@@ -553,13 +588,13 @@ useEffect(() => {
       setChartData(chartData.timeSeriesData);
     }
 
-    // setKey(prevKey => prevKey + 1);
+   
 
     setlabelYearStart(selectedYearStart);
     setlabelYearEnd(selectedYearEnd);
     setlabelRegion(updatedRegion);
     setlabelProvince(updatedProvince);
-    // setlabelRegion(selectedRegion);
+    
 
     
     const datasetKey = selectedDataset;
@@ -574,8 +609,10 @@ useEffect(() => {
   if (variable.type === "yearly" || isSPI) {
     console.log("Hide Seasonal Cycle because Yearly or SPI/SPEI variable");
     setShowSeasonalCycle(false);
+    setIsSeasonalHidden(true);
   } else {
     setShowSeasonalCycle(true);
+    setIsSeasonalHidden(false);
   }
 
         if (variable.description) {
@@ -598,6 +635,21 @@ useEffect(() => {
 
 }, [isApplied]);
 
+useEffect(() => {
+  const datasetKey = selectedDataset;
+  const dataset = configData?.datasets?.[datasetKey];
+
+  if (dataset && dataset.variable_options) {
+    const variable = dataset.variable_options.find((v) => v.value === selectedValue);
+    if (variable?.multi_scale) {
+      setAvailableScales(variable.multi_scale);
+      setSelectedScale(variable.multi_scale[0]); 
+    } else {
+      setAvailableScales([]);
+      setSelectedScale(null);
+    }
+  }
+}, [selectedValue, selectedDataset, configData]);
 
 
 useEffect(() => {
@@ -614,21 +666,6 @@ useEffect(() => {
 
 
 //---------------------------------- Index Use Effect------------------------------------//
-
-// useEffect(() => {
-//   if (!selectedDataset || !selectedValue) return;
-
-//   const datasetConfig = configData.datasets[selectedDataset];
-//   if (!datasetConfig) return;
-
-//   const variableOption = datasetConfig.variable_options.find(opt => opt.value === selectedValue);
-
-//   if (variableOption?.group === 'Indices Data') {
-//     setShowSeasonalCycle(false); // ซ่อนกราฟ seasonal cycle
-//   } else {
-//     setShowSeasonalCycle(true);  // แสดงกราฟถ้าไม่ใช่ Indices Data
-//   }
-// }, [selectedDataset, selectedValue]);
 
 
   useEffect(() => {
@@ -802,7 +839,87 @@ useEffect(() => {
   </div>
 )}
 
-    
+    <div className="value-selector">
+      <label>Variable</label>
+      <select
+        value={selectedValue}
+        onChange={(e) => setSelectedValue(e.target.value)}
+      >
+        <option value="" disabled hidden>
+          Select Variable
+        </option>
+        {["monthly", "yearly"].map((type) => (
+      <optgroup
+        key={type}
+        label={type === "monthly" ? "Monthly" : "Yearly"}
+      >
+        {variableOptions
+          .filter((option) => option.type === type)
+          .map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+      </optgroup>
+    ))}
+      </select>
+
+      {Array.isArray(availableScales) && availableScales.length > 0 && (
+      <div className="scale-selector">
+        <label className="scale-label">Select Scale:</label>
+        <div className="scale-options">
+          {availableScales.map((scale) => (
+            <label key={scale} className="scale-option">
+              <input
+                type="checkbox"
+                name="scale"
+                value={scale}
+                checked={selectedScale.includes(scale)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (!Array.isArray(selectedScale)) {
+                    setSelectedScale([value]);
+                    return;
+                  }
+                  if (e.target.checked) {
+                    setSelectedScale([...selectedScale, value]);
+                  } else {
+                    setSelectedScale(selectedScale.filter((s) => s !== value));
+                  }
+                }}
+              />
+              <span>{scale}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {(selectedValue === 'spi' || selectedValue === 'spei') &&
+  Array.isArray(availableScales) &&
+  availableScales.length > 0 && (
+  <div className="display-map-scale">
+    <label>Display Map Scale:</label>
+    <select
+      value={displayMapScale}
+      onChange={(e) => setDisplayMapScale(e.target.value)}
+    >
+      <option value="" disabled hidden>
+        Select Display Scale
+      </option>
+      {availableScales.map((scale) => (
+        <option key={scale} value={scale}>
+          {scale}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
+
+    </div>    
+
+
 
     <div className="kernel-size-container">
   <label>Kernel Size</label>
@@ -823,42 +940,7 @@ useEffect(() => {
 </div>
 
 
-   <div className="value-selector">
-  <label>Variable</label>
-  <select
-    value={selectedValue}
-    onChange={(e) => setSelectedValue(e.target.value)}
-  >
-    <option value="" disabled hidden>
-      Select Variable
-    </option>
-    {["monthly", "yearly"].map((type) => (
-  <optgroup
-    key={type}
-    label={type === "monthly" ? "Monthly" : "Yearly"}
-  >
-    {variableOptions
-      .filter((option) => option.type === type)
-      .map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-  </optgroup>
-))}
-    {/* {["Raw Data", "Indices Data"].map((group) => (
-      <optgroup key={group} label={group}>
-        {variableOptions
-          .filter((option) => option.group === group)
-          .map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-      </optgroup>
-    ))} */}
-  </select>
-</div>
+   
 
 
 
@@ -990,6 +1072,7 @@ useEffect(() => {
             yearStart: selectedYearStart,
             yearEnd: selectedYearEnd,
             selectedValue: selectedValue,
+            displayMapScale: displayMapScale,
             legendMin: minmaxButton === 'Actual' ? applyLegendMin : null, 
             legendMax: minmaxButton === 'Actual' ? applyLegendMax : null, 
             trendMin: minmaxButton === 'Trend' ? applyLegendMin : null,  
@@ -1042,8 +1125,10 @@ useEffect(() => {
       
   
 
-
-    <div className={`right-map ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
+    {!isSPIExpand && (
+    <div className={`right-map ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}
+      ${isSeasonalHidden ? "hidden-seasonal" : ""}
+      ${showSPIBarChart ? "show-spi" : ""}`}>
 
 
   {/* Button select map */}
@@ -1124,13 +1209,14 @@ useEffect(() => {
       isReversed={isReversed}
       numberOfYears={numberOfYears}
       isRegionView={DataApply.isRegionView} 
+      selectedScale={DataApply.displayMapScale}
     />
   )}
 </div>
-
+)}
 
 {showRegularCharts && (
-<div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
+<div className={`time-series-box ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""} ${isSeasonalHidden ? "hidden-seasonal" : ""}`}>
         {/* Time series chart */}
 
   <div className="expand-time-series-button">
@@ -1154,7 +1240,8 @@ useEffect(() => {
 
 
 
-  <div className={`time-series-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
+  <div className={`time-series-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""} 
+  ${isSeasonalHidden ? "hidden-seasonal" : ""} ${showSPIBarChart ? "show-spi" : ""}`}>
     {labelYearStart && labelYearEnd ? (
       <h3 className="time-series-head">
         Time Series ({labelYearStart} - {labelYearEnd}) 
@@ -1390,7 +1477,7 @@ useEffect(() => {
 )}
 
 {showSPIBarChart && spiChartData && (
-  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "expanded" : ""}`}>
+  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "expanded" : ""} ${showSPIBarChart ? "show-spi" : ""}`}>
 
 
 
@@ -1398,7 +1485,7 @@ useEffect(() => {
     <div className={`spi-chart-group ${isSPIExpand ? "expanded" : ""}`}>
 
 
-        <div className="expand-spi-chart-button">
+        <div className={`expand-spi-chart-button ${isSPIExpand ? "expanded" : ""}`}>
         <button
           onClick={() => setIsSPIExpand(prev => !prev)}
           style={{
@@ -1429,7 +1516,6 @@ useEffect(() => {
 
             return (
               <div key={barDataset.label} className="spi-sub-chart">
-                <h3>{barDataset.label}</h3>
                 <Bar
                   data={{
                     labels: spiChartData.labels,
@@ -1440,15 +1526,27 @@ useEffect(() => {
                   options={{
                     responsive: true,
                     plugins: {
-                      legend: { display: true },
-                    },
+                    legend: { display: false },
+                    customLegend: {
+                      display: true
+                    }
+                  },
+
+                    // plugins: {
+                    //   legend: { display: true },
+                    // },
                     scales: {
                       y: {
                         min: -3,
                         max: 3,
                         title: {
                           display: true,
-                          text: 'SPI',
+                          text: barDataset.label,
+                          font: {
+                          size: 18,       
+                          weight: 'bold', 
+                        },
+                        color: '#000000'
                         },
                       },
                       x: {
@@ -1502,7 +1600,8 @@ useEffect(() => {
 
 </div>
 
-<div className={`dashboard-footer ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSpiOpen ? "spi-open" : "spi-closed"} ${isExpand ? "expanded" : ""}`} title="Variable Description">
+<div className={`dashboard-footer ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSpiOpen ? "spi-open" : "spi-closed"}
+ ${isExpand ? "expanded" : ""} ${isSeasonalHidden ? "hidden-seasonal" : "" } ${showSPIBarChart ? "show-spi" : ""}`} title="Variable Description">
   {variableDescription && (
     <div className="variable-description">
       <p dangerouslySetInnerHTML={{ __html: variableDescription }}></p>

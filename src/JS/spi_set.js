@@ -1,4 +1,98 @@
 // spi_set.js
+
+
+
+//สร้างข้อมูลรายเดือนแบบดิบตามช่วงเวลา + สเกล
+export const spi_process = (
+  dataByYear,
+  startYear,
+  endYear,
+  selectedValue,
+  updatedRegion,
+  updatedProvince,
+  configData,
+  selectedDataset,
+  selectedScales
+) => {
+  const datasetConfig = configData.datasets[selectedDataset];
+  const variableOption = datasetConfig.variable_options.find(
+    (opt) => opt.value === selectedValue
+  );
+
+  if (!variableOption || !variableOption.multi_scale) {
+    console.warn("No multi_scale config for", selectedValue);
+    return [];
+  }
+  const allScales = variableOption.multi_scale;
+  const scalesToUse = (selectedScales && selectedScales.length > 0) ? selectedScales : [allScales[0]];
+  console.log("🎯 Scales selected:", scalesToUse);
+  
+  // const allScales = variableOption.multi_scale;
+  const spiData = [];
+  
+  console.log("Using SPI scale:", scalesToUse);
+
+  for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
+    let geojson = null;
+
+    if (updatedRegion === "Thailand_region" && updatedProvince === "Thailand") {
+      geojson = dataByYear[year]?.country;
+    } else if (updatedProvince && updatedProvince !== "Thailand") {
+      geojson = dataByYear[year]?.province;
+    } else {
+      geojson = dataByYear[year]?.region;
+    }
+
+    if (!geojson || !geojson.features) {
+      console.warn(`❌ No valid geojson for year ${year}`);
+      continue;
+    }
+
+    const features = Array.isArray(geojson.features)
+      ? geojson.features
+      : [geojson.features];
+
+    let filtered = [];
+
+    if (updatedProvince && updatedProvince !== "Thailand") {
+      filtered = features.filter(f => f.properties.province_name === updatedProvince);
+    } else if (updatedRegion && updatedRegion !== "Thailand_region") {
+      filtered = features.filter(f => f.properties.region_name === updatedRegion);
+    } else {
+      filtered = features;
+    }
+
+    filtered.forEach((feature) => {
+      const props = feature.properties;
+      const featYear = year;
+
+      scalesToUse.forEach((scale) => {
+        const values = props.monthly?.[scale];
+
+        if (Array.isArray(values)) {
+          values.forEach((value, idx) => {
+            spiData.push({
+              year: featYear,
+              month: idx + 1,
+              scale,
+              value,
+            });
+            // console.log(
+            //   `year: ${featYear}, month: ${idx + 1}, spi value: ${value}, spi scale: ${scale}`
+            // );
+          });
+        } else {
+          console.warn(
+            `⚠️ ${scale} missing for ${updatedProvince || updatedRegion}, year ${year}`
+          );
+        }
+      });
+    });
+  }
+
+  return spiData;
+};
+
 export const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') => {
   const kernel = Array.from({ length: kernelSize }, (_, i) => {
     const x = i - Math.floor(kernelSize / 2);
@@ -45,91 +139,8 @@ export const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'refle
   });
 };
 
-export const spi_process = (
-  dataByYear,
-  startYear,
-  endYear,
-  selectedValue,
-  updatedRegion,
-  updatedProvince,
-  configData,
-  selectedDataset
-) => {
-  const datasetConfig = configData.datasets[selectedDataset];
-  const variableOption = datasetConfig.variable_options.find(
-    (opt) => opt.value === selectedValue
-  );
 
-  if (!variableOption || !variableOption.multi_scale) {
-    console.warn("No multi_scale config for", selectedValue);
-    return [];
-  }
-
-  const allScales = variableOption.multi_scale;
-  const spiData = [];
-
-  for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-    let geojson = null;
-
-    if (updatedRegion === "Thailand_region" && updatedProvince === "Thailand") {
-      geojson = dataByYear[year]?.country;
-    } else if (updatedProvince && updatedProvince !== "Thailand") {
-      geojson = dataByYear[year]?.province;
-    } else {
-      geojson = dataByYear[year]?.region;
-    }
-
-    if (!geojson || !geojson.features) {
-      console.warn(`❌ No valid geojson for year ${year}`);
-      continue;
-    }
-
-    const features = Array.isArray(geojson.features)
-      ? geojson.features
-      : [geojson.features];
-
-    let filtered = [];
-
-    if (updatedProvince && updatedProvince !== "Thailand") {
-      filtered = features.filter(f => f.properties.province_name === updatedProvince);
-    } else if (updatedRegion && updatedRegion !== "Thailand_region") {
-      filtered = features.filter(f => f.properties.region_name === updatedRegion);
-    } else {
-      filtered = features;
-    }
-
-    filtered.forEach((feature) => {
-      const props = feature.properties;
-      const featYear = year;
-
-      allScales.forEach((scale) => {
-        const values = props.monthly?.[scale];
-
-        if (Array.isArray(values)) {
-          values.forEach((value, idx) => {
-            spiData.push({
-              year: featYear,
-              month: idx + 1,
-              scale,
-              value,
-            });
-            // console.log(
-            //   `year: ${featYear}, month: ${idx + 1}, spi value: ${value}, spi scale: ${scale}`
-            // );
-          });
-        } else {
-          console.warn(
-            `⚠️ ${scale} missing for ${updatedProvince || updatedRegion}, year ${year}`
-          );
-        }
-      });
-    });
-  }
-
-  return spiData;
-};
-
-export const SPIChartData = (spiData, kernelSize = null) => {
+export const SPIChartData = (spiData, kernelSize = null, selectedType = "SPI") => {
   if (!spiData || spiData.length === 0) return null;
 
   const grouped = {};
@@ -143,7 +154,6 @@ export const SPIChartData = (spiData, kernelSize = null) => {
   });
 
   const labels = Object.keys(grouped).sort();
-
   const sortedScales = [...allScales].sort((a, b) => {
     const numA = parseInt(a.replace(/[^\d]/g, ''), 10);
     const numB = parseInt(b.replace(/[^\d]/g, ''), 10);
@@ -159,29 +169,30 @@ export const SPIChartData = (spiData, kernelSize = null) => {
       return val >= 0 ? '#0000ff' : '#ff0000';
     });
 
-    // Bar chart dataset (SPI value)
+    const scaleLabel = `${scale.replace(/[^\d]/g, '')}-Month ${selectedType.toUpperCase()}`;
+
+    // Bar
     datasets.push({
-      label: scale.toUpperCase(),
+      label: scaleLabel,
       data,
       backgroundColor,
-      type: "bar", 
+      type: "bar",
     });
 
-    // 
+    // Moving average line
     if (kernelSize && kernelSize > 1 && kernelSize % 2 === 1) {
       const smoothed = gaussianFilterWithPadding(
-        data.map((v) => (typeof v === "number" ? v : 0)), // null → 0
+        data.map((v) => (typeof v === "number" ? v : 0)),
         kernelSize,
         "reflect"
       );
 
       datasets.push({
-        label: `${scale.toUpperCase()} Moving Avg`,
+        label: `${scaleLabel} Moving Avg`,
         data: smoothed,
         type: "line",
         borderColor: "purple",
         borderWidth: 2,
-        // borderDash: [5, 5],
         tension: 0.25,
         pointRadius: 0,
         fill: false,
@@ -191,5 +202,7 @@ export const SPIChartData = (spiData, kernelSize = null) => {
 
   return { labels, datasets };
 };
+
+
 
 
