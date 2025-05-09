@@ -363,7 +363,7 @@
   display: flex;
   align-items: center;
   justify-content: center; 
-  margin-top: 170px;
+  margin-top: -20px;
 }
 
 
@@ -371,16 +371,18 @@
   max-width: 1005%;
   background-color: #f9f9f9;
   border-top: 2px solid #ccc;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center; 
-  margin-top: -1px;
+  margin-top: -100px;
+  height: 30px;
 }
 
-.dashboard-footer.sidebar-closed.show-spi {
+.dashboard-footer.sidebar-open.show-spi {
   max-width: 1005%;
+  height: 70px;
   background-color: #f9f9f9;
   border-top: 2px solid #ccc;
   padding: 8px 16px;
@@ -390,8 +392,41 @@
   justify-content: center; 
   margin-top: 100px;
   position: absolute;
-  top: 570px;
+  top: 180px;
 }
+
+.dashboard-footer.sidebar-closed.show-spi {
+  max-width: 1005%;
+  height: 70px;
+  background-color: #f9f9f9;
+  border-top: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  margin-top: 100px;
+  position: absolute;
+  top: 180px;
+}
+
+
+
+.dashboard-footer.sidebar-closed.show-spi.expanded {
+  max-width: 1005%;
+  height: 70px;
+  background-color: #f9f9f9;
+  border-top: 2px solid #ccc;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  margin-top: 100px;
+  position: absolute;
+  top: 480px;
+}
+
 
 .dashboard-footer.sidebar-open.hidden-seasonal {
   max-width: 1005%;
@@ -421,11 +456,10 @@
 
 
 .variable-description p {
-  font-size: 16px;
+  font-size: 14px;
   color: #222;
   font-weight: bold;
   margin: 0;
-  
 }
 /*--------------Description box---------------------*/
 
@@ -460,7 +494,7 @@
 
 
 .time-series-box.sidebar-open{
-  border: 2px solid #ccc; 
+  /* border: 2px solid #ccc; 
   border-radius: 10px; 
   padding: 20px; 
   margin: -80px 0; 
@@ -472,22 +506,39 @@
   top: -12%;
   right: -3%;
   width: 55%;
-  padding-bottom: 80px;
+  padding-bottom: 80px; */
+  border: 2px solid #ccc; 
+  border-radius: 10px; 
+  padding: 20px; 
+  margin: -70px 0; 
+  background: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
+  margin-left: -650px;
+  margin-top: 100px;
+  position: relative;
+  top: -16%;
+  left: 7%;
+  width: 58%;
+  height: 220px;
+  padding-bottom: 50px; 
 } 
 
 .seasonal-cycle-box.sidebar-open {
   border: 2px solid #ccc; 
   border-radius: 10px; 
-  padding: 20px; 
+  padding: 15px; 
   margin: -80px 0; 
   background: #fff;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
-  /* margin-left: -560px;
-  margin-top: 100px; */
+  margin-left: -650px;
+  margin-top: 100px;
   position: relative;
-  right: 19%;
-  top: 9.5%;
-  width: 55%;
+  top: -18.2%;
+  left: 7%;
+  height: 225px;
+  width: 59%;
+  /* z-index: 2; */
+  /* transition: left 0.4s ease, opacity 0.3s ease; */
 }
 
 
@@ -501,10 +552,10 @@
   margin-left: -650px;
   margin-top: 100px;
   position: relative;
-  top: -17%;
+  top: -15%;
   left: 0%;
   width: 50%;
-  height: 170px;
+  height: 220px;
   padding-bottom: 50px; 
 } 
 
@@ -545,49 +596,64 @@
 .seasonal-cycle-box.sidebar-closed {
   border: 2px solid #ccc; 
   border-radius: 10px; 
-  padding: 20px; 
+  padding: 15px; 
   margin: -80px 0; 
   background: #fff;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
   margin-left: -650px;
   margin-top: 100px;
   position: relative;
-  top: -15%;
+  top: -16.5%;
   left: -0%;
-  height: 230px;
-  width: 50%;
+  height: 225px;
+  width: 51%;
+  /* z-index: 2; */
 }
 
-.time-series-chart canvas, .seasonal-cycle-chart canvas {
+.time-series-chart canvas {
+  width: 100% !important; 
+  height: 100% !important;
+}
+
+.seasonal-cycle-chart canvas {
   width: 100% !important; 
   height: 100% !important;
 }
 
 .time-series-chart.sidebar-open {
-  width: 650px; 
+  /* width: 650px; 
   height: 350px; 
   margin: 0 auto; 
   margin-left: 15px;
   margin-top: 5px;
   position: relative;
-  top: 100px;
+  top: 100px; */
+  width: 740px; 
+  height: 230px; 
+  margin: 0 auto; 
+  margin-left: -10px;
+  margin-top: -5px;
+  position: relative;
+  top: 90px;
+  z-index: 1px;
 }
 
 .time-series-chart.sidebar-closed {
-  width: 800px; 
-  height: 250px; 
+  width: 740px; 
+  height: 230px; 
   margin: 0 auto; 
-  margin-left: 15px;
+  margin-left: -10px;
   margin-top: -5px;
   position: relative;
-  top: 100px;
+  top: 95px;
   z-index: 1px;
 }
 
 .time-series-chart h3{
   margin-bottom: -170px; 
   position: relative;
-  top: -33%;
+  top: -49%;
+  font-size: 14px;
 }
 
 /*--------------------------------*/
@@ -598,7 +664,7 @@
   gap: 10px; 
   margin-top: 20px;
   position: relative;
-  top: 112%;
+  top: 113%;
   bottom: -55%;
   margin-left: 5%;
 }
@@ -610,15 +676,15 @@
 
 .annual-average-line{
   display: inline-block;
-  width: 50px; /* ความยาวของเส้น */
-  height: 3px; /* ความหนาของเส้น */
+  width: 20px; /* ความยาวของเส้น */
+  height: 2px; /* ความหนาของเส้น */
   margin-right: 10px; /* ระยะห่างจากข้อความ */
 }
 
 .kernel-average-line {
   display: inline-block;
-  width: 50px; 
-  height: 3px; 
+  width: 30px; 
+  height: 2px; 
   margin-right: 10px; 
   border-top: 3px dashed purple; 
   /* background-color: transparent;  */
@@ -634,37 +700,58 @@
 } */
 
 .legend-text {
-  font-size: 14px;
+  font-size: 11.5px;
   font-weight: bold;
 }
 /*---------------------------------*/
 
 
 
-.seasonal-Cycle-chart.sidebar-open{
-  width: 650px; 
-  height: 350px; 
+.seasonal-cycle-chart.sidebar-open{
+  max-width: 100%; 
+  height: 230px; 
+  margin: 0 auto; 
+  margin-left: 10px;
+  margin-top: 50px;
+  position: relative;
+  top: -50px;
+  right: 5px;
+  /* width: 650px; 
+  height: 350px;
   margin: 0 auto; 
   margin-left: 50px;
   margin-top: 50px;
   position: relative;
-  top: -20%;
+  top: -20%; */
 }
 
 .seasonal-cycle-chart.sidebar-closed{
-  width: 650px; 
-  height: 350px; 
+  max-width: 100%; 
+  height: 230px; 
   margin: 0 auto; 
-  margin-left: 20px;
+  margin-left: 10px;
   margin-top: 50px;
   position: relative;
   top: -50px;
+  right: 5px;
 }
 
 .seasonal-cycle-chart h3 {
   margin-bottom: -70px; 
   padding-bottom: 5px; 
-  font-size: 18px; 
+  font-size: 14px; 
+  top: -5%;
+  right: 1%;
+  position: relative;
+}
+
+.seasonal-cycle-chart.sidebar-open h3 {
+  margin-bottom: -70px; 
+  padding-bottom: 5px; 
+  font-size: 14px; 
+  top: -11px;
+  right: 5px;
+  position: relative;
 }
 
 /* สไตล์สำหรับ legend line */
@@ -674,20 +761,21 @@
   justify-content: center;
   margin-top: 20px;
   position: relative;
-  top: 385px;  
+  top: 40px;  
+  right: -320px;
 }
 
 .seasonal-legend-line span {
   display: inline-block;
-  width: 40px;  
-  height: 3px;  
+  width: 20px;  
+  height: 2px;  
   background-color: #000000;  
   margin-right: 15px;  
 }
 
 
 .seasonal-legend-line .legend-text {
-  font-size: 14px;
+  font-size: 9px;
   font-weight: bold;
   margin-left: 1px;  
 }
@@ -704,8 +792,6 @@
   padding-right: 5%;
   position: relative;
   /* top: -5%; */
-
-  
 }
 
 .spi-chart-wrapper.sidebar-open {
@@ -715,15 +801,15 @@
 }
 
 .spi-chart-wrapper.sidebar-closed {
-  padding-right: 650px; 
+  padding-right: 630px; 
   margin-bottom: -100px;
-  top: -5.5%;
+  top: -10%;
 }
 
 
 .spi-chart-group {
   width: 100%;
-  max-height: 920px;            
+  max-height: 570px;            
   overflow-y: auto;             
   overflow-x: hidden;           
   display: block;               
@@ -736,16 +822,33 @@
   border: 3px solid #ccc;
 }
 
+.spi-chart-group.sidebar-open {
+  width: 100%;
+  max-height: 570px;            
+  overflow-y: auto;             
+  overflow-x: hidden;           
+  display: block;               
+  position: relative;
+  right: -1%;
+  top: -4%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-sizing: border-box;
+  border: 3px solid #ccc;
+}
+
 
 
 .spi-sub-chart {
-  margin-bottom: 40px;
+  margin-bottom: 5px;
   width: 705px;
   flex-shrink: 0;
 }
 
 .spi-sub-chart.sidebar-open {
-  width: 500px;
+  width: 700px;
 }
 
 .spi-sub-chart h3 {
@@ -811,8 +914,8 @@
 
 .right-map.sidebar-open {
   position: relative; 
-  top: 8%;
-  left: 11%;
+  top: 7.5%;
+  left: 13%;
 }
 
 .right-map.sidebar-closed {
@@ -823,9 +926,14 @@
 
 .right-map.sidebar-closed.show-spi {
   position: absolute;
-  top: 70px !important;
+  top: 50px !important;
   left: 100px !important;
-  /* background-color: yellow;  */
+}
+
+.right-map.sidebar-open.show-spi {
+  position: absolute;
+  top: 45px !important;
+  left: 130px !important;
 }
 
 .right-map.sidebar-open.hidden-seasonal {
@@ -1007,7 +1115,7 @@
 
 .map-buttons {
   position: relative; 
-  top: 150%;
+  top: 100%;
   left: 150px; 
   z-index: 1000; 
   display: flex;
@@ -1035,7 +1143,7 @@
 .tonecolor-wrapper {
   position: relative;  
   right: -63%;
-  top: 1415%;
+  top: 807%;
   display: inline-block; 
   z-index: 999;
 }
@@ -1127,9 +1235,9 @@
   flex-direction: column;
   align-items: center;
   box-shadow: 2px 2px 8px rgba(105, 69, 69, 0.1); 
-  height: 886px;
+  height: 535px;
   position: absolute; 
-   top: -6.5%;
+   top: 7.5%;
   left: 0%; 
   margin-left: 85px;
   margin-top: -4%;
@@ -1147,7 +1255,7 @@
 
 .map-container{
   position: relative;
-  margin-top: 50px;
+  margin-top: 25px;
 }
 /* .map-container {
   position: relative;
@@ -1176,7 +1284,7 @@
   width: 111%;
   border: 1px solid #000;
   position: relative;
-  top: 6%;
+  top: -6%;
 }
 
 .color-bar-container.heatmap .labels {
@@ -1185,7 +1293,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 5px;
-  top: 7px;
+  top: -7px;
   padding: 0 5px;
 }
 
@@ -1209,7 +1317,7 @@
   width: 111%;
   border: 1px solid #000;
   position: relative;
-  top: 10px;
+  top: -4px;
 }
 
 .color-bar-container.trendmap .color-segment {
@@ -1222,7 +1330,7 @@
   right: 30px;
   width: 100%;
   height: 12px;
-  top: 10px;
+  top: -5px;
   display: flex;
   justify-content: space-between;
 }
@@ -1242,7 +1350,7 @@
   justify-content: center;
   left: -31.9px;
   margin-top: 35px;
-  top: -40px;
+  top: -60px;
   gap: 10px;
 }
 
@@ -1258,77 +1366,14 @@
   margin-right: -10px;
   font-size: 15px;
   position: relative;
-  top: 75px;
+  top: 65px;
   text-align: center;
   font-weight: bold;
 } 
 
 
-/* .color-bar-horizontal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: -40px 0;
-  width: 90%;
-}
-
-.gradient-bar {
-  display: flex;
-  height: 17px;
-  width: 111%;
-  border: 1px solid #000;
-  position: relative;
-  top: 50px;
-}
-
-.color-segment {
-  height: 100%;
-}
-
-.labels {
-  position: relative;
-  width: 100%;
-  left: 0%;
-  display: flex;
-  justify-content: center;
-  margin-top: 35px;
-  top: 20px;
-  gap: 10px;
-}
-
-.labels span {
-  transform: translateX(-50%);
-  white-space: nowrap;
-  gap: 10px;
-}
-
-.title {
-  margin-top: 25px;
-  margin-right: -80px;
-  font-size: 15px;
-  position: relative;
-  top: 18px;
-  text-align: center;
-  
-} */
-
 /*-----------------------dropdown region--------------------------------------*/
 
-/*-------------------------------------------------------------*/
-
-/* .time-series-chart {
-  width: 1500px; 
-  height: 650px; 
-  margin: 0 auto; 
-  margin-left: 50px;
-}
-
-.Seasonal-Cycle-chart{
-  width: 1300px; 
-  height: 700px; 
-  margin: 0 auto; 
-  margin-left: 50px;
-} */
 
 /*------------------Dataset Selector---------------------------*/
 /* Container สำหรับ dropdown */
@@ -1619,18 +1664,27 @@
 .expand-time-series-button {
   position: absolute;
   left: 90%;
-  top: 20px; /* ปรับตามที่เหมาะกับ time series chart */
+  top: 10px; /* ปรับตามที่เหมาะกับ time series chart */
   transform: translateX(-50%);
   z-index: 1px;
 }
 
-.time-series-box.expanded {
+.time-series-box.sidebar-closed.expanded {
   width: 93% !important; 
   margin-left: auto;
   margin-right: auto;
   transition: width 0.3s ease-in-out, margin 0.3s ease-in-out;
   /* margin-top: 2%; */
 }
+
+.time-series-box.sidebar-open.expanded {
+  width: 93% !important; 
+  margin-left: -80px;
+  margin-right: auto;
+  transition: width 0.3s ease-in-out, margin 0.3s ease-in-out;
+  /* margin-top: 2%; */
+}
+
 
 .time-series-box.expanded.hidden-seasonal {
   width: 93% !important; 
@@ -1649,25 +1703,25 @@
 .right-map.sidebar-closed.expanded { 
   position: static;
   width: 70%;
-  transform: translate(525px, 590px);
+  transform: translate(512px, 400px);
 
 }
 
 .right-map.sidebar-open.expanded { 
   position: static;
   width: 70%;
-  transform: translate(550px, 594px);
+  transform: translate(540px, 390px);
 
 }
 
 .seasonal-cycle-box.sidebar-closed.expanded{
-  left: 1% !important;
-  top: -9.5% !important;
+  left: 0.5% ;
+  top: -16% ;
 }
 
 .seasonal-cycle-box.sidebar-open.expanded{
-  left: -16% !important;
-  top: 10.5% !important;
+  left: 7% !important;
+  top: -18.5% !important;
 }
 
 
@@ -1681,39 +1735,69 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  top: 75%;
+  top: 50%;
 }
 
 /*---------Expand Time series ----------------------*/
 /*---------Expand spi graph ------------------------*/
 
-.expand-spi-chart-button.expanded {
+.expand-spi-chart-button.sidebar-closed.spi-expanded {
+  position: absolute;
+  left: 97%;
+  top: 1px; 
+  transform: translateX(-50%);
+}
+
+.expand-spi-chart-button.sidebar-open {
   position: absolute;
   left: 95%;
-  top: 20px; /* ปรับตามที่เหมาะกับ spi chart */
+  top: 3px; 
   transform: translateX(-50%);
 }
 
-.expand-spi-chart-button {
+.expand-spi-chart-button.sidebar-closed {
   position: absolute;
-  left: 50%;
-  top: 20px; 
+  left: 51%;
+  top: 3px; 
   transform: translateX(-50%);
 }
 
-/*--------- Expanded SPI Chart Layout 2x2 ---------*/
-.spi-chart-group.expanded {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+
+/*--------- Expanded SPI Chart Layout ---------*/
+.spi-chart-group.spi-expanded {
+  display: flex;
+  flex-direction: column; 
   gap: 40px;
-  max-height: 98%; 
-  overflow: visible;
+  /* max-height: 57%; */
+  height: 600px;
+  width: 1460px;
+  overflow-x: auto;        
+  overflow-y: visible;
   transform: translateY(4.5%);
+  position: absolute;
+  top: 38%;
+  right: -940.5%;
+  margin-bottom: 5px;
 }
 
-.spi-sub-chart.expanded {
-  width: 100%; 
+.spi-chart-wrapper.sidebar-closed.spi-expanded {
+  max-width: 500%;
+  margin: 60px auto 40px;
+  padding: 0 0px;
+  padding-bottom: 5%;
+  z-index: 1;
+  transition: padding-left 0.3s ease;
+  padding-right: 5%;
+  position: relative;
+  /* transition: width 0.3s ease-in-out, margin 0.3s ease-in-out; */
 }
+
+.spi-sub-chart.sidebar-closed.spi-expanded {
+  width: 1400px;
+  margin-bottom: 5px;
+  /* transition: width 0.3s ease-in-out, margin 0.3s ease-in-out; */
+}
+
 
 
 /*---------Expand spi graph ------------------------*/

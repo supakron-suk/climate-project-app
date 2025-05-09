@@ -108,14 +108,12 @@ if (geojson.features) {
 } else if (geojson.type === "Feature") {
   features = [geojson];
 } else {
-  console.warn(`❌ Invalid geojson structure for year ${year}:`, geojson);
+  console.warn(`Invalid geojson structure for year ${year}:`, geojson);
   continue;
 }
 
     const filteredFeatures = filterRegion_Province(features, region, province);
 
-    // console.log(`📅 Year: ${year}, Dataset used:`, geojson);
-    // กรองข้อมูลตาม region และ province ที่เลือก
 
       filteredFeatures.forEach((feature) => {
         const { name } = feature.properties;
@@ -169,7 +167,7 @@ for (let year = startYear; year <= endYear; year++) {
     value: yearlyMeans[year] !== undefined ? yearlyMeans[year] : null,
   });
 }
-// console.log("📊 Full annual array:", annualArray);
+
 
 
   const result = monthlyAverages.map((sum, index) =>
@@ -261,7 +259,19 @@ const calculateYAxisBounds = (data) => {
     },
   ],
   options: {
+
     responsive: true,
+
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      tooltip: {
+        enabled: true,
+      },
+    },
+
     scales: {
       y: {
         title: {
@@ -281,11 +291,9 @@ const calculateYAxisBounds = (data) => {
 };
 
 
+
   //----------------------------------------------------//
   // สร้างข้อมูลรายปีจากรายเดือน
-
-
-
 
 // สร้าง Labels รายปี
 const annualLabels = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
@@ -351,9 +359,6 @@ const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') =>
 
 // **ให้ User กำหนดค่า kernelSize**
 const annualGaussianAverage = gaussianFilterWithPadding(annualArray.map(item => item.value), kernelSize, 'reflect');
-// console.log("📊 Kernel Size:", kernelSize);
-// console.log("📊 annual data :", annualArray);
-// console.log("📊 Gaussian Filter Data:", annualGaussianAverage);
   //----------------------------------------------------//
 
   const timeSeriesData = {
@@ -433,9 +438,9 @@ const annualGaussianAverage = gaussianFilterWithPadding(annualArray.map(item => 
   },
 };
 
-console.log("📊 Time Series Data:", timeSeriesData);
-console.log("📈 Seasonal Cycle Data:", seasonalCycleData);
+console.log("Time Series Data:", timeSeriesData);
+console.log("Seasonal Cycle Data:", seasonalCycleData);
 
-return { seasonalCycleData, timeSeriesData};
+return { seasonalCycleData,  timeSeriesData};
 
 };

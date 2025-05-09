@@ -9,7 +9,7 @@ export const spi_Heatmap = (
   selectedProvince,
   isRegionView
 ) => {
-  console.log("✅ Using scale:", selectedScale);
+  console.log("Using scale:", selectedScale);
 
   const sumByArea = {};
   const countByArea = {};
@@ -68,74 +68,10 @@ export const spi_Heatmap = (
     })),
   };
 
-  console.log("✅ Final SPI GeoJSON:", resultGeoJSON);
+  console.log("SPI GeoJSON:", resultGeoJSON);
   return resultGeoJSON;
 };
 
-// export const spi_Heatmap = (
-//   dataByYear,
-//   startYear,
-//   endYear,
-//   selectedValue,
-//   selectedScale,
-//   selectedRegion,
-//   selectedProvince,
-//   isRegionView // 🔥 เพิ่มเข้ามา!
-// ) => {
-//   console.log("✅ Using scale:", selectedScale);
-
-//   const results = {};
-
-//   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-//     let geojson = isRegionView
-//       ? dataByYear[year]?.region
-//       : dataByYear[year]?.province;
-
-//     console.log(
-//       isRegionView
-//         ? "📍 Using REGION data for year"
-//         : "🏙️ Using PROVINCE data for year",
-//       year,
-//       geojson
-//     );
-
-//     if (!geojson?.features) {
-//       console.warn("⚠️ geojson is missing or has no features for year", year);
-//       continue;
-//     }
-
-//     const features = geojson.features;
-//     if (!Array.isArray(features)) continue;
-
-//     const filtered = features.filter((f) => {
-//       if (isRegionView) {
-//         if (selectedRegion === "Thailand_region") return true;
-//         return f.properties.region_name === selectedRegion;
-//       } else {
-//         if (selectedProvince === "Thailand") return true;
-//         return f.properties.province_name === selectedProvince;
-//       }
-//     });
-
-//     filtered.forEach((feature) => {
-//       const name = isRegionView
-//         ? feature.properties.region_name
-//         : feature.properties.province_name;
-
-//       const monthlyData = feature.properties.monthly?.[selectedScale];
-//       if (!monthlyData) return;
-
-//       if (!results[name]) results[name] = [];
-//       results[name].push(...monthlyData);
-//     });
-//   }
-
-//   Object.entries(results).forEach(([name, values]) => {
-//     console.log(`${name}: scale(${selectedScale}): value`, values);
-//   });
-
-//   return results;
-// };
 
 
 export const Heatmap = (
@@ -241,7 +177,7 @@ export const Heatmap = (
     })),
   };
 
-  console.log("✅ Heatmap data returned:", averagedGeoJSON);
+  console.log("Heatmap data returned:", averagedGeoJSON);
   return averagedGeoJSON;
 };
 

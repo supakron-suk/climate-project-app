@@ -25,7 +25,7 @@ export const spi_process = (
   }
   const allScales = variableOption.multi_scale;
   const scalesToUse = (selectedScales && selectedScales.length > 0) ? selectedScales : [allScales[0]];
-  console.log("🎯 Scales selected:", scalesToUse);
+  console.log("Scales selected:", scalesToUse);
   
   // const allScales = variableOption.multi_scale;
   const spiData = [];
@@ -44,7 +44,7 @@ export const spi_process = (
     }
 
     if (!geojson || !geojson.features) {
-      console.warn(`❌ No valid geojson for year ${year}`);
+      console.warn(`No valid geojson for year ${year}`);
       continue;
     }
 
@@ -83,7 +83,7 @@ export const spi_process = (
           });
         } else {
           console.warn(
-            `⚠️ ${scale} missing for ${updatedProvince || updatedRegion}, year ${year}`
+            `${scale} missing for ${updatedProvince || updatedRegion}, year ${year}`
           );
         }
       });

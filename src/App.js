@@ -6,7 +6,7 @@
 //import Thailandmap from "./Geo-data/thailand-Geo.json";
 
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState} from 'react';
 import 'leaflet/dist/leaflet.css';
 import { Line } from 'react-chartjs-2';
 import { Bar } from 'react-chartjs-2';
@@ -63,8 +63,9 @@ const movingAvgLegendPlugin = {
   }
 };
 
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement,
-  Title, Tooltip, Legend, annotationPlugin, CrosshairPlugin, ...registerables, movingAvgLegendPlugin); 
+  Title, Tooltip, Legend, annotationPlugin,CrosshairPlugin,  ...registerables, movingAvgLegendPlugin); 
 
 
 //------------------------IMPORT FUCTION-------------------------------------//
@@ -110,6 +111,7 @@ function App() {
   const [chartData, setChartData] = useState(dummyTimeSeriesData);
   // const [Timeseries, set] = useState(dummyTimeSeriesData);
   const [seasonalCycle, setSeasonalCycle] = useState(dummySeasonalCycleData);
+  
   // const [spiChartData, setSPIChartData] = useState(null);
   // const [isSpiOpen, setIsSpiOpen] = useState(true);
   // const [showSPIBarChart, setShowSPIBarChart] = useState(false);
@@ -490,7 +492,7 @@ useEffect(() => {
     selectedScale
   );
 
-  console.log(`🔍 SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
+  console.log(`SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
 
   const mapSPIData = spi_Heatmap(
     dataByYear,
@@ -503,8 +505,7 @@ useEffect(() => {
     isRegionView
   );
 
-  // ✅ log ค่าที่ดึงมาได้
-  console.log(`🗺️ SPI Heatmap Summary:`, mapSPIData);
+  console.log(`SPI Heatmap Summary:`, mapSPIData);
 
   setSPIChartData(SPIChartData(spiResult, kernelSize, selectedValue));
   setShowSPIBarChart(true);                  
@@ -583,7 +584,7 @@ useEffect(() => {
       selectedValue
     );
     if (chartData) {
-      console.log("📊 Time Series Data:", chartData);
+      console.log("Time Series Data:", chartData);
       setSeasonalCycle(chartData.seasonalCycleData);
       setChartData(chartData.timeSeriesData);
     }
@@ -607,7 +608,7 @@ useEffect(() => {
   const isSPI = selectedValue === "spi" || selectedValue === "spei";
 
   if (variable.type === "yearly" || isSPI) {
-    console.log("Hide Seasonal Cycle because Yearly or SPI/SPEI variable");
+    // console.log("Hide Seasonal Cycle because Yearly or SPI/SPEI variable");
     setShowSeasonalCycle(false);
     setIsSeasonalHidden(true);
   } else {
@@ -899,13 +900,13 @@ useEffect(() => {
   Array.isArray(availableScales) &&
   availableScales.length > 0 && (
   <div className="display-map-scale">
-    <label>Display Map Scale:</label>
+    <label>Map Scale:</label>
     <select
       value={displayMapScale}
       onChange={(e) => setDisplayMapScale(e.target.value)}
     >
       <option value="" disabled hidden>
-        Select Display Scale
+        Select Scale
       </option>
       {availableScales.map((scale) => (
         <option key={scale} value={scale}>
@@ -994,7 +995,7 @@ useEffect(() => {
 
       if (minmaxButton === "Actual") {
         
-        if (!/^\d*(\.\d*)?$/.test(value)) return;
+        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
       } else if (minmaxButton === "Trend") {
         
         if (!/^-?\d*(\.\d*)?$/.test(value)) return;
@@ -1264,8 +1265,9 @@ useEffect(() => {
   data={chartData}
   options={{
     responsive: true,
+    // maintainAspectRatio: false,
     maintainAspectRatio: false,
-    devicePixelRatio: 2,
+    devicePixelRatio: 3,
     interaction: {
       mode: 'index',
       intersect: false,
@@ -1289,7 +1291,7 @@ useEffect(() => {
     borderColor: 'black',
     borderWidth: 1,
     titleFont: {
-      size: 16,
+      size: 14,
       weight: 'bold',
     },
     bodyFont: {
@@ -1330,12 +1332,12 @@ useEffect(() => {
           display: true,
           text: 'Year',
           font: {
-            size: 12,
+            size: 10,
           },
         },
         ticks: {
           font: {
-            size: 12,
+            size: 9,
           },
           autoSkip: true,
           maxTicksLimit: 10,
@@ -1348,12 +1350,12 @@ useEffect(() => {
           display: true,
           text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
           font: {
-            size: 15,
+            size: 10,
           },
         },
         ticks: {
           font: {
-            size: 12,
+            size: 9,
           },
           stepSize: Math.ceil((chartData?.options?.scales?.y?.max - chartData?.options?.scales?.y?.min) / 3),
     callback: function (value, index, values) {
@@ -1393,99 +1395,109 @@ useEffect(() => {
 </div>
 
       <Line
-        data={seasonalCycle}
-        options={{
-          responsive: true,
-          plugins: {
-            tooltip: {
-    enabled: true,
-    mode: 'nearest',
-    intersect: false,
-    backgroundColor: 'white',
-    titleColor: 'black',
-    bodyColor: 'black',
-    borderColor: 'black',
-    borderWidth: 1,
-    titleFont: {
-      size: 16,
-      weight: 'bold',
+  data={seasonalCycle}
+  options={{
+    responsive: true,
+    maintainAspectRatio: false, 
+    devicePixelRatio: 3,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        enabled: true,
+        mode: 'nearest',
+        intersect: false,
+        backgroundColor: 'white',
+        titleColor: 'black',
+        bodyColor: 'black',
+        borderColor: 'black',
+        borderWidth: 1,
+        titleFont: { size: 15, weight: 'bold' },
+        bodyFont: { size: 14 },
+        padding: 10,
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) label += ': ';
+            let value = context.raw || 0;
+            let unit = getUnit(selectedValue);
+            return `${label}${value.toFixed(2)} ${unit}`;
+          },
+        },
+      },
+
+      crosshair: {
+            line: {
+              color: 'rgba(255, 0, 0, 0.3)',
+              width: 1,
+              dashPattern: [5, 5],
+            },
+            sync: {
+              enabled: true,
+            },
+            zoom: {
+              enabled: false,
+            },
+          },
+
     },
-    bodyFont: {
-      size: 14,
-    },
-    padding: 10,
-    callbacks: {
-      label: function (context) {
-        let label = context.dataset.label || '';
-        if (label) {
-          label += ': ';
-        }
-        let value = context.raw || 0;
-        let unit = getUnit(selectedValue);
-        return `${label}${value.toFixed(2)} ${unit}`;
+    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Months',
+          font: { size: 9, family: 'Arial Narrow', weight: 'normal' },
+        },
+        ticks: {
+          font: { size: 9.5, family: 'Arial Narrow', weight: 'normal' },
+          callback: function (value, index) {
+            const labelsToShow = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+            return labelsToShow.includes(index)
+              ? this.getLabelForValue(value)
+              : '';
+          },
+        },
+      },
+      y: {
+        min: seasonalCycle?.options?.scales?.y?.min || 0,
+        max: seasonalCycle?.options?.scales?.y?.max || 100,
+        title: {
+          display: true,
+          text: seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown',
+          font: { size: 10, family: 'Arial Narrow', weight: 'bold' },
+        },
+        ticks: {
+          font: { size: 9, family: 'Arial Narrow', weight: 'normal' },
+          stepSize: 10,
+          maxTicksLimit: 5,
+          callback: function (value) {
+            return `${Number(value.toFixed(0))} ${
+              seasonalCycle?.options?.scales?.y?.title?.text
+                ?.split('(')[1]
+                ?.replace(')', '') || ''
+            }`;
+          },
+        },
       },
     },
-  },
-            legend: {
-              display: false, 
-            },
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Months',
-                font: {
-                  size: 12,
-                  
-                },
-              },
-              ticks: {
-                font: {
-                  size: 12,
-                  
-                },
-              },
-            },
-            y: {
-              min: seasonalCycle?.options?.scales?.y?.min || 0,
-              max: seasonalCycle?.options?.scales?.y?.max || 100,
-              title: {
-                display: true,
-                text: `${seasonalCycle?.options?.scales?.y?.title?.text || 'Unknown'}`,
-                font: {
-                  size: 15,
-                  
-                },
-              },
-              ticks: {
-                font: {
-                  size: 12,
-                  
-                },
-                callback: function(value) {
-                  return `${Number(value.toFixed(0))} ${seasonalCycle?.options?.scales?.y?.title?.text.split('(')[1]?.replace(')', '') || ''}`;
-                },
-              },
-            },
-          },
-        }}
-      />
+  }}
+/>
+
     </div>
 </div>
 )}
 
 {showSPIBarChart && spiChartData && (
-  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "expanded" : ""} ${showSPIBarChart ? "show-spi" : ""}`}>
+  <div className={`spi-chart-wrapper ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "spi-expanded" : ""} ${showSPIBarChart ? "show-spi" : ""}`}>
 
 
 
 
-    <div className={`spi-chart-group ${isSPIExpand ? "expanded" : ""}`}>
+    <div className={`spi-chart-group ${isSPIExpand ? "spi-expanded" : ""} ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "spi-expanded" : ""}`}>
 
 
-        <div className={`expand-spi-chart-button ${isSPIExpand ? "expanded" : ""}`}>
+        <div className={`expand-spi-chart-button ${isSPIExpand ? "spi-expanded" : ""}  ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
         <button
           onClick={() => setIsSPIExpand(prev => !prev)}
           style={{
@@ -1494,7 +1506,7 @@ useEffect(() => {
             border: "none",
             borderRadius: "6px",
             padding: "6px 12px",
-            fontSize: "13px",
+            fontSize: "10px",
             cursor: "pointer",
             marginBottom: "10px",
           }}
@@ -1515,7 +1527,10 @@ useEffect(() => {
             );
 
             return (
-              <div key={barDataset.label} className="spi-sub-chart">
+              <div
+                key={barDataset.label}
+                className={`spi-sub-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "spi-expanded" : ""} ${showSPIBarChart ? "show-spi" : ""}`}
+              >
                 <Bar
                   data={{
                     labels: spiChartData.labels,
@@ -1525,6 +1540,8 @@ useEffect(() => {
                   }}
                   options={{
                     responsive: true,
+                    maintainAspectRatio: false,
+                    devicePixelRatio: 3,
                     plugins: {
                     legend: { display: false },
                     customLegend: {
@@ -1544,20 +1561,21 @@ useEffect(() => {
                           text: barDataset.label,
                           font: {
                           size: 18,       
-                          weight: 'bold', 
+                          weight: 'normal', 
                         },
                         color: '#000000'
                         },
                       },
                       x: {
-                        title: {
-                          display: true,
-                          text: 'Year',
-                        },
+                        // title: {
+                        //   display: true,
+                        //   text: 'Year',
+                        // },
                         ticks: {
                           autoSkip: false,
                           maxRotation: 0,
                           minRotation: 0,
+                          maxTicksLimit: 20,
                           font: {
                             size: 10,
                           },
@@ -1582,7 +1600,7 @@ useEffect(() => {
                           },
                         },
                         grid: {
-                          display: false,
+                          display: true,
                         },
                       },
                     },
@@ -1601,7 +1619,7 @@ useEffect(() => {
 </div>
 
 <div className={`dashboard-footer ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSpiOpen ? "spi-open" : "spi-closed"}
- ${isExpand ? "expanded" : ""} ${isSeasonalHidden ? "hidden-seasonal" : "" } ${showSPIBarChart ? "show-spi" : ""}`} title="Variable Description">
+ ${isExpand ? "expanded" : ""} ${isSPIExpand ? "spi-expanded" : ""} ${isSeasonalHidden ? "hidden-seasonal" : "" } ${showSPIBarChart ? "show-spi" : ""}`} title="Variable Description">
   {variableDescription && (
     <div className="variable-description">
       <p dangerouslySetInnerHTML={{ __html: variableDescription }}></p>

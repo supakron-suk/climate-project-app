@@ -305,8 +305,15 @@ const style = (
 //   };
 // };
 
-
-const onEachFeature = (feature, layer, viewMode, value, isRegionView, selectedScale) => {
+const onEachFeature = (
+  feature,
+  layer,
+  viewMode,
+  value,
+  isRegionView,
+  selectedScale,
+  numberOfYears
+) => {
   const props = feature.properties;
 
   const name = isRegionView
@@ -317,69 +324,95 @@ const onEachFeature = (feature, layer, viewMode, value, isRegionView, selectedSc
   const province = props.province_name || "N/A";
 
   const isMultiScale = value === "spi" || value === "spei";
+  const actualValueKey = isMultiScale && selectedScale ? selectedScale : value;
 
-  const actualValueKey =
-    isMultiScale && selectedScale
-      ? selectedScale
-      : value;
-
-  const actualValue =
+  const rawValue =
     viewMode === "TrendMap"
       ? props.slope_value
       : props.annual?.[actualValueKey] ?? props[actualValueKey];
 
-  // const actualValueKey = (value === "spi" || value === "spei")
-  //   ? `${value}${selectedScale}`
-  //   : value;
+  // ปัดทศนิยมตามประเภทข้อมูล
+  const formattedValue =
+    rawValue !== null && rawValue !== undefined
+      ? Number(rawValue).toFixed(2)
+      : "N/A";
 
-  // let actualValue = null;
+  // หาหน่วยของข้อมูล
+  const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(value)
+    ? "°C"
+    : "mm";
 
-  // if (viewMode === "TrendMap") {
-  //   actualValue = props.slope_value;
-  // } else {
-  //   if (props.annual && props.annual[actualValueKey] !== undefined) {
-  //     actualValue = props.annual[actualValueKey];
-  //   } else if (props[actualValueKey] !== undefined) {
-  //     actualValue = props[actualValueKey];
-  //   }
-  // }
+  const yearsText = numberOfYears ? `/ ${numberOfYears} year` : "";
 
- console.log(
-  `[DEBUG] ${name} (${region}/${province}) | viewMode: ${viewMode}, selectedScale: ${selectedScale}, actualKey: ${actualValueKey} -> value:`,
-  actualValue
-);
+  const label = viewMode === "TrendMap" ? "Slope" : "Value";
+
+  const fullValue =
+    formattedValue !== "N/A"
+      ? `<strong>${label}:</strong> ${formattedValue}${unit}${yearsText}`
+      : `<strong>${label}:</strong> N/A`;
+
+  console.log(
+    `[looking value] ${name} (${region}/${province}) | ${label} →`,
+    rawValue
+  );
 
   layer.bindPopup(`
     <strong>${name}</strong><br/>
-    Value: ${actualValue !== null && actualValue !== undefined ? actualValue : 'N/A'}
+    ${fullValue}
   `);
 };
 
 
+// const onEachFeature = (feature, layer, viewMode, value, isRegionView, selectedScale) => {
+//   const props = feature.properties;
 
-// const onEachFeature = (feature, layer, viewMode, value) => {
-//   const valueText = viewMode === "TrendMap"
-//     ? feature.properties.slope_value !== undefined && feature.properties.slope_value !== null
-//       ? feature.properties.slope_value.toFixed(2)
-//       : 'N/A'
-//     : feature.properties[value] !== undefined && feature.properties[value] !== null
-//       ? feature.properties[value].toFixed(2)
-//       : 'N/A';
+//   const name = isRegionView
+//     ? props.region_name || props.name
+//     : props.province_name || props.name;
 
-  
-//   const label = viewMode === "TrendMap"
-//     ? "Slope Value"
-//     : (typeof value === "string" ? value.charAt(0).toUpperCase() + value.slice(1) : "Value");
+//   const region = props.region_name || "N/A";
+//   const province = props.province_name || "N/A";
 
-//   const labelName = feature.properties.province_name || feature.properties.name || "Unknown";
-//   const regionLabel = feature.properties.region_name || feature.properties.name || "Unknown";
+//   const isMultiScale = value === "spi" || value === "spei";
 
-//   layer.bindPopup(
-//     `<b>Province:</b> ${labelName}<br/>
-//      <b>Region:</b> ${regionLabel}<br/>
-//      <b>${label}:</b> ${valueText}`
-//   );
+//   const actualValueKey =
+//     isMultiScale && selectedScale
+//       ? selectedScale
+//       : value;
+
+//   const actualValue =
+//     viewMode === "TrendMap"
+//       ? props.slope_value
+//       : props.annual?.[actualValueKey] ?? props[actualValueKey];
+
+//   // const actualValueKey = (value === "spi" || value === "spei")
+//   //   ? `${value}${selectedScale}`
+//   //   : value;
+
+//   // let actualValue = null;
+
+//   // if (viewMode === "TrendMap") {
+//   //   actualValue = props.slope_value;
+//   // } else {
+//   //   if (props.annual && props.annual[actualValueKey] !== undefined) {
+//   //     actualValue = props.annual[actualValueKey];
+//   //   } else if (props[actualValueKey] !== undefined) {
+//   //     actualValue = props[actualValueKey];
+//   //   }
+//   // }
+
+//  console.log(
+//   `[DEBUG] ${name} (${region}/${province}) | viewMode: ${viewMode}, selectedScale: ${selectedScale}, actualKey: ${actualValueKey} -> value:`,
+//   actualValue
+// );
+
+//   layer.bindPopup(`
+//     <strong>${name}</strong><br/>
+//     Value: ${actualValue !== null && actualValue !== undefined ? actualValue : 'N/A'}
+//   `);
 // };
+
+
 
 
 const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears }) => {
@@ -461,69 +494,6 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
   );
 };
 
-
-
-
-
-// const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed , numberOfYears}) => {
-//   const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
-
-//   if (!temp_color || !Array.isArray(temp_color)) {
-//     console.warn("Invalid colorScale in HeatmapBar", { temp_color });
-//     return null;
-//   }
-
-//   // ฟังก์ชันจัดรูปแบบตัวเลขให้เป็นเลขกลมๆ หรือ 0.5
-//   const roundLabel = (value) => {
-//     if (["pre", "rx1day"].includes(selectedValue)) {
-//       return Math.round(value); // ปริมาณน้ำฝนให้แสดงเลขเต็ม
-//     }
-//     return Math.round(value); // อุณหภูมิให้แสดงเป็น .0 หรือ .5
-//   };
-
-//   const labels = Array.from({ length: 12 }, (_, i) => roundLabel(min + (i / 11) * (max - min)));
-//   const numBlocks = temp_color.length;
-
-//   // กำหนดหน่วยตาม selectedValue
-//   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
-//   const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
-
-//   return (
-//     <div className="color-bar-container heatmap">
-//       <div className="color-bar-title">
-//         {title}
-//       </div>
-//       <div className="gradient-bar">
-//         {temp_color.map(([_, color], index) => (
-//           <div
-//             key={index}
-//             className="color-segment"
-//             style={{
-//               backgroundColor: color,
-//               width: `${100 / numBlocks}%`,
-//               height: "20px",
-//             }}
-//           />
-//         ))}
-//       </div>
-//       <div className="labels">
-//         {labels.map((label, index) => (
-//           <span
-//             key={index}
-//             style={{
-//               position: "absolute",
-//               left: `${(index / (labels.length - 1)) * 100}%`,
-//               transform: "translateX(-50%)",
-//               fontSize: "11px",
-//             }}
-//           >
-//             {label}
-//           </span>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
 
 
 const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears, isReversed }) => {
@@ -677,7 +647,7 @@ const MapComponent = ({
       </label>
 
       <div className="map-container">
-        <MapContainer center={[13.7563, 100.5018]} zoom={6} style={{ height: "750px", width: "600px" }}>
+        <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "450px", width: "600px" }}>
           <LayersControl position="topright">
             <LayersControl.Overlay checked name="Thailand Background">
               <GeoJSON
@@ -696,7 +666,7 @@ const MapComponent = ({
                 data={displayedGeoData}
                 style={(feature) => style(feature, selectedRegion, selectedProvince, 
                   viewMode, defaultMin, defaultMax, value, selectedToneColor, isReversed, isRegionView, selectedScale )}  // Pass isReversed here
-                onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value, isRegionView, selectedScale )}
+                onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value, isRegionView, selectedScale, numberOfYears )}
               />
             </LayersControl.Overlay>
           </LayersControl>
