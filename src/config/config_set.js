@@ -31,7 +31,7 @@ const loadDatasetFiles = async (datasetName) => {
     }
   }
 
-  return dataset; // ตอน return จะได้รูปแบบ { 1960: { country: {...}, region: {...}, province: {...} }, ... }
+  return dataset; 
 };
 
 export { loadDatasetFiles };

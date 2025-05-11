@@ -351,10 +351,10 @@ const onEachFeature = (
       ? `<strong>${label}:</strong> ${formattedValue}${unit}${yearsText}`
       : `<strong>${label}:</strong> N/A`;
 
-  console.log(
-    `[looking value] ${name} (${region}/${province}) | ${label} →`,
-    rawValue
-  );
+  // console.log(
+  //   `[looking value] ${name} (${region}/${province}) | ${label} →`,
+  //   rawValue
+  // );
 
   layer.bindPopup(`
     <strong>${name}</strong><br/>
@@ -435,12 +435,11 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
   };
 
   // log min และ max ก่อน
-  console.log("Min:", min, "Max:", max);
+  // console.log("Min:", min, "Max:", max);
 
   // คำนวณ labels โดยใช้ min, max และขั้น step ที่คำนวณจาก (max - min) / 11
   const step = (max - min) / 11;
-  console.log("Step:", step); // log step value
-
+  // console.log("Step:", step); 
   // คำนวณ labels โดยการเพิ่ม step จาก min เพื่อให้อยู่ในช่วงของ min - max
   const labels = Array.from({ length: 12 }, (_, i) => {
     const value = min + step * i;  // คำนวณค่าแต่ละขั้นจาก min และ step
@@ -449,7 +448,7 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
   });
 
   // log labels array
-  console.log("Labels (Rounded Values):", labels);
+  // console.log("Labels (Rounded Values):", labels);
 
   const numBlocks = temp_color.length;
 
@@ -610,7 +609,7 @@ const MapComponent = ({
   // console.log("scale of spi", selectedScale)
 
   const { min: calculatedMin, max: calculatedMax } = calculateMinMax(fullGeoData, viewMode, value, selectedScale);
-  console.log("Legend MinMax:", calculatedMin, calculatedMax);
+  // console.log("Legend MinMax:", calculatedMin, calculatedMax);
   
   // Use the values of legendMin and legendMax from Actual and Trend
   const isValid = (v) => typeof v === "number" && !isNaN(v) && v !== 0 && v !== 1;
@@ -633,7 +632,7 @@ const MapComponent = ({
 
   const displayedGeoData = geoData?.features ? geoData : { type: "FeatureCollection", features: [] };
 
-  console.log("Props legendMin:", legendMin, "legendMax:", legendMax);
+  // console.log("Props legendMin:", legendMin, "legendMax:", legendMax);
 
 
   return (

@@ -125,41 +125,41 @@
 # process_and_save(years)
 #----------------------------------- Region Code----------------------------------------
 
-import json
-import os
+# import json
+# import os
 
-def load_province_data(year):
-    file_path = f'public/Geo-data/Cru-Dataset/{year}/province_data_{year}.json'
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f), file_path
+# def load_province_data(year):
+#     file_path = f'public/Geo-data/Cru-Dataset/{year}/province_data_{year}.json'
+#     with open(file_path, 'r', encoding='utf-8') as f:
+#         return json.load(f), file_path
 
-def rename_keys_in_feature(feature):
-    if 'properties' in feature:
-        props = feature['properties']
+# def rename_keys_in_feature(feature):
+#     if 'properties' in feature:
+#         props = feature['properties']
 
-        # ✅ เปลี่ยนคีย์ region_name ➔ province_name เท่านั้น
-        if 'region_name' in props:
-            props['province_name'] = props.pop('region_name')
+#         # ✅ เปลี่ยนคีย์ region_name ➔ province_name เท่านั้น
+#         if 'region_name' in props:
+#             props['province_name'] = props.pop('region_name')
 
-def process_and_save(years):
-    for i, year in enumerate(years):
-        data, path = load_province_data(year)
+# def process_and_save(years):
+#     for i, year in enumerate(years):
+#         data, path = load_province_data(year)
 
-        if 'features' in data:
-            for feature in data['features']:
-                rename_keys_in_feature(feature)
+#         if 'features' in data:
+#             for feature in data['features']:
+#                 rename_keys_in_feature(feature)
 
-            # เขียนกลับไฟล์
-            with open(path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+#             # เขียนกลับไฟล์
+#             with open(path, 'w', encoding='utf-8') as f:
+#                 json.dump(data, f, ensure_ascii=False, indent=2)
 
-            print(f"✅ Updated {year} ({i+1}/{len(years)})")
-        else:
-            print(f"⚠️  Skipped {year}, no 'features' found.")
+#             print(f"✅ Updated {year} ({i+1}/{len(years)})")
+#         else:
+#             print(f"⚠️  Skipped {year}, no 'features' found.")
 
-# เรียกใช้งาน
-years = list(range(1901, 2024))  
-process_and_save(years)
+# # เรียกใช้งาน
+# years = list(range(1901, 2024))  
+# process_and_save(years)
 
 
 
@@ -286,4 +286,73 @@ process_and_save(years)
 # move_and_rename_province_files(1901, 1910)
 
 
+import os
+import json
+
+def rename_monthly_property_in_json(start_year=1960, end_year=2022):
+    dest_base = "public/Geo-data/Era-Dataset"
+
+    total_years = end_year - start_year + 1
+
+    for idx, year in enumerate(range(start_year, end_year + 1), start=1):
+        progress = int((idx / total_years) * 100)
+
+        dest_filename = f"oceanic_data_{year}.json"
+        dest_path = os.path.join(dest_base, str(year), dest_filename)
+
+        if not os.path.exists(dest_path):
+            print(f"[{progress}%] ❌ File not found: {dest_path}")
+            continue
+
+        # เปิดไฟล์ JSON
+        with open(dest_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+
+        # เปลี่ยนชื่อ properties.montly เป็น properties.monthly
+        for feature in data.get('features', []):
+            if 'properties' in feature and 'montly' in feature['properties']:
+                feature['properties']['monthly'] = feature['properties'].pop('montly')
+
+        # บันทึกไฟล์ JSON ที่แก้ไขแล้ว
+        with open(dest_path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
+        print(f"[{progress}%] ✅ Renamed 'montly' to 'monthly' in: {dest_path}")
+
+# เรียกใช้ฟังก์ชัน
+rename_monthly_property_in_json(1960, 2022)
+
+# import os
+# import shutil
+
+# def move_and_rename_oni_files(start_year=1901, end_year=1910):
+#     src_base = "src/Geo-data"
+#     dest_base = "public/Geo-data/Era-Dataset"
+
+#     total_years = end_year - start_year + 1
+
+#     for idx, year in enumerate(range(start_year, end_year + 1), start=1):
+#         progress = int((idx / total_years) * 100)
+
+#         src_filename = f"Oceanic_Nino_Index_{year}.json"
+#         src_path = os.path.join(src_base, src_filename)
+
+#         if not os.path.exists(src_path):
+#             print(f"[{progress}%] ❌ Source file not found: {src_path}")
+#             continue
+
+#         # เตรียมโฟลเดอร์ปลายทาง
+#         dest_folder = os.path.join(dest_base, str(year))
+#         os.makedirs(dest_folder, exist_ok=True)
+
+#         dest_filename = f"oceanic_data_{year}.json"
+#         dest_path = os.path.join(dest_folder, dest_filename)
+
+#         # คัดลอกไฟล์และเปลี่ยนชื่อ
+#         shutil.copy2(src_path, dest_path)
+
+#         print(f"[{progress}%] ✅ Moved: {src_path} -> {dest_path}")
+
+# # เรียกใช้ฟังก์ชัน
+# move_and_rename_oni_files(1960, 2022)
 

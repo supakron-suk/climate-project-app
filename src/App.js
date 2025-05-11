@@ -21,7 +21,7 @@ import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap, spi_Heatmap} from './JS/Heatmap.js';
 import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 import colormap from 'colormap';
-import { spi_process, SPIChartData } from './JS/spi_set.js';
+import { spi_process, SPIChartData, r_squared, getSpiAndSpeiData } from './JS/spi_set.js';
 
 
 
@@ -104,7 +104,9 @@ function App() {
   const [isSpiOpen, setIsSpiOpen] = useState(true);
   const [showSPIBarChart, setShowSPIBarChart] = useState(false);
   const [displayMapScale, setDisplayMapScale] = useState("");
+  const [rSquaredValue, setRSquaredValue] = useState(null);
 
+  const [spiSpeiData, setSpiSpeiData] = useState([]);
 //--------------------spi and spi state-----------------------------------//
 
 
@@ -118,7 +120,7 @@ function App() {
   const [showRegularCharts, setShowRegularCharts] = useState(true);
   const [showSeasonalCycle, setShowSeasonalCycle] = useState(true);
   const [isSeasonalHidden, setIsSeasonalHidden] = useState(false);
-
+  
 
 //const [filteredDataByRange, setFilteredDataByRange] = useState(null);
 const [isApplied, setIsApplied] = useState(false);
@@ -475,8 +477,12 @@ useEffect(() => {
     setProvinces(Array.from(provinces));
 
     //-------------------------------------spi USE EFFECT----------------------------------------------//
+  
 
-    if (selectedValue === 'spi' || selectedValue === 'spei') {
+    const isSPIorSPEI = selectedValue === 'spi' || selectedValue === 'spei';
+    const includesONI = selectedScale.includes('oni');
+
+    if (isSPIorSPEI || includesONI) {
   const updatedRegion = isRegionView ? selectedRegion : "Thailand_region";
   const updatedProvince = !isRegionView ? selectedProvince : "Thailand";
 
@@ -494,6 +500,7 @@ useEffect(() => {
 
   console.log(`SPI Raw Data from app.js ${selectedValue.toUpperCase()}:`, spiResult);
 
+  if (isSPIorSPEI && !includesONI) {
   const mapSPIData = spi_Heatmap(
     dataByYear,
     selectedYearStart,
@@ -505,7 +512,53 @@ useEffect(() => {
     isRegionView
   );
 
-  console.log(`SPI Heatmap Summary:`, mapSPIData);
+  console.log(`🗺️ SPI Heatmap Summary:`, mapSPIData);
+
+}
+
+
+const spiData = getSpiAndSpeiData(
+  dataByYear,
+  selectedYearStart,
+  selectedYearEnd,
+  "spi",
+  updatedRegion,
+  updatedProvince,
+  configData,
+  selectedDataset,
+  selectedScale
+);
+
+const speiData = getSpiAndSpeiData(
+  dataByYear,
+  selectedYearStart,
+  selectedYearEnd,
+  "spei",
+  updatedRegion,
+  updatedProvince,
+  configData,
+  selectedDataset,
+  selectedScale
+);
+
+const combinedData = [...spiData, ...speiData];
+
+console.log("Combined SPI/SPEI data:", combinedData);
+setSpiSpeiData(combinedData);
+
+
+  // const mapSPIData = spi_Heatmap(
+  //   dataByYear,
+  //   selectedYearStart,
+  //   selectedYearEnd,
+  //   selectedValue,
+  //   displayMapScale,
+  //   updatedRegion,
+  //   updatedProvince,
+  //   isRegionView
+  // );
+
+  // console.log(`SPI Heatmap Summary:`, mapSPIData);
 
   setSPIChartData(SPIChartData(spiResult, kernelSize, selectedValue));
   setShowSPIBarChart(true);                  
@@ -518,8 +571,6 @@ useEffect(() => {
   setShowSeasonalCycle(true);
   setIsSpiOpen(false);
 }
-
-
 
 
 
