@@ -1,7 +1,5 @@
 // spi_set.js
 
-
-
 export const spi_process = (
   dataByYear,
   startYear,
@@ -200,7 +198,7 @@ export const SPIChartData = (spiData, kernelSize = null, selectedType = "SPI") =
     });
 
     const scaleLabel = scale === "oni"
-      ? "Oceanic Ni\u00f1o Index"
+      ? "Oceanic Nino Index"
       : `${scale.replace(/[^\d]/g, '')}-Month ${selectedType.toUpperCase()}`;
 
     datasets.push({
@@ -241,27 +239,24 @@ export const getSpiAndSpeiData = (
   dataByYear,
   startYear,
   endYear,
-  selectedValues, // 'spi' หรือ ['spi', 'spei']
+  selectedValues,
   updatedRegion,
   updatedProvince,
   configData,
   selectedDataset,
-  selectedScales // 'spi3' หรือ ['spi3', 'spi6']
+  selectedScales
 ) => {
   const datasetConfig = configData.datasets[selectedDataset];
 
-  // ✅ แปลง selectedValues และ selectedScales ให้เป็น array เสมอ
   const valuesArray = Array.isArray(selectedValues) ? selectedValues : [selectedValues];
   const scalesArray = selectedScales
     ? (Array.isArray(selectedScales) ? selectedScales : [selectedScales])
     : [];
 
-  // 🔢 แยกเลข scale เช่น ['spi3', 'spi6'] → ['3', '6']
   const scaleNumbers = scalesArray.length > 0
     ? scalesArray.map(s => s.match(/\d+/)?.[0]).filter(Boolean)
     : [];
 
-  // 🧮 สร้าง scale เต็มจาก prefix และตัวเลข เช่น ['spi3', 'spei3']
   const scalesToUse = scaleNumbers.length > 0
     ? scaleNumbers.flatMap(num => valuesArray.map(prefix => `${prefix}${num}`))
     : datasetConfig.variable_options
@@ -271,6 +266,7 @@ export const getSpiAndSpeiData = (
   console.log(`Final scales to use (SPI + SPEI):`, scalesToUse);
 
   const spiSpeiData = [];
+  const areaScaleMap = {}; // { areaName: { scaleKey: [all values] } }
 
   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
     let geojson = null;
@@ -297,15 +293,18 @@ export const getSpiAndSpeiData = (
 
     filtered.forEach(feature => {
       const props = feature.properties;
+      const areaName = props.province_name || props.region_name || "Thailand";
+
+      if (!areaScaleMap[areaName]) areaScaleMap[areaName] = {};
 
       scalesToUse.forEach(scale => {
         const values = props.monthly?.[scale];
         if (Array.isArray(values)) {
-          const match = scale.match(/(spi|spei)(\d+)/i);
-          const prefix = match ? match[1].toLowerCase() : "unknown";
-          const scaleNum = match ? match[2] : "??";
+          if (!areaScaleMap[areaName][scale]) {
+            areaScaleMap[areaName][scale] = [];
+          }
 
-          console.log(`${prefix.toUpperCase()} scale [${scaleNum}]:`, values);
+          areaScaleMap[areaName][scale].push(...values); // รวมข้ามปี
 
           values.forEach((value, idx) => {
             spiSpeiData.push({
@@ -320,12 +319,24 @@ export const getSpiAndSpeiData = (
     });
   }
 
+  // 🔽 Log รวมแบบจัดกลุ่มหลังวนครบทุกปี
+  Object.entries(areaScaleMap).forEach(([areaName, scaleObj]) => {
+    console.log(`\nArea: ${areaName}`);
+    const uniqueScaleNums = [...new Set(
+      Object.keys(scaleObj).map(s => s.match(/\d+/)?.[0]).filter(Boolean)
+    )];
+
+    uniqueScaleNums.forEach(scaleNum => {
+      console.log(`Scale: ${scaleNum}`);
+      valuesArray.forEach(prefix => {
+        const scaleKey = `${prefix}${scaleNum}`;
+        console.log(`${scaleKey}:`, scaleObj[scaleKey] ?? "N/A");
+      });
+    });
+  });
+
   return spiSpeiData;
 };
-
-
-
-
 
 export const r_squared = (spiData, speiData) => {
   const result = {};
@@ -333,23 +344,33 @@ export const r_squared = (spiData, speiData) => {
   const speiByScale = {};
 
   spiData.forEach(d => {
-    if (!spiByScale[d.scale]) spiByScale[d.scale] = [];
-    spiByScale[d.scale].push(d.value);
+    const scaleKey = d.scale.replace('spi', '');
+    if (!spiByScale[scaleKey]) spiByScale[scaleKey] = [];
+    spiByScale[scaleKey].push(d.value);
   });
 
   speiData.forEach(d => {
-    if (!speiByScale[d.scale]) speiByScale[d.scale] = [];
-    speiByScale[d.scale].push(d.value);
+    const scaleKey = d.scale.replace('spei', '');
+    if (!speiByScale[scaleKey]) speiByScale[scaleKey] = [];
+    speiByScale[scaleKey].push(d.value);
   });
 
-  // Iterates through both SPI and SPEI by their scale
   for (const scale in spiByScale) {
     if (scale === 'oni') continue;
 
-    const x = spiByScale[scale]; // SPI data
-    const y = speiByScale[scale]; // SPEI data
-    const timeLength = Math.min(x.length, y.length);
+    const x = spiByScale[scale];
+    const y = speiByScale[scale];
 
+    console.log("spei scale y", y);
+    console.log("spi scale x", x);
+
+    if (!Array.isArray(x) || !Array.isArray(y)) {
+      console.warn(`Missing data for scale ${scale}:`, { x, y });
+      result[scale] = null;
+      continue;
+    }
+
+    const timeLength = Math.min(x.length, y.length);
     if (timeLength === 0) {
       result[scale] = null;
       continue;
@@ -358,7 +379,6 @@ export const r_squared = (spiData, speiData) => {
     const xTrim = x.slice(0, timeLength);
     const yTrim = y.slice(0, timeLength);
 
-    // 👉 Log ค่าของ SPI และ SPEI สำหรับ scale นั้น
     console.log(`📊 Scale: ${scale}`);
     console.log(`SPI values [${scale}]:`, xTrim);
     console.log(`SPEI values [${scale}]:`, yTrim);
@@ -387,6 +407,7 @@ export const r_squared = (spiData, speiData) => {
 
   return result;
 };
+
 
 // export const r_squared = (spiData, speiData) => {
 //   const result = {};

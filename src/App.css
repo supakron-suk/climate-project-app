@@ -90,21 +90,17 @@
 }
 
 /* ======================== Header & Titles ======================== */
+
 .sidebar-header h2 {
-  font-size: 40px;
+  font-size: 28px;
   /* text-align: center; */
-  margin-bottom: -50px;
-  color: #444;
+  /* margin-bottom: -50px; */
+  color: #000000;
   position: relative;
-  top: 30px;
-  right: -17%;
+  top: 15px;
+  right: -28%; 
 }
 
-/* .sidebar-header h3 {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 20px;
-} */
 
 /* ======================== Apply Button ======================== */
 .apply_button {
@@ -840,6 +836,17 @@
 }
 
 
+.rsquare-text {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 10;
+  font-size: 14px;
+  color: #000000;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 
 .spi-sub-chart {
   margin-bottom: 5px;
@@ -1376,34 +1383,35 @@
 
 
 /*------------------Dataset Selector---------------------------*/
-/* Container สำหรับ dropdown */
+
 .dataset-selector {
   padding: 20px;
   display: flex;
-  flex-direction: column; /* จัดเรียงแนวตั้ง */
-  align-items: flex-start; /* จัด label ให้อยู่ชิดซ้าย */
+  flex-direction: column; 
+  align-items: flex-start; 
+  margin-top: -27%;
 }
 
 .dataset-selector label {
   position: relative;
-  font-size: 30px;  
+  font-size: 20px;  
   bottom: -90px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   margin-left: -10px;
 }
 
-/* สไตล์สำหรับ select dropdown */
+
 .dataset-selector select {
-  width: 300px; /* คงความกว้างไว้ */
-  height: 35px; /* ลดความสูงลง */
-  padding: 8px 10px; /* ลด padding เพื่อลดความหนา */
-  margin: 10px; /* ระยะรอบนอก */
-  font-size: 16px; /* ลดขนาดตัวอักษรลงเล็กน้อย */
-  border: 2px solid #ccc; /* เสริมขอบ */
-  border-radius: 3px; /* ทำขอบมุมโค้งเล็กลง */
-  background-color: #fff; /* สีพื้นหลัง */
-  color: #333; /* สีตัวอักษร */
-  cursor: pointer; /* เปลี่ยน cursor เมื่อ hover */
+  width: 300px; 
+  height: 35px; 
+  padding: 8px 10px; 
+  margin: 10px; 
+  font-size: 16px; 
+  border: 2px solid #ccc; 
+  border-radius: 3px; 
+  background-color: #fff; 
+  color: #333; 
+  cursor: pointer; 
 
   position: relative;
   margin-top: 100px;
@@ -1569,7 +1577,7 @@
 /*-------------Region, Province Selector---------------*/
 
 .area-label {
-  font-size: 25px; 
+  font-size: 20px; 
   color: #000000; 
   margin-bottom: 30px;  
   text-align: center;
@@ -1634,7 +1642,8 @@
   margin-bottom: 20px;
   gap: 10px;
   position: absolute;
-  top: 65%;
+  top: 35%;
+  right: 32%;
 }
 
 .toggle-button {

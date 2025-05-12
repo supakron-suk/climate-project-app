@@ -151,8 +151,8 @@ const calculateMinMax = (geoData, viewMode, value, displayMapScale) => {
   }
 
   // ตรวจสอบค่าหลังจากการคำนวณและไม่ปรับค่า
-  console.log('Final Min:', min);
-  console.log('Final Max:', max);
+  // console.log('Final Min:', min);
+  // console.log('Final Max:', max);
 
   if (viewMode === "TrendMap") {
     const range = Math.max(Math.abs(min), Math.abs(max));

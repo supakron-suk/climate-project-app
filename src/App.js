@@ -48,7 +48,7 @@ const movingAvgLegendPlugin = {
     ctx.font = 'bold 12px sans-serif';
     ctx.fillStyle = 'purple';
 
-    const legendX = right - 100;
+    const legendX = right - 180;
     const legendY = top + 10;
 
     ctx.beginPath();
@@ -105,6 +105,7 @@ function App() {
   const [showSPIBarChart, setShowSPIBarChart] = useState(false);
   const [displayMapScale, setDisplayMapScale] = useState("");
   const [rSquaredValue, setRSquaredValue] = useState(null);
+  // const [rSquareText, setRSquareText] = useState({});
 
   const [spiSpeiData, setSpiSpeiData] = useState([]);
 //--------------------spi and spi state-----------------------------------//
@@ -432,13 +433,8 @@ const getFullDatasetName = (dataset) => {
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
 
+    
 
-
-  //   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-  //   console.log(`Year ${year} - Province GeoJSON:`, dataByYear[year]?.province);
-  //   console.log(`Year ${year} - Region GeoJSON:`, dataByYear[year]?.region);
-  //   console.log(`Year ${year} - Country GeoJSON:`, dataByYear[year]?.country);
-  // }
 
    const updatedRegion = DataApply.isRegionView
   ? DataApply.selectedRegion
@@ -480,11 +476,17 @@ useEffect(() => {
   
 
     const isSPIorSPEI = selectedValue === 'spi' || selectedValue === 'spei';
-    const includesONI = selectedScale.includes('oni');
+    // const includesONI = selectedScale.includes('oni');
+    const includesONI = Array.isArray(selectedScale) && selectedScale.includes('oni');
 
     if (isSPIorSPEI || includesONI) {
   const updatedRegion = isRegionView ? selectedRegion : "Thailand_region";
   const updatedProvince = !isRegionView ? selectedProvince : "Thailand";
+
+  if (!isSPIorSPEI) {
+      setSelectedScale([]);
+      setDisplayMapScale("");
+    }
 
   const spiResult = spi_process(
     dataByYear,
@@ -512,7 +514,7 @@ useEffect(() => {
     isRegionView
   );
 
-  console.log(`🗺️ SPI Heatmap Summary:`, mapSPIData);
+  console.log(`SPI Heatmap Summary:`, mapSPIData);
 
 }
 
@@ -541,24 +543,15 @@ const speiData = getSpiAndSpeiData(
   selectedScale
 );
 
+
 const combinedData = [...spiData, ...speiData];
 
-console.log("Combined SPI/SPEI data:", combinedData);
+// console.log("Combined SPI/SPEI data:", combinedData);
 setSpiSpeiData(combinedData);
 
-
-  // const mapSPIData = spi_Heatmap(
-  //   dataByYear,
-  //   selectedYearStart,
-  //   selectedYearEnd,
-  //   selectedValue,
-  //   displayMapScale,
-  //   updatedRegion,
-  //   updatedProvince,
-  //   isRegionView
-  // );
-
-  // console.log(`SPI Heatmap Summary:`, mapSPIData);
+const rSquareResult = r_squared(spiData, speiData);
+  console.log("R² (SPI vs SPEI) by scale:", rSquareResult);
+  setRSquaredValue(rSquareResult);
 
   setSPIChartData(SPIChartData(spiResult, kernelSize, selectedValue));
   setShowSPIBarChart(true);                  
@@ -750,12 +743,17 @@ useEffect(() => {
 
     {/* sidebar */}
 <div className={`left-sidebar ${isSidebarOpen ? "open" : ""}`}>
+  
+  <div className="sidebar-header">
+    <h2>Access Data</h2>
+    </div>
 
   <div className={`sidebar-content ${isLoading ? "loading" : ""}`}>
 
-    <div className="sidebar-header">
+    {/* <div className="sidebar-header">
     <h2>Access Data</h2>
-    </div>
+    <p className="line">.</p>
+    </div> */}
 
     {/* Dropdown เลือก Dataset */}
     <div className="dataset-selector">
@@ -780,57 +778,7 @@ useEffect(() => {
   <>
   
 
-    {/* Year Selector Dropdown */}
-<div className="year-selector">
-  <label className="year-label">Time period</label>
-  <div className="dropdown-container">
-
-    {/* Start Year */}
-    <div className="dropdown-item">
-      <label className="start-year-label">Start Year</label>
-      <select
-        value={selectedYearStart}
-        onChange={(e) => setSelectedYearStart(e.target.value)}
-      >
-        <option value="">start year</option>
-        {selectedDataset && configData.datasets[selectedDataset] && (() => {
-          const { year_start, year_end } = configData.datasets[selectedDataset];
-          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
-          return years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ));
-        })()}
-      </select>
-    </div>
-
-    {/* End Year */}
-    <div className="dropdown-item">
-      <label>End Year</label>
-      <select
-        value={selectedYearEnd}
-        onChange={(e) => setSelectedYearEnd(e.target.value)}
-      >
-        <option value="">end year</option>
-        {selectedDataset && configData.datasets[selectedDataset] && (() => {
-          const { year_start, year_end } = configData.datasets[selectedDataset];
-          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
-          return years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ));
-        })()}
-      </select>
-    </div>
-
-  </div>
-</div>
-
-  
-  
-    <label className="area-label">Area</label>
+  <label className="area-label">Select Area</label>
 
 
 <div className="toggle-button-group">
@@ -890,6 +838,58 @@ useEffect(() => {
     </select>
   </div>
 )}
+
+    {/* Year Selector Dropdown */}
+<div className="year-selector">
+  <label className="year-label">Time period</label>
+  <div className="dropdown-container">
+
+    {/* Start Year */}
+    <div className="dropdown-item">
+      <label className="start-year-label">Start Year</label>
+      <select
+        value={selectedYearStart}
+        onChange={(e) => setSelectedYearStart(e.target.value)}
+      >
+        <option value="">start year</option>
+        {selectedDataset && configData.datasets[selectedDataset] && (() => {
+          const { year_start, year_end } = configData.datasets[selectedDataset];
+          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
+          return years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ));
+        })()}
+      </select>
+    </div>
+
+    {/* End Year */}
+    <div className="dropdown-item">
+      <label>End Year</label>
+      <select
+        value={selectedYearEnd}
+        onChange={(e) => setSelectedYearEnd(e.target.value)}
+      >
+        <option value="">end year</option>
+        {selectedDataset && configData.datasets[selectedDataset] && (() => {
+          const { year_start, year_end } = configData.datasets[selectedDataset];
+          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
+          return years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ));
+        })()}
+      </select>
+    </div>
+
+  </div>
+</div>
+
+  
+  
+    
 
     <div className="value-selector">
       <label>Variable</label>
@@ -1567,98 +1567,110 @@ useEffect(() => {
       </div>
 
       {
-        // วนหาเฉพาะชุด bar chart (label ไม่ลงท้ายด้วย "Moving Avg")
         spiChartData.datasets
-          .filter((d) => !d.label.toLowerCase().includes("moving avg"))
-          .map((barDataset) => {
-            // หาชุดเส้นที่ตรงกับ scale เดียวกัน
-            const matchingLine = spiChartData.datasets.find(
-              (d) => d.label.toLowerCase().includes("moving avg") &&
-                     d.label.toLowerCase().includes(barDataset.label.toLowerCase())
-            );
+            .sort((a, b) => {
+              // ถ้าเป็น "ONI" ให้ไปล่างสุด
+              if (a.label === "Oceanic Nino Index" && b.label !== "Oceanic Nino Index") return 1;
+              if (b.label === "Oceanic Nino Index" && a.label !== "Oceanic Nino Index") return -1;
+              return 0; // สำหรับข้อมูลอื่นๆ ให้เรียงตามเดิม
+            })
+            .filter((d) => !d.label.toLowerCase().includes("moving avg"))
+            .map((barDataset) => {
+              const matchingLine = spiChartData.datasets.find(
+                (d) =>
+                  d.label.toLowerCase().includes("moving avg") &&
+                  d.label.toLowerCase().includes(barDataset.label.toLowerCase())
+              );
+                const scaleLabel = barDataset.label.toLowerCase(); // เช่น "spi3"
+                const scaleMatch = scaleLabel.match(/\d+/);        // ดึง "3" ออกมา
+                const scaleKey = scaleMatch ? scaleMatch[0] : null;
 
+                const rSquareText = scaleKey && rSquaredValue[scaleKey]
+                  ? `R² = ${rSquaredValue[scaleKey].toFixed(3)}`
+                  : "";
+                console.log("r Square Text",rSquareText);
             return (
               <div
-                key={barDataset.label}
-                className={`spi-sub-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "spi-expanded" : ""} ${showSPIBarChart ? "show-spi" : ""}`}
-              >
-                <Bar
-                  data={{
-                    labels: spiChartData.labels,
-                    datasets: matchingLine
-                      ? [barDataset, matchingLine] // รวมเส้นกับแท่ง
-                      : [barDataset],
-                  }}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    devicePixelRatio: 3,
-                    plugins: {
-                    legend: { display: false },
-                    customLegend: {
-                      display: true
-                    }
-                  },
+            key={barDataset.label}
+            className={`spi-sub-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isSPIExpand ? "spi-expanded" : ""} ${showSPIBarChart ? "show-spi" : ""}`}
+            style={{ position: "relative" }} // สำคัญ เพื่อให้ข้อความอยู่ในกรอบนี้
+          >
+            {/* ✅ แสดงข้อความ R² บนมุมขวาบน */}
+            {rSquareText && (
+              <div className="rsquare-text">
+                {rSquareText}
+              </div>
+            )}
 
-                    // plugins: {
-                    //   legend: { display: true },
-                    // },
-                    scales: {
-                      y: {
-                        min: -3,
-                        max: 3,
-                        title: {
-                          display: true,
-                          text: barDataset.label,
-                          font: {
-                          size: 18,       
-                          weight: 'normal', 
-                        },
-                        color: '#000000'
-                        },
+            <Bar
+              data={{
+                labels: spiChartData.labels,
+                datasets: matchingLine
+                  ? [barDataset, matchingLine]
+                  : [barDataset],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                devicePixelRatio: 3,
+                plugins: {
+                  legend: { display: false },
+                  customLegend: {
+                    display: true
+                  }
+                },
+                scales: {
+                  y: {
+                    min: -3,
+                    max: 3,
+                    title: {
+                      display: true,
+                      text: barDataset.label, // <-- ยังแสดงชื่อ scale เช่น SPI3
+                      font: {
+                        size: 15,
+                        weight: 'normal',
                       },
-                      x: {
-                        // title: {
-                        //   display: true,
-                        //   text: 'Year',
-                        // },
-                        ticks: {
-                          autoSkip: false,
-                          maxRotation: 0,
-                          minRotation: 0,
-                          maxTicksLimit: 20,
-                          font: {
-                            size: 10,
-                          },
-                          callback: function (val) {
-                            const label = this.getLabelForValue(val);
-                            const [year, month] = label.split("-");
-                            const labels = this.getLabels();
-                            const yearsOnly = labels.filter(lbl => lbl.endsWith("-01"));
-                            const totalYears = yearsOnly.length;
+                      color: '#000000'
+                    },
+                  },
+                  x: {
+                    ticks: {
+                      autoSkip: false,
+                      maxRotation: 0,
+                      minRotation: 0,
+                      maxTicksLimit: 20,
+                      font: {
+                        size: 10,
+                      },
+                      callback: function (val) {
+                        const label = this.getLabelForValue(val);
+                        const [year, month] = label.split("-");
+                        const labels = this.getLabels();
+                        const yearsOnly = labels.filter(lbl => lbl.endsWith("-01"));
+                        const totalYears = yearsOnly.length;
 
-                            let interval = 1;
-                            if (totalYears <= 11) interval = 1;
-                            else if (totalYears <= 70) interval = 5;
-                            else interval = 10;
+                        let interval = 1;
+                        if (totalYears <= 11) interval = 1;
+                        else if (totalYears <= 70) interval = 5;
+                        else interval = 10;
 
-                            if (month === "01") {
-                              const numericYear = parseInt(year, 10);
-                              return numericYear % interval === 0 ? year : "";
-                            }
+                        if (month === "01") {
+                          const numericYear = parseInt(year, 10);
+                          return numericYear % interval === 0 ? year : "";
+                        }
 
-                            return "";
-                          },
-                        },
-                        grid: {
-                          display: true,
-                        },
+                        return "";
                       },
                     },
-                  }}
-                />
-              </div>
-            );
+                    grid: {
+                      display: true,
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        );
           })
       }
     </div>
