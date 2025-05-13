@@ -86,9 +86,11 @@ function App() {
   const [selectedYearEnd, setSelectedYearEnd] = useState('');
 
   
-  
-  const [selectedRegion, setSelectedRegion] = useState('Thailand_region');
-  const [selectedProvince, setSelectedProvince] = useState(''); // จังหวัดที่เลือก
+  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState('');
+
+  // const [selectedRegion, setSelectedRegion] = useState('Thailand_region');
+  // const [selectedProvince, setSelectedProvince] = useState(''); 
   // const [filteredData, setFilteredData] = useState(null); // ข้อมูลที่กรองตามภูมิภาค
   const [filteredYearData, setFilteredYearData] = useState(null);  // เก็บข้อมูลของช่วงปีที่เลือก
   const [provinces, setProvinces] = useState([]); // รายชื่อจังหวัดในภูมิภาค
@@ -696,6 +698,14 @@ useEffect(() => {
   }
 }, [selectedValue, selectedDataset, configData]);
 
+useEffect(() => {
+  if (isRegionView) {
+    setSelectedRegion('');
+  } else {
+    setSelectedProvince('');
+  }
+}, [isRegionView]);
+
 
 useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
@@ -799,99 +809,52 @@ useEffect(() => {
 {/* REGION View */}
 {isRegionView ? (
   <div className="region-selector">
-    <label>Region</label>
     <select
       onChange={(e) => {
         setSelectedRegion(e.target.value);
-        setSelectedProvince("");
+        setSelectedProvince('');
       }}
       value={selectedRegion}
     >
+        <option value="" disabled>
+      Region
+    </option>
       <option value="Thailand_region">Thailand</option>
       {Object.keys(configData.areas.area_thailand).map((region) => (
         <option key={region} value={region}>
-          {region.replace(/_/g, " ")}
+          {region.replace(/_/g, ' ')}
         </option>
       ))}
     </select>
   </div>
 ) : (
   <div className="province-selector">
-    <label>Province</label>
     <select
       onChange={(e) => {
         setSelectedProvince(e.target.value);
-        setSelectedRegion("");
+        setSelectedRegion('');
       }}
       value={selectedProvince}
     >
+      <option value="" disabled>
+      Province
+    </option>
       <option value="Thailand">Thailand</option>
-      {[
-        ...new Set(
-          Object.values(configData.areas.area_thailand).flat()
-        ),
-      ].map((province, index) => (
-        <option key={index} value={province}>
-          {province}
-        </option>
-      ))}
+      {[...new Set(Object.values(configData.areas.area_thailand).flat())].map(
+        (province, index) => (
+          <option key={index} value={province}>
+            {province}
+          </option>
+        )
+      )}
     </select>
   </div>
 )}
 
-    {/* Year Selector Dropdown */}
-<div className="year-selector">
-  <label className="year-label">Time period</label>
-  <div className="dropdown-container">
 
-    {/* Start Year */}
-    <div className="dropdown-item">
-      <label className="start-year-label">Start Year</label>
-      <select
-        value={selectedYearStart}
-        onChange={(e) => setSelectedYearStart(e.target.value)}
-      >
-        <option value="">start year</option>
-        {selectedDataset && configData.datasets[selectedDataset] && (() => {
-          const { year_start, year_end } = configData.datasets[selectedDataset];
-          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
-          return years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ));
-        })()}
-      </select>
-    </div>
+    <label className='select-data'>Select Data</label>
 
-    {/* End Year */}
-    <div className="dropdown-item">
-      <label>End Year</label>
-      <select
-        value={selectedYearEnd}
-        onChange={(e) => setSelectedYearEnd(e.target.value)}
-      >
-        <option value="">end year</option>
-        {selectedDataset && configData.datasets[selectedDataset] && (() => {
-          const { year_start, year_end } = configData.datasets[selectedDataset];
-          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
-          return years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ));
-        })()}
-      </select>
-    </div>
-
-  </div>
-</div>
-
-  
-  
-    
-
-    <div className="value-selector">
+  <div className="value-selector">
       <label>Variable</label>
       <select
         value={selectedValue}
@@ -969,8 +932,57 @@ useEffect(() => {
 )}
 
 
-    </div>    
+    </div>  
 
+    {/* Year Selector Dropdown */}
+<div className="year-selector">
+  <div className="dropdown-container">
+
+    {/* Start Year */}
+    <div className="dropdown-item">
+      <label className="start-year-label">Start Year</label>
+      <select
+        value={selectedYearStart}
+        onChange={(e) => setSelectedYearStart(e.target.value)}
+      >
+        <option value="">start year</option>
+        {selectedDataset && configData.datasets[selectedDataset] && (() => {
+          const { year_start, year_end } = configData.datasets[selectedDataset];
+          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
+          return years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ));
+        })()}
+      </select>
+    </div>
+
+    {/* End Year */}
+    <div className="dropdown-item">
+      <label>End Year</label>
+      <select
+        value={selectedYearEnd}
+        onChange={(e) => setSelectedYearEnd(e.target.value)}
+      >
+        <option value="">end year</option>
+        {selectedDataset && configData.datasets[selectedDataset] && (() => {
+          const { year_start, year_end } = configData.datasets[selectedDataset];
+          const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
+          return years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ));
+        })()}
+      </select>
+    </div>
+
+  </div>
+</div>
+
+    
+        <label className='output-options'>Output Options</label>
 
 
     <div className="kernel-size-container">

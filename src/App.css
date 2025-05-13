@@ -1026,9 +1026,19 @@
 
 /*--------------------- Kernel Input -------------------------*/
 
+.output-options{
+  font-size: 20px; 
+  color: #000000; 
+  text-align: center;
+  position: relative;
+  top: -81px;
+  left: 3px;  
+}
+
 .kernel-size-container {
   position: relative;
-  top: -90px;
+  top: -110px;
+  margin-top: 25px;
 }
 
 .kernel-input {
@@ -1062,12 +1072,23 @@
   padding-left: 60px;
 }
 
+.select-data {
+ font-size: 20px; 
+  color: #000000; 
+  margin-bottom: 30px;  
+  text-align: center;
+  position: relative;
+  margin-left: 10px;
+  top: 10px;  
+  
+}
+
 .value-selector{
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
   position: relative;
-  top: -70px;
+  top: -50px;
   left: -15px;
 }
 
@@ -1083,7 +1104,7 @@
   position: relative;
   margin-left: 0px;
   left: 15px;
-  top: -20px;
+  top: -25px;
   margin-top: 20px;
 }
 
@@ -1105,7 +1126,6 @@
 .value-selector label{
   font-size: 15px; /* เพิ่มขนาดตัวอักษรของ label */
   margin: 20px 0 10px 0; /* เพิ่มระยะห่างระหว่าง label และ dropdown */
-  font-weight: bold; /* เพิ่มความหนาของตัวอักษร */
   position: relative;
   margin-left: 25px;
   margin-top: 80px;
@@ -1512,6 +1532,8 @@
   font-size: 20px;
   margin-bottom: 50px;
   margin-left: 10px;
+  position: relative;
+  top: -50px;
 }
 
 .year-label {
@@ -1538,7 +1560,9 @@
 }
 
 .dropdown-item label {
-  margin-bottom: 5px; 
+  margin-bottom: 5px;
+  font-size: 16px;
+  font-weight: normal; 
 }
 
 .dropdown-item select {
@@ -1558,8 +1582,9 @@
 }
 
 .dropdown-container label {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 14px;
+  position: relative;
+  left: -28%;
 }
 
 .dropdown-container select {
@@ -1590,7 +1615,7 @@
  .province-selector {
   display: flex;
   align-items: center; 
-  margin-bottom: 20px; 
+  margin-bottom: 20px;
   position: relative;
   top: 10px;
   display: flex;
@@ -1600,12 +1625,12 @@
   z-index: 100;
 }
 
-.region-selector label,
+/* .region-selector label,
 .province-selector label {
   margin-right: 240px; 
   font-size: 16px; 
   margin-bottom: 10px;
-}
+} */
 
 /* สไตล์สำหรับ select */
 .region-selector select,
@@ -1614,6 +1639,7 @@
   padding: 10px;
   font-size: 16px;
   margin-right: 90px;
+  margin-top: 20px;
   border: 1px solid #ccc; 
   border-radius: 8px; 
   background-color: #f9f9f9; 
@@ -1634,6 +1660,7 @@
   font-size: 20px; 
   text-align: left; 
 }
+
 
 
 .toggle-button-group {
