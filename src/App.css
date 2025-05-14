@@ -958,7 +958,45 @@
 }
 /*---------------User Select Value Legend Bar----------------*/
 
+.legend-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legend-bar-header {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.legend-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-bar-label {
+  width: 60px;
+}
+
+.legend-bar-input {
+  width: 80px;
+  padding: 4px;
+}
+
 .legend-bar-button {
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.legend-bar-button.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+/* .legend-bar-button {
   border: 2px solid #ccc;
   padding: 10px 20px;
   cursor: pointer;
@@ -981,7 +1019,7 @@
 }
 
 
-/* Legend Bar Controls */
+
 .legend-bar-container {
   display: flex;
   justify-content: space-between; 
@@ -1007,7 +1045,7 @@
 .legend-bar-max {
   position: relative;
   left: -100px;  
-  top: 32px;  /* เลื่อน Max ไปทางซ้าย 50px */
+  top: 32px;  
 }
 
 .legend-bar-input {
@@ -1020,7 +1058,7 @@
   font-size: 10px;
   z-index: 1000;
   position: relative;
-}
+} */
 
 /*---------------User Select Value Legend Bar----------------*/
 
@@ -1037,7 +1075,7 @@
 
 .kernel-size-container {
   position: relative;
-  top: -110px;
+  top: -100px;
   margin-top: 25px;
 }
 

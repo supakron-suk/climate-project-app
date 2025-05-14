@@ -1011,6 +1011,116 @@ useEffect(() => {
 
 {/* User Select Legend Bar */}
 <div className="legend-bar-container">
+  <div className="legend-bar-header">
+    <span style={{ fontWeight: "bold", marginRight: "40px" }}>Legend Range</span>
+    <span style={{ marginRight: "60px" }}>Min</span>
+    <span>Max</span>
+  </div>
+
+  {/* Row: Actual */}
+  <div className="legend-bar-row">
+    <label className="legend-bar-label">Actual</label>
+    <input
+      type="text"
+      value={minmaxButton === "Actual" ? applyLegendMin ?? "" : ""}
+      disabled={minmaxButton !== "Actual"}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+        setapplyLegendMin(value);
+      }}
+      onBlur={() => {
+        if (applyLegendMin !== "" && applyLegendMin !== "-") {
+          setapplyLegendMin(parseFloat(applyLegendMin));
+        }
+      }}
+      className="legend-bar-input"
+    />
+    <input
+      type="text"
+      value={minmaxButton === "Actual" ? applyLegendMax ?? "" : ""}
+      disabled={minmaxButton !== "Actual"}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (!/^\d*(\.\d*)?$/.test(value)) return;
+        setapplyLegendMax(value);
+      }}
+      onBlur={() => {
+        if (applyLegendMax !== "" && applyLegendMax !== "-") {
+          setapplyLegendMax(parseFloat(applyLegendMax));
+        }
+      }}
+      className="legend-bar-input"
+    />
+    <button
+      className={`legend-bar-button Actual_minmax ${minmaxButton === 'Actual' ? 'selected' : ''}`}
+      onClick={() => {
+        if (minmaxButton === "Actual") {
+          setminmaxButton(null);
+          setapplyLegendMin(null);
+          setapplyLegendMax(null);
+        } else {
+          setminmaxButton("Actual");
+        }
+      }}
+    >
+      {minmaxButton === "Actual" ? "✓" : "Set"}
+    </button>
+  </div>
+
+  {/* Row: Trend */}
+  <div className="legend-bar-row">
+    <label className="legend-bar-label">Trend</label>
+    <input
+      type="text"
+      value={minmaxButton === "Trend" ? applyLegendMin ?? "" : ""}
+      disabled={minmaxButton !== "Trend"}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+        setapplyLegendMin(value);
+      }}
+      onBlur={() => {
+        if (applyLegendMin !== "" && applyLegendMin !== "-") {
+          setapplyLegendMin(parseFloat(applyLegendMin));
+        }
+      }}
+      className="legend-bar-input"
+    />
+    <input
+      type="text"
+      value={minmaxButton === "Trend" ? applyLegendMax ?? "" : ""}
+      disabled={minmaxButton !== "Trend"}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+        setapplyLegendMax(value);
+      }}
+      onBlur={() => {
+        if (applyLegendMax !== "" && applyLegendMax !== "-") {
+          setapplyLegendMax(parseFloat(applyLegendMax));
+        }
+      }}
+      className="legend-bar-input"
+    />
+    <button
+      className={`legend-bar-button Trend_minmax ${minmaxButton === 'Trend' ? 'selected' : ''}`}
+      onClick={() => {
+        if (minmaxButton === "Trend") {
+          setminmaxButton(null);
+          setapplyLegendMin(null);
+          setapplyLegendMax(null);
+        } else {
+          setminmaxButton("Trend");
+        }
+      }}
+    >
+      {minmaxButton === "Trend" ? "✓" : "Set"}
+    </button>
+  </div>
+</div>
+
+{/* <div className="legend-bar-container">
 
    <div className="legend-bar-buttons">
     <button
@@ -1045,7 +1155,7 @@ useEffect(() => {
     </button>
   </div>
 
-  {/* Box สำหรับ Min */}
+
 <div className="legend-bar-item legend-bar-min">
   <label style={{ opacity: !minmaxButton ? 0.5 : 1 }}>Min:</label>
   <input
@@ -1064,7 +1174,7 @@ useEffect(() => {
         if (!/^-?\d*(\.\d*)?$/.test(value)) return;
       }
 
-      setapplyLegendMin(value); // เก็บค่าเป็น string
+      setapplyLegendMin(value); 
     }}
     className="legend-bar-input"
     onBlur={() => {
@@ -1075,7 +1185,6 @@ useEffect(() => {
   />
 </div>
 
-{/* Box สำหรับ Max */}
 <div className="legend-bar-item legend-bar-max">
   <label style={{ opacity: !minmaxButton ? 0.5 : 1 }}>Max:</label>
   <input
@@ -1105,7 +1214,7 @@ useEffect(() => {
   />
 </div>
 
-</div>
+</div> */}
 
 {/* Apply Button */}
       <button
