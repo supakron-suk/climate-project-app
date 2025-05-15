@@ -8,6 +8,7 @@
 
 import React, { useEffect, useState} from 'react';
 import 'leaflet/dist/leaflet.css';
+import { AiOutlineInfoCircle } from "react-icons/ai";
 import { Line } from 'react-chartjs-2';
 import { Bar } from 'react-chartjs-2';
 import annotationPlugin from 'chartjs-plugin-annotation';
@@ -150,6 +151,8 @@ const [legendMax, setLegendMax] = useState();
 
 const [actualMin, setActualMin] = useState(null);
 const [actualMax, setActualMax] = useState(null);
+const [trendMin, setTrendMin] = useState(null);
+const [trendMax, setTrendMax] = useState(null);
 
 const [globalLegendMin, setGlobalLegendMin] = useState(null);
 const [globalLegendMax, setGlobalLegendMax] = useState(null);
@@ -788,7 +791,12 @@ useEffect(() => {
   <>
   
 
-  <label className="area-label">Select Area</label>
+  <label className="area-label">Select Area
+    <AiOutlineInfoCircle className="area-info" 
+    // style={{ color: '#4285f4', cursor: 'pointer' }} 
+    title="Selecting an area will divide 
+    the data into views according to the File Config settings." />
+  </label>
 
 
 <div className="toggle-button-group">
@@ -852,7 +860,12 @@ useEffect(() => {
 )}
 
 
-    <label className='select-data'>Select Data</label>
+    <label className='select-data'>Select Data
+      <AiOutlineInfoCircle className="select-data-info" 
+    title="Data select is divided into two main components.
+     selecting the variable to be used for display and 
+     selecting the time period." />
+    </label>
 
   <div className="value-selector">
       <label>Variable</label>
@@ -881,7 +894,7 @@ useEffect(() => {
 
       {Array.isArray(availableScales) && availableScales.length > 0 && (
       <div className="scale-selector">
-        <label className="scale-label">Select Scale:</label>
+        {/* <label className="scale-label">Select Scale</label> */}
         <div className="scale-options">
           {availableScales.map((scale) => (
             <label key={scale} className="scale-option">
@@ -914,7 +927,7 @@ useEffect(() => {
   Array.isArray(availableScales) &&
   availableScales.length > 0 && (
   <div className="display-map-scale">
-    <label>Map Scale:</label>
+    <label>Map Scale</label>
     <select
       value={displayMapScale}
       onChange={(e) => setDisplayMapScale(e.target.value)}
@@ -982,11 +995,26 @@ useEffect(() => {
 </div>
 
     
-        <label className='output-options'>Output Options</label>
+        <label className='output-options'>Output Options
+          <AiOutlineInfoCircle className="output-options-info" 
+    title="Display settings for both Time series charts, SPI BarChart, 
+    and min max values ​​of Range Actual Map and Trendmap." />
+        </label>
 
 
     <div className="kernel-size-container">
-  <label>Kernel Size</label>
+      
+  <label>Kernel Size
+    <AiOutlineInfoCircle className="kernel-size-info" 
+    // style={{ color: '#4285f4', cursor: 'pointer' }} 
+    title="Kernel size for moving average to analyze smoothness of
+     data in Time series graph. Only odd numbers can be entered
+      (1, 3, 5, 7, 9...). smaller kernel size for look shorter trend and noise will be affected. 
+       larger kernel size for look longer trend
+        and noise will not be affected." />
+  </label>
+
+
   <input
     type="text"
     value={kernelSize ?? ""} 
@@ -1004,121 +1032,87 @@ useEffect(() => {
 </div>
 
 
-   
-
-
+    <label className='map-range'>Map Range</label>
 
 
 {/* User Select Legend Bar */}
 <div className="legend-bar-container">
   <div className="legend-bar-header">
-    <span style={{ fontWeight: "bold", marginRight: "40px" }}>Legend Range</span>
     <span style={{ marginRight: "60px" }}>Min</span>
     <span>Max</span>
   </div>
 
   {/* Row: Actual */}
-  <div className="legend-bar-row">
-    <label className="legend-bar-label">Actual</label>
-    <input
-      type="text"
-      value={minmaxButton === "Actual" ? applyLegendMin ?? "" : ""}
-      disabled={minmaxButton !== "Actual"}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
-        setapplyLegendMin(value);
-      }}
-      onBlur={() => {
-        if (applyLegendMin !== "" && applyLegendMin !== "-") {
-          setapplyLegendMin(parseFloat(applyLegendMin));
-        }
-      }}
-      className="legend-bar-input"
-    />
-    <input
-      type="text"
-      value={minmaxButton === "Actual" ? applyLegendMax ?? "" : ""}
-      disabled={minmaxButton !== "Actual"}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (!/^\d*(\.\d*)?$/.test(value)) return;
-        setapplyLegendMax(value);
-      }}
-      onBlur={() => {
-        if (applyLegendMax !== "" && applyLegendMax !== "-") {
-          setapplyLegendMax(parseFloat(applyLegendMax));
-        }
-      }}
-      className="legend-bar-input"
-    />
-    <button
-      className={`legend-bar-button Actual_minmax ${minmaxButton === 'Actual' ? 'selected' : ''}`}
-      onClick={() => {
-        if (minmaxButton === "Actual") {
-          setminmaxButton(null);
-          setapplyLegendMin(null);
-          setapplyLegendMax(null);
-        } else {
-          setminmaxButton("Actual");
-        }
-      }}
-    >
-      {minmaxButton === "Actual" ? "✓" : "Set"}
-    </button>
-  </div>
-
-  {/* Row: Trend */}
-  <div className="legend-bar-row">
-    <label className="legend-bar-label">Trend</label>
-    <input
-      type="text"
-      value={minmaxButton === "Trend" ? applyLegendMin ?? "" : ""}
-      disabled={minmaxButton !== "Trend"}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
-        setapplyLegendMin(value);
-      }}
-      onBlur={() => {
-        if (applyLegendMin !== "" && applyLegendMin !== "-") {
-          setapplyLegendMin(parseFloat(applyLegendMin));
-        }
-      }}
-      className="legend-bar-input"
-    />
-    <input
-      type="text"
-      value={minmaxButton === "Trend" ? applyLegendMax ?? "" : ""}
-      disabled={minmaxButton !== "Trend"}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (!/^-?\d*(\.\d*)?$/.test(value)) return;
-        setapplyLegendMax(value);
-      }}
-      onBlur={() => {
-        if (applyLegendMax !== "" && applyLegendMax !== "-") {
-          setapplyLegendMax(parseFloat(applyLegendMax));
-        }
-      }}
-      className="legend-bar-input"
-    />
-    <button
-      className={`legend-bar-button Trend_minmax ${minmaxButton === 'Trend' ? 'selected' : ''}`}
-      onClick={() => {
-        if (minmaxButton === "Trend") {
-          setminmaxButton(null);
-          setapplyLegendMin(null);
-          setapplyLegendMax(null);
-        } else {
-          setminmaxButton("Trend");
-        }
-      }}
-    >
-      {minmaxButton === "Trend" ? "✓" : "Set"}
-    </button>
-  </div>
+<div className="legend-bar-row">
+  <label className="legend-bar-label">Actual</label>
+  <input
+    type="text"
+    value={actualMin ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
+      if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+      setActualMin(value);
+    }}
+    onBlur={() => {
+      if (actualMin !== "" && actualMin !== "-") {
+        setActualMin(parseFloat(actualMin));
+      }
+    }}
+    className="legend-bar-input"
+  />
+  <input
+    type="text"
+    value={actualMax ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
+      if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+      setActualMax(value);
+    }}
+    onBlur={() => {
+      if (actualMax !== "" && actualMax !== "-") {
+        setActualMax(parseFloat(actualMax));
+      }
+    }}
+    className="legend-bar-input"
+  />
 </div>
+
+{/* Row: Trend */}
+<div className="legend-bar-row">
+  <label className="legend-bar-label">Trend</label>
+  <input
+    type="text"
+    value={trendMin ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
+      if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+      setTrendMin(value);
+    }}
+    onBlur={() => {
+      if (trendMin !== "" && trendMin !== "-") {
+        setTrendMin(parseFloat(trendMin));
+      }
+    }}
+    className="legend-bar-input"
+  />
+  <input
+    type="text"
+    value={trendMax ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
+      if (!/^-?\d*(\.\d*)?$/.test(value)) return;
+      setTrendMax(value);
+    }}
+    onBlur={() => {
+      if (trendMax !== "" && trendMax !== "-") {
+        setTrendMax(parseFloat(trendMax));
+      }
+    }}
+    className="legend-bar-input"
+  />
+</div>
+</div>
+
 
 {/* <div className="legend-bar-container">
 
@@ -1229,27 +1223,27 @@ useEffect(() => {
             return;
           }
            
-          if (minmaxButton === 'Actual') {
-          setActualMin(applyLegendMin);
-          setActualMax(applyLegendMax);
-          setTrendLegendMin(null);  
-          setTrendLegendMax(null);
-    } else if (minmaxButton === 'Trend') {
-          setTrendLegendMin(applyLegendMin);
-          setTrendLegendMax(applyLegendMax);
-          setActualMin(null);  
-          setActualMax(null);
-    }
+    //       if (minmaxButton === 'Actual') {
+    //       setActualMin(applyLegendMin);
+    //       setActualMax(applyLegendMax);
+    //       setTrendLegendMin(null);  
+    //       setTrendLegendMax(null);
+    // } else if (minmaxButton === 'Trend') {
+    //       setTrendLegendMin(applyLegendMin);
+    //       setTrendLegendMax(applyLegendMax);
+    //       setActualMin(null);  
+    //       setActualMax(null);
+    // }
 
           const appliedData = {
             yearStart: selectedYearStart,
             yearEnd: selectedYearEnd,
             selectedValue: selectedValue,
             displayMapScale: displayMapScale,
-            legendMin: minmaxButton === 'Actual' ? applyLegendMin : null, 
-            legendMax: minmaxButton === 'Actual' ? applyLegendMax : null, 
-            trendMin: minmaxButton === 'Trend' ? applyLegendMin : null,  
-            trendMax: minmaxButton === 'Trend' ? applyLegendMax : null,  
+            legendMin: actualMin,
+            legendMax: actualMax,
+            trendMin: trendMin,
+            trendMax: trendMax,  
             selectedRegion: selectedRegion,
             selectedProvince: selectedProvince,
             isRegionView: isRegionView,
@@ -1263,7 +1257,7 @@ useEffect(() => {
       >
         Apply
       </button>
-
+ 
 
   {/* Loading Animation */}
   </>
@@ -1516,35 +1510,36 @@ useEffect(() => {
         },
       },
       y: {
-        min: chartData?.options?.scales?.y?.min || 10,
-        max: chartData?.options?.scales?.y?.max || 50,
-        title: {
-          display: true,
-          text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
-          font: {
-            size: 10,
-          },
-        },
-        ticks: {
-          font: {
-            size: 9,
-          },
-          stepSize: Math.ceil((chartData?.options?.scales?.y?.max - chartData?.options?.scales?.y?.min) / 3),
-    callback: function (value, index, values) {
+  min: chartData?.options?.scales?.y?.min || 10,
+  max: chartData?.options?.scales?.y?.max || 50,
+  title: {
+    display: true,
+    text: `${chartData?.options?.scales?.y?.title?.text || 'Unknown'}`,
+    font: {
+      size: 10,
+    },
+  },
+  ticks: {
+    font: {
+      size: 9,
+    },
+    callback: function (value) {
       let unit = chartData?.options?.scales?.y?.title?.text.split("(")[1]?.replace(")", "") || "";
-      let uniqueTicks = [];
+      return `${value} ${unit}`;
+    }
+  },
+  afterBuildTicks: function (axis) {
+    const seen = new Set();
+    axis.ticks = axis.ticks.filter(tick => {
+      const rounded = Math.round(tick.value);
+      if (seen.has(rounded)) return false;
+      seen.add(rounded);
+      tick.value = rounded; // บังคับให้เป็นจำนวนเต็ม
+      return true;
+    });
+  }
+}
 
-      
-      let newValue = Math.round(value);
-      while (uniqueTicks.includes(newValue)) {
-        newValue += 2;
-      }
-      uniqueTicks.push(newValue);
-
-      return `${newValue} ${unit}`;
-          },
-        },
-      },
     },
   }}
 />
@@ -1558,13 +1553,12 @@ useEffect(() => {
   {/* Seasonal Cycle chart */}
 
     <div className={`seasonal-cycle-chart ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"} ${isExpand ? "expanded" : ""}`}>
-      <h3>Seasonal Cycle</h3>
+      <h3>Monthly Pattern</h3>
 
       
-        <div className="seasonal-legend-line">
+        {/* <div className="seasonal-legend-line">
   <span></span><h4 className='legend-text'>Value</h4>
-  {/* <span className="legend-text">Value</span>  */}
-</div>
+</div> */}
 
       <Line
   data={seasonalCycle}
@@ -1616,13 +1610,13 @@ useEffect(() => {
     scales: {
       x: {
         beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Months',
-          font: { size: 9, family: 'Arial Narrow', weight: 'normal' },
-        },
+        // title: {
+        //   display: true,
+        //   text: 'Months',
+        //   font: { size: 9, family: 'Arial Narrow', weight: 'normal' },
+        // },
         ticks: {
-          font: { size: 9.5, family: 'Arial Narrow', weight: 'normal' },
+          font: { size: 9.5,  weight: 'normal' },
           callback: function (value, index) {
             const labelsToShow = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
             return labelsToShow.includes(index)

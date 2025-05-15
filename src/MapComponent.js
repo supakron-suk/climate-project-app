@@ -150,9 +150,6 @@ const calculateMinMax = (geoData, viewMode, value, displayMapScale) => {
     }
   }
 
-  // ตรวจสอบค่าหลังจากการคำนวณและไม่ปรับค่า
-  // console.log('Final Min:', min);
-  // console.log('Final Max:', max);
 
   if (viewMode === "TrendMap") {
     const range = Math.max(Math.abs(min), Math.abs(max));
@@ -251,60 +248,6 @@ const style = (
   };
 };
 
-// const style = (
-//   feature,
-//   selectedRegion,
-//   selectedProvince,
-//   viewMode,
-//   min,
-//   max,
-//   selectedValue,
-//   selectedToneColor,
-//   isReversed,
-//   isRegionView,
-//   selectedScale
-// ) => {
-//   const actualValueKey = (selectedValue === "spi" || selectedValue === "spei")
-//   ? `${selectedValue}${selectedScale}`
-//   : selectedValue;
-
-// const dataValue = viewMode === "TrendMap"
-//   ? feature.properties.slope_value
-//   : feature.properties[actualValueKey];
-
-//   // const dataValue = viewMode === "TrendMap"
-//   //   ? feature.properties.slope_value
-//   //   : feature.properties[selectedValue];
-
-//   console.log(`[STYLE DEBUG] ${feature.properties.name} ->`, {
-//     viewMode,
-//     selectedValue,
-//     dataValue,
-//   });
-
-//   const isProvinceFeature = feature.properties.level === "province";
-//   const isRegionFeature = feature.properties.level === "region";
-
-//   // เงื่อนไขที่ให้แสดงผลบนแผนที่
-
-//   const shouldShow = isRegionView
-//   ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion || feature.properties.name === selectedRegion)
-//   : (selectedProvince === "Thailand" || feature.properties.province_name === selectedProvince || feature.properties.name === selectedProvince);
-//   // const shouldShow =
-//   //   isRegionView
-//   //     ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion)
-//   //     : (selectedProvince === "Thailand_province" || feature.properties.name === selectedProvince);
-
-//   return {
-//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
-//     weight: 0.3,
-//     opacity: 1,
-//     color: "black",
-//     dashArray: "0",
-//     fillOpacity: shouldShow ? 0.9 : 0,
-//   };
-// };
-
 const onEachFeature = (
   feature,
   layer,
@@ -363,57 +306,6 @@ const onEachFeature = (
 };
 
 
-// const onEachFeature = (feature, layer, viewMode, value, isRegionView, selectedScale) => {
-//   const props = feature.properties;
-
-//   const name = isRegionView
-//     ? props.region_name || props.name
-//     : props.province_name || props.name;
-
-//   const region = props.region_name || "N/A";
-//   const province = props.province_name || "N/A";
-
-//   const isMultiScale = value === "spi" || value === "spei";
-
-//   const actualValueKey =
-//     isMultiScale && selectedScale
-//       ? selectedScale
-//       : value;
-
-//   const actualValue =
-//     viewMode === "TrendMap"
-//       ? props.slope_value
-//       : props.annual?.[actualValueKey] ?? props[actualValueKey];
-
-//   // const actualValueKey = (value === "spi" || value === "spei")
-//   //   ? `${value}${selectedScale}`
-//   //   : value;
-
-//   // let actualValue = null;
-
-//   // if (viewMode === "TrendMap") {
-//   //   actualValue = props.slope_value;
-//   // } else {
-//   //   if (props.annual && props.annual[actualValueKey] !== undefined) {
-//   //     actualValue = props.annual[actualValueKey];
-//   //   } else if (props[actualValueKey] !== undefined) {
-//   //     actualValue = props[actualValueKey];
-//   //   }
-//   // }
-
-//  console.log(
-//   `[DEBUG] ${name} (${region}/${province}) | viewMode: ${viewMode}, selectedScale: ${selectedScale}, actualKey: ${actualValueKey} -> value:`,
-//   actualValue
-// );
-
-//   layer.bindPopup(`
-//     <strong>${name}</strong><br/>
-//     Value: ${actualValue !== null && actualValue !== undefined ? actualValue : 'N/A'}
-//   `);
-// };
-
-
-
 
 const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears }) => {
   const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
@@ -423,36 +315,50 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
     return null;
   }
 
-  // ฟังก์ชันจัดรูปแบบตัวเลขให้เป็นเลขกลมๆ หรือ 0.5
   const roundLabel = (value) => {
     if (["spi", "spei"].includes(selectedValue)) {
-      return value.toFixed(2); // สำหรับ SPI หรือ SPEI ให้แสดงเลขที่มีทศนิยม 2 ตำแหน่ง
+      return value.toFixed(2);
     }
     if (["pre", "rx1day"].includes(selectedValue)) {
-      return Math.round(value); // สำหรับปริมาณน้ำฝนแสดงเลขเต็ม
+      return Math.round(value);
     }
-    return Math.round(value); // สำหรับอุณหภูมิให้แสดงเป็น .0 หรือ .5
+    return Math.round(value);
   };
 
-  // log min และ max ก่อน
-  // console.log("Min:", min, "Max:", max);
+  let labels = [];
 
-  // คำนวณ labels โดยใช้ min, max และขั้น step ที่คำนวณจาก (max - min) / 11
-  const step = (max - min) / 11;
-  // console.log("Step:", step); 
-  // คำนวณ labels โดยการเพิ่ม step จาก min เพื่อให้อยู่ในช่วงของ min - max
-  const labels = Array.from({ length: 12 }, (_, i) => {
-    const value = min + step * i;  // คำนวณค่าแต่ละขั้นจาก min และ step
-    const roundedValue = roundLabel(value); // ใช้ roundLabel เพื่อจัดรูปแบบค่าทศนิยม
-    return roundedValue;     
-  });
+  if (["spi", "spei"].includes(selectedValue)) {
+    // 🟦 กรณี SPI/SPEI ใช้แบบเดิม
+    const step = (max - min) / 11;
+    labels = Array.from({ length: 12 }, (_, i) => {
+      const value = min + step * i;
+      return roundLabel(value);
+    });
+  } else {
+    // 🔴 กรณีอื่นใช้แบบ dynamic
+    const desiredLabelCount = 7;
+    const minInt = Math.floor(min);
+    const maxInt = Math.ceil(max);
+    const range = maxInt - minInt;
 
-  // log labels array
-  // console.log("Labels (Rounded Values):", labels);
+    let step = 1;
+    if (range >= desiredLabelCount - 1) {
+      step = Math.ceil(range / (desiredLabelCount - 1));
+    }
+
+    const rawLabels = [];
+    for (let value = minInt; value <= maxInt; value += step) {
+      rawLabels.push(roundLabel(value));
+    }
+
+    if (rawLabels.length < 2) {
+      rawLabels.push(roundLabel(max));
+    }
+
+    labels = [...new Set(rawLabels)];
+  }
 
   const numBlocks = temp_color.length;
-
-  // กำหนดหน่วยตาม selectedValue
   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
   const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
 
@@ -492,6 +398,85 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
     </div>
   );
 };
+
+
+// const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears }) => {
+//   const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
+
+//   if (!temp_color || !Array.isArray(temp_color)) {
+//     console.warn("Invalid colorScale in HeatmapBar", { temp_color });
+//     return null;
+//   }
+
+//   // ฟังก์ชันจัดรูปแบบตัวเลขให้เป็นเลขกลมๆ หรือ 0.5
+//   const roundLabel = (value) => {
+//     if (["spi", "spei"].includes(selectedValue)) {
+//       return value.toFixed(2); // สำหรับ SPI หรือ SPEI ให้แสดงเลขที่มีทศนิยม 2 ตำแหน่ง
+//     }
+//     if (["pre", "rx1day"].includes(selectedValue)) {
+//       return Math.round(value); // สำหรับปริมาณน้ำฝนแสดงเลขเต็ม
+//     }
+//     return Math.round(value); // สำหรับอุณหภูมิให้แสดงเป็น .0 หรือ .5
+//   };
+
+//   // log min และ max ก่อน
+//   // console.log("Min:", min, "Max:", max);
+
+//   // คำนวณ labels โดยใช้ min, max และขั้น step ที่คำนวณจาก (max - min) / 11
+//   const step = (max - min) / 11;
+//   // console.log("Step:", step); 
+//   // คำนวณ labels โดยการเพิ่ม step จาก min เพื่อให้อยู่ในช่วงของ min - max
+//   const labels = Array.from({ length: 12 }, (_, i) => {
+//     const value = min + step * i;  // คำนวณค่าแต่ละขั้นจาก min และ step
+//     const roundedValue = roundLabel(value); // ใช้ roundLabel เพื่อจัดรูปแบบค่าทศนิยม
+//     return roundedValue;     
+//   });
+
+//   // log labels array
+//   // console.log("Labels (Rounded Values):", labels);
+
+//   const numBlocks = temp_color.length;
+
+//   // กำหนดหน่วยตาม selectedValue
+//   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+//   const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
+
+//   return (
+//     <div className="color-bar-container heatmap">
+//       <div className="color-bar-title">
+//         {title}
+//       </div>
+//       <div className="gradient-bar">
+//         {temp_color.map(([_, color], index) => (
+//           <div
+//             key={index}
+//             className="color-segment"
+//             style={{
+//               backgroundColor: color,
+//               width: `${100 / numBlocks}%`,
+//               height: "20px",
+//             }}
+//           />
+//         ))}
+//       </div>
+//       <div className="labels">
+//         {labels.map((label, index) => (
+//           <span
+//             key={index}
+//             style={{
+//               position: "absolute",
+//               left: `${(index / (labels.length - 1)) * 100}%`,
+//               transform: "translateX(-50%)",
+//               fontSize: "11px",
+//             }}
+//           >
+//             {label}
+//           </span>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
 
 
 
