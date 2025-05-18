@@ -266,7 +266,7 @@ export const getSpiAndSpeiData = (
         .filter(opt => valuesArray.includes(opt.value))
         .flatMap(opt => opt.multi_scale);
 
-  console.log(`Final scales to use (SPI + SPEI):`, scalesToUse);
+  // console.log(`Final scales to use (SPI + SPEI):`, scalesToUse);
 
   const spiSpeiData = [];
   const areaScaleMap = {}; // { areaName: { scaleKey: [all values] } }
@@ -364,8 +364,8 @@ export const r_squared = (spiData, speiData) => {
     const x = spiByScale[scale];
     const y = speiByScale[scale];
 
-    console.log("spei scale y", y);
-    console.log("spi scale x", x);
+    // console.log("spei scale y", y);
+    // console.log("spi scale x", x);
 
     if (!Array.isArray(x) || !Array.isArray(y)) {
       console.warn(`Missing data for scale ${scale}:`, { x, y });
@@ -382,9 +382,9 @@ export const r_squared = (spiData, speiData) => {
     const xTrim = x.slice(0, timeLength);
     const yTrim = y.slice(0, timeLength);
 
-    console.log(`Scale: ${scale}`);
-    console.log(`SPI values [${scale}]:`, xTrim);
-    console.log(`SPEI values [${scale}]:`, yTrim);
+    // console.log(`Scale: ${scale}`);
+    // console.log(`SPI values [${scale}]:`, xTrim);
+    // console.log(`SPEI values [${scale}]:`, yTrim);
 
     const xMean = xTrim.reduce((sum, val) => sum + val, 0) / timeLength;
     const yMean = yTrim.reduce((sum, val) => sum + val, 0) / timeLength;

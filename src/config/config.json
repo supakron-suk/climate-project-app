@@ -2,14 +2,38 @@
   "datasets": {
     "ERA dataset": {
       "path": "/Geo-data/Era-Dataset/",
+      "info":"ECMWF Reanalysis v5 Data",
       "year_start": 1960,
       "year_end": 2022,
       "file_name_pattern": {
-        "country": "country_data_{year}.json",
-        "region": "region_data_{year}.json",
-        "province": "province_data_{year}.json",
-        "oceanic": "oceanic_data_{year}.json"
-      },
+  "country": {
+    "filename": "country_data_{year}.json",
+    "properties": ["annual", "monthly"],
+    "yearly": "annual",
+    "monthly": "monthly"
+  },
+  "region": {
+    "filename": "region_data_{year}.json",
+    "area_property": "region_name",
+    "properties": ["annual", "monthly"],
+    "yearly": "annual",
+    "monthly": "monthly"
+  },
+  "province": {
+    "filename": "province_data_{year}.json",
+    "area_property": "province_name",
+    "properties": ["annual", "monthly"],
+    "yearly": "annual",
+    "monthly": "monthly"
+  },
+  "oceanic": {
+    "filename": "oceanic_data_{year}.json",
+    "properties": ["monthly"],
+    "monthly": "monthly"
+  }
+},
+
+
       "variable_options": [
         { "label": "Precipitation", "value": "pre", "unit": "mm", "group": "Raw Data", "type": "monthly"
         , "description": "Mean monthly or annual rainfall" },
@@ -21,67 +45,69 @@
         , "description": "Monthly and annual average minimum temperatures"},
 
         { "label": "SPI", "value": "spi", "unit": "mm", "group": "Indices Data", "type": "monthly", 
-        "multi_scale": ["spi3", "spi6", "spi12", "spi24", "oni"] , "description":"Standardised Precipitation Index<br>Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 12 and 24 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."},
+        "multi_scale": ["spi3", "spi6", "spi9", "spi12", "spi24", "spi36", "spi48", "spi60", "oni"] , "description":"Standardised Precipitation Index<br>Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."},
 
         { "label": "SPEI", "value": "spei", "unit": "mm" , "group": "Indices Data", "type": "monthly", 
-        "multi_scale": ["spei3", "spei6", "spei12", "spei24", "oni"] , "description":"Standardised Precipitation Evapotranspiration Index<br>Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 12 and 24 months. A drought measure specified using precipitation and evaporation."},
+        "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60", "oni"] , "description":"Standardised Precipitation Evapotranspiration Index<br>Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified using precipitation and evaporation."},
         
-        { "label": "CDD",                   "value": "cdd",       "unit": "mm", "type": "yearly",  "group": "Indices Data", "description":"Maximum length of dry spell: maximum number of consecutive days with RR < 1mm<br>Let RR<sub>ij</sub> be the daily precipitation amount on day i in period j. Count the largest number of consecutive days where RR<sub>ij</sub> < 1mm."},
-        { "label": "CDDCOLD18",             "value": "cddcold18", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Cooling degree days:<br>Annual sum of TM - 18, location-specific base temperature and TM > 18. A measure of the energy demand needed to cool a building."},
+        { "label": "CDD",                   "value": "cdd",       "unit": "mm", "type": "yearly",  "group": "Indices Data", "description":"Maximum length of dry spell: maximum number of consecutive days with daily rainfall rate < 1mm"},
+        { "label": "CDDCOLD18",             "value": "cddcold18", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Cooling degree days Annual sum of difference between daily mean temperature with 18. A measure of the energy demand needed to cool a building."},
         { "label": "CSDI",                  "value": "csdi",      "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Cold spell duration index: annual count of days with at least 6 consecutive days when TN < 10<sup>th</sup> percentile <br>Let TN<sub>ij</sub> be the daily maximum temperature on day i in period j and let TN<sub>in</sub>10 be the calendar day 10<sup>th</sup> percentile centred on a 5-day window for the base period 1961-1990. Then the number of days per period is summed where, in intervals of at least 6 consecutive days, TN<sub>ij</sub> < TN<sub>in</sub>10."},
         { "label": "CSDI3",                 "value": "csdi3",     "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Cold spell duration index: annual count of days with at least 3 consecutive days when TN < 10<sup>th</sup> percentile <br>CSDI Annual number of days contributing to events where 3 or more consecutive days experience TN < 10<sup>th</sup> percentile."},
-        { "label": "CWD",                   "value": "cwd",       "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Maximum length of wet spell: maximum number of consecutive days with RR ≥ 1mm<br>Let RR<sub>ij</sub> be the daily precipitation amount on day i in period j. Count the largest number of consecutive days where RR<sub>ij</sub> ≥ 1mm."},
-        { "label": "DTR",                   "value": "dtr",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Daily temperature range <br>Let TX<sub>ij</sub> and TN<sub>ij</sub> be the daily maximum and minimum temperature respectively on day i in period j. If I represents the number of days in j,"},
-        { "label": "GDDGROW10",             "value": "gddgrow10", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Growing degree days<br>Annual sum of TM - 10, base temperature and TM > 10. A measure of the energy demand needed to cool a building."},
-        { "label": "GSL",                   "value": "gsl",       "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Growing season length<br>Annual* count between the first span of at least 6 days with daily mean temperature TG > 5°C and the first span after July 1<sup>st</sup> (Jan 1<sup>st</sup> in SH) of 6 days with TG <5 °C. Let TG<sub>ij</sub> be daily mean temperature on day i in year j. Count the number of days between the first occurrence of at least 6 consecutive days with TG<sub>ij</sub> > 5 °C and the first occurrence after 1<sup>st</sup> July (Jan 1<sup>st</sup> in SH) of at least 6 consecutive days with TG<sub>ij</sub> < 5 °C. * Annual means Jan 1st to Dec 31<sup>st</sup> in the Northern Hemisphere (NH); July 1<sup>st</sup> to June 30<sup>th</sup> in the Southern Hemisphere (SH)."},
-        { "label": "HDDHEAT18",             "value": "hddheat18", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Heating degree days<br>Annual sum of 18 - TM, location-specific base temperature and TM < 18. A measure of the energy demand needed to heat a building."},
-        { "label": "PRCPTOT (Total Precipitation)", "value": "prcptot",   "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total precipitation on wet days<br>Let RR<sub>ij</sub> be the daily wet day (>= 1mm) precipitation amount on day i in period j, then:"},
-        { "label": "R10MM",                 "value": "r10mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when PRCP ≥ 10mm<br>Let RR<sub>ij</sub> be the daily precipitation amount on day i in period j. Count the number of days where RR<sub>ij</sub> ≥ 10mm"},
-        { "label": "R20MM",                 "value": "r20mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when PRCP ≥ 20mm<br>Let RR<sub>ij</sub> be the daily precipitation amount on day i in period j. Count the number of days where RR<sub>ij</sub> ≥ 20mm"},
-        { "label": "R30MM",                 "value": "r30mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when PRCP ≥ 30mm<br>Let RR<sub>ij</sub> be the daily precipitation amount on day i in period j. Count the number of days where RR<sub>ij</sub> ≥ 30mm"},
-        { "label": "R95P",                  "value": "r95p",      "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total PRCP when RR > 95th percentile<br>Let RR<sub>wj</sub> be the daily precipitation amount on a wet day w (RR ≥ 1.0mm) in period i and let RRwn95 be the 95<sup>th</sup> percentile of precipitation on wet days in the 1961-1990 period. If W represents the number of wet days in the period, then:"},
+        { "label": "CWD",                   "value": "cwd",       "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Maximum length of wet spell: maximum number of consecutive days of daily precipitation amount with day rainfall rate ≥ 1mm"},
+        { "label": "DTR",                   "value": "dtr",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Daily temperature range between maximum temperature and minimum temperature."},
+        { "label": "GDDGROW10",             "value": "gddgrow10", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Growing degree days Annual sum of difference between daily mean temperature difference with 10. A measure of heat accumulation used to predict plant growth rates."},
+        { "label": "GSL",                   "value": "gsl",       "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Growing season length Annual* count between the first span of at least 6 days with daily mean temperature >5 °C and the first span after July 1st (Jan 1st in SH) of 6 days with daily mean temperature <5 °C. (* Annual means Jan 1st to Dec 31st in the Northern Hemisphere (NH); July 1st to June 30th in the Southern Hemisphere (SH).)"},
+        { "label": "HDDHEAT18",             "value": "hddheat18", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Heating degree days Annual sum of difference between 18 with daily mean temperature . A measure of the energy demand needed to heat a building."},
+        { "label": "ID",                    "value": "id",        "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of icing days Annual count of days daily maximum temperature < 0 °C."},
+        { "label": "PRCPTOT", "value": "prcptot",   "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total precipitation on wet days<br>Let RR<sub>ij</sub> be the daily wet day (>= 1mm) precipitation amount on day i in period j, then:"},
+        { "label": "R10MM",                 "value": "r10mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when the total liquid water equivalent of presumably all precipitation ≥ 10mm"},
+        { "label": "R20MM",                 "value": "r20mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when the total liquid water equivalent of presumably all precipitation ≥ 20mm"},
+        { "label": "R30MM",                 "value": "r30mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when the total liquid water equivalent of presumably all precipitation ≥ 30mm"},
+        { "label": "R95P",                  "value": "r95p",      "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total the total liquid water equivalent of presumably all precipitation when daily rainfall rate> 95th percentile."},
         { "label": "R95PTOT",               "value": "r95ptot",   "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Contribution to total precipitation from very wet days"},
-        { "label": "R99P",                  "value": "r99p",      "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total PRCP when RR > 99th percentile<br>Let RR<sub>wj</sub> be the daily precipitation amount on a wet day w (RR ≥ 1.0mm) in period i and let RRwn99 be the 99<sup>th</sup> percentile of precipitation on wet days in the 1961-1990 period. If W represents the number of wet days in the period, then:"},
+        { "label": "R99P",                  "value": "r99p",      "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total the total liquid water equivalent of presumably all precipitation when daily rainfall rate> 99th percentile."},
         { "label": "R99PTOT",               "value": "r99ptot",   "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Contribution to total precipitation from extremely wet days"},
-        { "label": "RX1DAY",                "value": "rx1day",    "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Maximum 1-day precipitation<br>Let RRᵢⱼ be the daily precipitation amount on day i in period j. The maximum 1-day value for period j are Rx1day<sub>j</sub> = max (RR<sub>ij</sub>)"},
-        { "label": "RX3DAY",                "value": "rx3day",    "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Maximum consecutive 3-day precipitation<br>Let RR<sub>kj</sub> be the precipitation amount for the 3-day interval ending k, period j. Then maximum 3-day values for period j are Rx3day<sub>j</sub> = max (RR<sub>kj</sub>)"},
-        { "label": "RX5DAY",                "value": "rx5day",    "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Maximum consecutive 5-day precipitation<br>Let RR<sub>kj</sub> be the precipitation amount for the 5-day interval ending k, period j. Then maximum 5-day values for period j are Rx5day<sub>j</sub> = max (RR<sub>kj</sub>)"},
-        { "label": "SDII",                  "value": "sdii",      "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Simple precipitation intensity index<br>Let RRwj be the daily precipitation amount on wet days, w (RR ≥ 1mm) in period j. If W represents number of wet days in j, then"},
-        { "label": "SU",                    "value": "su",        "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of summer days<br>Annual count of days when TX (daily maximum temperature) > 25°C. Let TX<sub>ij</sub> be daily minimum temperature on day i in year j. Count the number of days where TX<sub>ij</sub> > 25 °C."},
-        { "label": "TMGE10",                "value": "tmge10",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TM of greater than or equal to 10 °C<br>Number of days when TM (daily mean temperature) ≥ 10 °C."},
-        { "label": "TMGE5",                 "value": "tmge5",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TM of greater than or equal to 5 °C<br>Number of days when TM (daily mean temperature) ≥ 5 °C."},
-        { "label": "TMLT10",                "value": "tmlt10",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TM of at least 10 °C<br>Number of days when TM (daily mean temperature) < 10 °C."},
-        { "label": "TMLT5",                 "value": "tmlt5",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TM of at least 5 °C<br>Number of days when TM (daily mean temperature) < 5 °C."},
-        { "label": "TMM",                   "value": "tmm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Mean TM<br>The mean daily mean temperature."},
-        { "label": "TN10P",                 "value": "tn10p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when TN < 10<sup>th</sup> percentile<br>Let TN<sub>ij</sub> be the daily minimum temperature on day i in period j and let TN<sub>in</sub>10 be the calendar day 10<su>th</sup> percentile centred on a 5-day window for the base period 1961-1990. The percentage of time for the base period is determined where TN<sub>ij</sub> < TN<sub>in</sub>10. To avoid possible inhomogeneity across the in-base and out-base periods, the calculation for the base period (1961-1990) requires the use of a bootstrap procedure."},
-        { "label": "TN90P",                 "value": "tn90p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when TN > 90<sup>th</sup> percentile<br>Let TN<sub>ij</sub> be the daily minimum temperature on day i in period j and let TN<sub>in</sub>90 be the calendar day 90<su>th</sup> percentile centred on a 5-day window for the base period 1961-1990. The percentage of time for the base period is determined where TN<sub>ij</sub> > TN<sub>in</sub>90. To avoid possible inhomogeneity across the in-base and out-base periods, the calculation for the base period (1961-1990) requires the use of a bootstrap processure."},
-        { "label": "TNLT2",                 "value": "tnlt2",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TN below 2 °C<br>The number of days when TN < 2 °C."},
-        { "label": "TNLTM2",                "value": "tnltm2",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TN below -2 °C<br>The number of days when TN < -2 °C."},
-        { "label": "TNLTM20",               "value": "tnltm20",   "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TN below -20 °C<br>The number of days when TN < -20 °C."},
-        { "label": "TNM",                   "value": "tnm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Mean TN<br>The mean daily minimum temperature."},
-        { "label": "TNN",                   "value": "tnn",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Minimum value of daily minimum temperature<br>Let TN<sub>n</sub> be the daily minimum temperatures in month k, period j. The minimum daily minimum temperature each month is then TN<sub>n</sub>kj</sub></sub> = min(TN<sub>n</sub>kj</sub></sub>)"},
-        { "label": "TNX",                   "value": "tnx",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Maximum value of daily minimum temperature<br>Let TN<sub>x</sub> be the daily minimum temperatures in month k, period j. The maximum daily minimum temperature each month is then TN<sub>x</sub>kj</sub></sub> = max(TN<sub>x</sub>kj</sub></sub>)."},
-        { "label": "TR",                    "value": "tr",        "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of tropical nights<br>Annual count of days when TN (daily minimum temperature) > 20 °C. Let TN<sub>ij</sub> be daily minimum temperature on day i in year j. Count the number of days where TN<sub>ij</sub> > 20 °C."},
-        { "label": "TX10P",                 "value": "tx10p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when TX < 10<sup>th</sup> percentile<br>Let TX<sub>ij</sub> be the daily maximum temperature on day i in period j and let TX<sub>in</sub>10 be the calendar day 10th percentile centred on a 5-day window for the base period 1961-1990. The percentage of time for the base period is determined where TX<sub>ij</sub> < TX<sub>in</sub>10. To avoid possible inhomogeneity across the in-base and out-base periods, the calculation for the base period (1961-1990) requires the use of a bootstrap processure."},
-        { "label": "TX2TN2",                "value": "tx2tn2",    "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"number of consecutive hot days and nights of 2 days <br>Annual count of 2 consecutive days where both TX > 95<sup>th</sup> percentile and TN > 95<sup>th</sup> percentile"},
-        { "label": "TX90P",                 "value": "tx90p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when TX > 90<sup>th</sup> percentile<br>Let TX<sub>ij</sub> be the daily maximum temperature on day i in period j and let TXin90 be the calendar day 90<sup>th</sup> percentile centred on a 5-day window for the base period 1961-1990. The percentage of time for the base period is determined where TX<sub>ij</sub> > TX<sub>in</sub>90. To avoid possible inhomogeneity across the in-base and out-base periods, the calculation for the base period (1961-1990) requires the use of a bootstrap processure."},
-        { "label": "TXB2TNB2",              "value": "txb2tnb2",  "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"number of consecutive cold days and nights of 2 days<br>Annual count of 2 consecutive days where both TX < 5<sup>th</sup> percentile and TN < 5<sup>th</sup> percentile."},
-        { "label": "TXGE30",                "value": "txge30",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TX of greater than or equal to 30 °C<br>Number of days when TX ≥ 30 ≥C."},
-        { "label": "TXGE35",                "value": "txge35",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TX of greater than or equal to 35 °C<br>Number of days when TX ≥ 35 ≥C."},
-        { "label": "TXGT50P",               "value": "txgt50p",   "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days with above average temperature<br>Percentage of days when TX > 50<sup>th</sup> percentile."},
-        { "label": "TXM",                   "value": "txm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Mean TX<br>The mean daily maximum temperature."},
-        { "label": "TXN",                   "value": "txn",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Minimum value of daily maximum temperature<br>Let TX<sub>n</sub> be the daily maximum temperatures in month k, period j. The minimum daily maximum temperature each month is then TX<sub>x<sub>kj</sub></sub> = min(TX<sub>n<sub>kj</sub></sub>)."},
-        { "label": "TXX",                   "value": "txx",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Maximum value of daily maximum temperature<br>Let TX<sub>x</sub> be the daily maximum temperatures in month k, period j. The maximum daily maximum temperature each month is then TX<sub>x<sub>kj</sub></sub> = max(TX<sub>n<sub>kj</sub></sub>)."},
-        { "label": "WSDI",                  "value": "wsdi",      "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Warm spell duration index: annual count of days with at least 6 consecutive days when TX > 90<sup>th<sup> percentile<br>Let TX<sub>ij</sub> be the daily maximum temperature on day i in period j and let TX<sub>in</sub>90 be the calendar day 90<sup>th</sup> percentile centred on a 5-day window for the base period 1961-1990. Then the number of days per period is summed where, in intervals of at least 6 consecutive days, TX<sub>ij</sub> > TX<sub>in</sub>90."},
-        { "label": "WSDI3",                 "value": "wsdi3",     "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"WSDI Annual number of days contributing to events where 3 consecutive days experience TX > 90<sup>th<sup> percentile<br>Annual number of days contributing to events where d or more consecutive days experience TX > 90th percentile."}
+        { "label": "RX1DAY",                "value": "rx1day",    "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Maximum 1-day precipitation The maximum daily precipitation amount on 1-day for given time period "},
+        { "label": "RX3DAY",                "value": "rx3day",    "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Maximum consecutive 3-day precipitation The maximum daily precipitation amount on 3-day interval for given time period "},
+        { "label": "RX5DAY",                "value": "rx5day",    "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Maximum consecutive 5-day precipitation The maximum daily precipitation amount on 5-day interval for given time period "},
+        { "label": "SDII",                  "value": "sdii",      "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Simple precipitation intensity index count daily precipitation amount on wet days"},
+        { "label": "SU",                    "value": "su",        "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of summer days Annual count of days daily maximum temperature > 25°C."},
+        { "label": "TMGE10",                "value": "tmge10",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of days when daily mean temperature greater than or equal to 10 °C."},
+        { "label": "TMGE5",                 "value": "tmge5",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of days when daily mean temperature of greater than or equal to 5 °C."},
+        { "label": "TMLT10",                "value": "tmlt10",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of days when TM daily mean temperature at least 10 °C."},
+        { "label": "TMLT5",                 "value": "tmlt5",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of days when daily mean temperature of at least 5 °C."},
+        { "label": "TMM",                   "value": "tmm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The mean daily mean temperature."},
+        { "label": "TN10P",                 "value": "tn10p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when daily minimum temperature  < 10th percentile."},
+        { "label": "TN90P",                 "value": "tn90p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when daily minimum temperature  > 90th percentile."},
+        { "label": "TNLT2",                 "value": "tnlt2",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The number of days when daily minimum temperature below 2 °C."},
+        { "label": "TNLTM2",                "value": "tnltm2",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The number of days when daily minimum temperature below -2 °C."},
+        { "label": "TNLTM20",               "value": "tnltm20",   "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The number of days when daily minimum temperature below -20 °C."},
+        { "label": "TNM ",                   "value": "tnm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The mean daily minimum temperature."},
+        { "label": "TNN",                   "value": "tnn",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Minimum value of daily minimum temperature each month."},
+        { "label": "TNX",                   "value": "tnx",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Maximum value of daily minimum temperature each month."},
+        { "label": "TR",                    "value": "tr",        "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of tropical nights Annual count of days daily minimum temperature > 20 °C."},
+        { "label": "TX10P",                 "value": "tx10p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when daily maximum temperature < 10th percentile."},
+        { "label": "TX2TN2",                "value": "tx2tn2",    "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"2 consecutive number of hot days and nights Annual count of d consecutive days where both daily maximum temperature > 95th percentile and daily minimum temperature > 95th percentile"},
+        { "label": "TX90P",                 "value": "tx90p",     "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days when daily maximum temperature > 90th percentile."},
+        { "label": "TXB2TNB2",              "value": "txb2tnb2",  "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"consecutive number of cold days and nights Annual count of 2 consecutive days where both daily maximum temperature < 5<sup>th</sup> percentile and daily minimum temperature < 5<sup>th</sup> percentile."},
+        { "label": "TXGE30",                "value": "txge30",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of days when daily maximum temperature greater than or equal to 30 °C."},
+        { "label": "TXGE35",                "value": "txge35",    "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of days when daily maximum temperature greater than or equal to 35 °C."},
+        { "label": "TXGT50P",               "value": "txgt50p",   "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Percentage of days with above average temperature when daily maximum temperature > 50th percentile."},
+        { "label": "TXM",                   "value": "txm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The mean daily maximum temperature."},
+        { "label": "TXN",                   "value": "txn",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Minimum value of daily maximum temperature each month."},
+        { "label": "TXX",                   "value": "txx",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TXx Maximum value of daily maximum temperature each month."},
+        { "label": "WSDI",                  "value": "wsdi",      "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Warm spell duration index: annual count of days with at least 6 consecutive days when daily maximum temperature > 90th percentile."},
+        { "label": "WSDI3",                 "value": "wsdi3",     "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Warm spell duration index: annual count of days with at least 6 consecutive days when daily maximum temperature > 90th percentile. Annual number of days contributing to events where 3 consecutive days."}
       ]
     },
     "CRU dataset": {
       "path": "/Geo-data/Cru-Dataset/",
+      "info":"Climatic Research Unit Data",
       "year_start": 1901,
       "year_end": 2023,
       "file_name_pattern": {
-        "country": "country_data_{year}.json",
+       "country": "country_data_{year}.json",
         "region": "region_data_{year}.json",
         "province": "province_data_{year}.json"
         
@@ -96,8 +122,8 @@
       "unit": "mm", 
       "type": "monthly",
       "group": "Indices Data",
-      "multi_scale": ["spi3", "spi6", "spi12", "spi24"],
-      "description": "Standardised Precipitation Index Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6 and 12 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."
+      "multi_scale": ["spi3", "spi6", "spi9", "spi12", "spi24", "spi36", "spi48", "spi60"],
+      "description": "Standardised Precipitation Index Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."
     },
     {
       "label": "SPEI",
@@ -105,13 +131,13 @@
       "unit": "mm", 
       "type": "monthly",
       "group": "Indices Data", 
-      "multi_scale": ["spei3", "spei6", "spei12", "spei24"],
-      "description": "Standardised Precipitation Evapotranspiration Index Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6 and 12 months. A drought measure specified using precipitation and evaporation. See Vicente-Serrano et al. (2010) for details."
+      "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60"],
+      "description": "Standardised Precipitation Evapotranspiration Index Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified using precipitation and evaporation. See Vicente-Serrano et al. (2010) for details."
     }
       ]
     }
 
-  },  
+  },
   "dropdown_options": [
     { "value": "ERA dataset", "label": "ERA Dataset" },
     { "value": "CRU dataset", "label": "CRU Dataset" }],

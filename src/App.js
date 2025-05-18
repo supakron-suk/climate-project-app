@@ -212,30 +212,37 @@ const getGradient = (colormapName, isReversed = false) => {
 
 //-------------------------------------------------- Function Area------------------------------------------//
   // ฟังก์ชันกรองข้อมูลตามภูมิภาค
- const filterByArea = (dataByYear, region, province, startYear, endYear) => {
+  const filterByArea = (dataByYear, region, province, startYear, endYear, configData, selectedDataset) => {
   const filtered = [];
 
   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
     let features = [];
-
+    let viewType = "";
+    let targetValue = "";
+    
     if (province && province !== "Thailand") {
-      const provinceData = dataByYear[year]?.province;
-      if (provinceData?.features) {
-        features = provinceData.features.filter(
-          (f) => f.properties.province_name === province
-        );
-      }
+      viewType = "province";
+      targetValue = province;
     } else if (region && region !== "Thailand_region") {
-      const regionData = dataByYear[year]?.region;
-      if (regionData?.features) {
-        features = regionData.features.filter(
-          (f) => f.properties.region_name === region
-        );
-      }
+      viewType = "region";
+      targetValue = region;
     } else {
-      const countryData = dataByYear[year]?.country;
-      if (countryData?.features) {
-        features = countryData.features;
+      viewType = "country";
+      // ไม่มี targetValue เพราะใช้ทั้งประเทศ
+    }
+
+    const fileConfig = configData.datasets[selectedDataset]?.file_name_pattern?.[viewType];
+    const areaProperty = fileConfig?.area_property;
+
+    const geojson = dataByYear[year]?.[viewType];
+
+    if (geojson?.features) {
+      if (viewType === "country" || !areaProperty) {
+        features = geojson.features;
+      } else {
+        features = geojson.features.filter(
+          (f) => f.properties[areaProperty] === targetValue
+        );
       }
     }
 
@@ -249,31 +256,68 @@ const getGradient = (colormapName, isReversed = false) => {
   return filtered;
 };
 
+//  const filterByArea = (dataByYear, region, province, startYear, endYear) => {
+//   const filtered = [];
+
+//   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
+//     let features = [];
+
+//     if (province && province !== "Thailand") {
+//       const provinceData = dataByYear[year]?.province;
+//       if (provinceData?.features) {
+//         features = provinceData.features.filter(
+//           (f) => f.properties.province_name === province
+//         );
+//       }
+//     } else if (region && region !== "Thailand_region") {
+//       const regionData = dataByYear[year]?.region;
+//       if (regionData?.features) {
+//         features = regionData.features.filter(
+//           (f) => f.properties.region_name === region
+//         );
+//       }
+//     } else {
+//       const countryData = dataByYear[year]?.country;
+//       if (countryData?.features) {
+//         features = countryData.features;
+//       }
+//     }
+
+//     if (Array.isArray(features)) {
+//       filtered.push(...features);
+//     } else if (features) {
+//       filtered.push(features);
+//     }
+//   }
+
+//   return filtered;
+// };
 
 
-const filteredProvinces = React.useMemo(() => {
-  if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
-    return [];
-  }
 
-  const regionProvinces = configData.areas.area_thailand[selectedRegion] || [];
-  const provincesSet = new Set();
+// const filteredProvinces = React.useMemo(() => {
+//   if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
+//     return [];
+//   }
 
-  for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-    const provinceData = dataByYear[year]?.province;
+//   const regionProvinces = configData.areas.area_thailand[selectedRegion] || [];
+//   const provincesSet = new Set();
 
-    if (provinceData && provinceData.features) {
-      provinceData.features.forEach((feature) => {
-        const provinceName = feature.properties.province_name;
-        if (regionProvinces.includes(provinceName)) {
-          provincesSet.add(provinceName);
-        }
-      });
-    }
-  }
+//   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
+//     const provinceData = dataByYear[year]?.province;
 
-  return Array.from(provincesSet);
-}, [selectedYearStart, selectedYearEnd, selectedRegion, dataByYear]);
+//     if (provinceData && provinceData.features) {
+//       provinceData.features.forEach((feature) => {
+//         const provinceName = feature.properties.province_name;
+//         if (regionProvinces.includes(provinceName)) {
+//           provincesSet.add(provinceName);
+//         }
+//       });
+//     }
+//   }
+
+//   return Array.from(provincesSet);
+// }, [selectedYearStart, selectedYearEnd, selectedRegion, dataByYear]);
 
 
 
@@ -316,6 +360,7 @@ const extractMinMaxFromGeoJSON = (geojson, key) => {
     selectedValue,
     configData,
     toRegionView,
+    
   );
   if (heatmapResult) {
   setHeatmapData(heatmapResult);
@@ -338,6 +383,7 @@ const extractMinMaxFromGeoJSON = (geojson, key) => {
   );
   if (trendResult) {
   setTrendGeoData(trendResult.geojson);
+
   setNumberOfYears(trendResult.numberOfYears);
   setFullTrendData(trendResult.geojson);
   const { min, max } = extractMinMaxFromGeoJSON(trendResult.geojson, "slope_value");
@@ -454,13 +500,21 @@ useEffect(() => {
     console.log("Province:", updatedProvince);
     console.log("Value Key:", selectedValue);
 
-   
+
     const selectedYears = Object.keys(dataByYear)
   .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
   .map((year) => ({
     year,
-    data: filterByArea(dataByYear, updatedRegion, updatedProvince, selectedYearStart, selectedYearEnd),
+    data: filterByArea(dataByYear, updatedRegion, updatedProvince, selectedYearStart, selectedYearEnd, configData, selectedDataset),
   }));
+
+   
+  //   const selectedYears = Object.keys(dataByYear)
+  // .filter((year) => year >= selectedYearStart && year <= selectedYearEnd)
+  // .map((year) => ({
+  //   year,
+  //   data: filterByArea(dataByYear, updatedRegion, updatedProvince, selectedYearStart, selectedYearEnd),
+  // }));
 
 
       selectedYears.forEach(({ year, data }) => {
@@ -471,11 +525,22 @@ useEffect(() => {
 
     setFilteredYearData(selectedYears);
 
+        const areaType = DataApply.isRegionView ? "region" : "province";
+    const areaProperty = configData.datasets[selectedDataset]?.file_name_pattern?.[areaType]?.area_property;
+
     const provinces = new Set();
     selectedYears.forEach(({ data }) =>
-      data.forEach((feature) => provinces.add(feature.properties.province_name))
+      data.forEach((feature) => {
+        const areaName = feature.properties?.[areaProperty];
+        if (areaName) provinces.add(areaName);
+      })
     );
-    setProvinces(Array.from(provinces));
+
+    // const provinces = new Set();
+    // selectedYears.forEach(({ data }) =>
+    //   data.forEach((feature) => provinces.add(feature.properties.province_name))
+    // );
+    // setProvinces(Array.from(provinces));
 
     //-------------------------------------spi USE EFFECT----------------------------------------------//
   
@@ -585,9 +650,11 @@ const rSquareResult = r_squared(spiData, speiData);
         DataApply.selectedValue,
         configData,
         DataApply.isRegionView,
+        selectedDataset
       );
 
       if (trendResult) {
+        console.log("trendresult number year", trendResult.numberOfYears)
         setTrendGeoData(trendResult.geojson);
         setNumberOfYears(trendResult.numberOfYears); 
         setFullTrendData(trendResult.geojson);
@@ -610,6 +677,7 @@ const rSquareResult = r_squared(spiData, speiData);
       configData,
       DataApply.isRegionView,
       displayMapScale,
+      selectedDataset
     );
     if (averageData) {
       setHeatmapData(averageData);
@@ -683,7 +751,7 @@ const rSquareResult = r_squared(spiData, speiData);
     setIsApplied(false);
   }
 
-}, [isApplied]);
+}, [isApplied, configData, selectedDataset]);
 
 useEffect(() => {
   const datasetKey = selectedDataset;

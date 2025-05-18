@@ -1,37 +1,37 @@
 
-# import os
-# import shutil
+import os
+import shutil
 
-# def move_and_rename_geojson(start_year=1960, end_year=2022):
-#     src_base = "src/Geo-data/Year-Dataset"
-#     dest_base = "public/Geo-data/Cru-Dataset"
+def move_and_rename_geojson(start_year=1960, end_year=1970):
+    src_base = "src/Geo-data"
+    dest_base = "public/Geo-data/Era-Dataset"
 
-#     total_years = end_year - start_year + 1
+    total_years = end_year - start_year + 1
 
-#     for idx, year in enumerate(range(start_year, end_year + 1), start=1):
-#         progress = int((idx / total_years) * 100)
+    for idx, year in enumerate(range(start_year, end_year + 1), start=1):
+        progress = int((idx / total_years) * 100)
 
-#         src_filename = f"cru_province_{year}.json"
-#         src_path = os.path.join(src_base, src_filename)
+        src_filename = f"era_province_{year}.json"
+        src_path = os.path.join(src_base, src_filename)
 
-#         if not os.path.exists(src_path):
-#             print(f"[{progress}%] ❌ Source file not found: {src_path}")
-#             continue
+        if not os.path.exists(src_path):
+            print(f"[{progress}%] ❌ Source file not found: {src_path}")
+            continue
 
-#         # เตรียม path ใหม่
-#         dest_folder = os.path.join(dest_base, str(year))
-#         os.makedirs(dest_folder, exist_ok=True)
+        # เตรียม path ใหม่
+        dest_folder = os.path.join(dest_base, str(year))
+        os.makedirs(dest_folder, exist_ok=True)
 
-#         dest_filename = f"province_data_{year}.json"
-#         dest_path = os.path.join(dest_folder, dest_filename)
+        dest_filename = f"province_data_{year}.json"
+        dest_path = os.path.join(dest_folder, dest_filename)
 
-#         # คัดลอกและเปลี่ยนชื่อ
-#         shutil.copy2(src_path, dest_path)
+        # คัดลอกและเปลี่ยนชื่อ
+        shutil.copy2(src_path, dest_path)
 
-#         print(f"[{progress}%] ✅ Moved: {src_path} -> {dest_path}")
+        print(f"[{progress}%] ✅ Moved: {src_path} -> {dest_path}")
 
-# # เรียกใช้
-# move_and_rename_geojson(1901, 2023)
+# เรียกใช้
+move_and_rename_geojson(1960, 2022)
 
 #-----------------------------------------------------------------------------------------
 #----------------------------------- Country Code----------------------------------------
@@ -286,41 +286,41 @@
 # move_and_rename_province_files(1901, 1910)
 
 
-import os
-import json
+# import os
+# import json
 
-def rename_monthly_property_in_json(start_year=1960, end_year=2022):
-    dest_base = "public/Geo-data/Era-Dataset"
+# def rename_monthly_property_in_json(start_year=1960, end_year=2022):
+#     dest_base = "public/Geo-data/Era-Dataset"
 
-    total_years = end_year - start_year + 1
+#     total_years = end_year - start_year + 1
 
-    for idx, year in enumerate(range(start_year, end_year + 1), start=1):
-        progress = int((idx / total_years) * 100)
+#     for idx, year in enumerate(range(start_year, end_year + 1), start=1):
+#         progress = int((idx / total_years) * 100)
 
-        dest_filename = f"oceanic_data_{year}.json"
-        dest_path = os.path.join(dest_base, str(year), dest_filename)
+#         dest_filename = f"oceanic_data_{year}.json"
+#         dest_path = os.path.join(dest_base, str(year), dest_filename)
 
-        if not os.path.exists(dest_path):
-            print(f"[{progress}%] ❌ File not found: {dest_path}")
-            continue
+#         if not os.path.exists(dest_path):
+#             print(f"[{progress}%] ❌ File not found: {dest_path}")
+#             continue
 
-        # เปิดไฟล์ JSON
-        with open(dest_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
+#         # เปิดไฟล์ JSON
+#         with open(dest_path, 'r', encoding='utf-8') as file:
+#             data = json.load(file)
 
-        # เปลี่ยนชื่อ properties.montly เป็น properties.monthly
-        for feature in data.get('features', []):
-            if 'properties' in feature and 'montly' in feature['properties']:
-                feature['properties']['monthly'] = feature['properties'].pop('montly')
+#         # เปลี่ยนชื่อ properties.montly เป็น properties.monthly
+#         for feature in data.get('features', []):
+#             if 'properties' in feature and 'montly' in feature['properties']:
+#                 feature['properties']['monthly'] = feature['properties'].pop('montly')
 
-        # บันทึกไฟล์ JSON ที่แก้ไขแล้ว
-        with open(dest_path, 'w', encoding='utf-8') as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
+#         # บันทึกไฟล์ JSON ที่แก้ไขแล้ว
+#         with open(dest_path, 'w', encoding='utf-8') as file:
+#             json.dump(data, file, ensure_ascii=False, indent=4)
 
-        print(f"[{progress}%] ✅ Renamed 'montly' to 'monthly' in: {dest_path}")
+#         print(f"[{progress}%] ✅ Renamed 'montly' to 'monthly' in: {dest_path}")
 
-# เรียกใช้ฟังก์ชัน
-rename_monthly_property_in_json(1960, 2022)
+# # เรียกใช้ฟังก์ชัน
+# rename_monthly_property_in_json(1960, 2022)
 
 # import os
 # import shutil

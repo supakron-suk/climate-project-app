@@ -335,7 +335,6 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
       return roundLabel(value);
     });
   } else {
-    // 🔴 กรณีอื่นใช้แบบ dynamic
     const desiredLabelCount = 7;
     const minInt = Math.floor(min);
     const maxInt = Math.ceil(max);
@@ -595,7 +594,7 @@ const MapComponent = ({
 
   const { min: calculatedMin, max: calculatedMax } = calculateMinMax(fullGeoData, viewMode, value, selectedScale);
   // console.log("Legend MinMax:", calculatedMin, calculatedMax);
-  
+  console.log("Received geoData", geoData);
   // Use the values of legendMin and legendMax from Actual and Trend
   const isValid = (v) => typeof v === "number" && !isNaN(v) && v !== 0 && v !== 1;
 

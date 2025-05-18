@@ -43,7 +43,7 @@ export const spi_Heatmap = (
       if (!sumByArea[name]) {
         sumByArea[name] = 0;
         countByArea[name] = 0;
-        geometryByArea[name] = feature.geometry; // ใช้ shape ของพื้นที่
+        geometryByArea[name] = feature.geometry; 
       }
 
       monthlyData.forEach((val) => {
@@ -72,8 +72,6 @@ export const spi_Heatmap = (
   return resultGeoJSON;
 };
 
-
-
 export const Heatmap = (
   dataByYear,
   startYear,
@@ -83,7 +81,8 @@ export const Heatmap = (
   valueKey,
   configData,
   isRegionView,
-  selectedScale // 
+  selectedScale,
+  selectedDataset 
 ) => {
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year.");
@@ -91,40 +90,35 @@ export const Heatmap = (
   }
 
   const isMultiScale = valueKey === "spi" || valueKey === "spei";
-  //  อย่าสร้าง selectedScale ใหม่ตรงนี้
+
+  const viewType = isRegionView ? "region" : "province";
+  const fileConfig = configData.datasets[selectedDataset]?.file_name_pattern?.[viewType];
+  const areaProperty = fileConfig?.area_property || "name";
 
   const sumByArea = {};
   const countByArea = {};
   const geometryByArea = {};
 
   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-    const geojson = isRegionView
-      ? dataByYear[year]?.region
-      : dataByYear[year]?.province;
-
+    const geojson = dataByYear[year]?.[viewType];
     if (!geojson?.features) continue;
 
     let filteredFeatures = geojson.features;
 
-    if (isRegionView) {
-      if (region && region !== "Thailand_region") {
-        filteredFeatures = filteredFeatures.filter(
-          (f) => f.properties.region_name === region
-        );
-      }
-    } else {
-      if (province && province !== "Thailand") {
-        filteredFeatures = filteredFeatures.filter(
-          (f) => f.properties.province_name === province
-        );
-      }
+    // ใช้ areaProperty เพื่อ filter โดยไม่ hardcode
+    const selectedArea = isRegionView ? region : province;
+    if (
+      selectedArea &&
+      selectedArea !== "Thailand" &&
+      selectedArea !== "Thailand_region"
+    ) {
+      filteredFeatures = filteredFeatures.filter(
+        (f) => f.properties[areaProperty] === selectedArea
+      );
     }
 
     filteredFeatures.forEach((feature) => {
-      const name = isRegionView
-        ? feature.properties.region_name || feature.properties.name
-        : feature.properties.province_name || feature.properties.name;
-
+      const name = feature.properties[areaProperty] || feature.properties.name;
       const geometry = feature.geometry;
 
       if (!geometryByArea[name]) {
@@ -182,8 +176,6 @@ export const Heatmap = (
 };
 
 
-
-
 // export const Heatmap = (
 //   dataByYear,
 //   startYear,
@@ -193,36 +185,39 @@ export const Heatmap = (
 //   valueKey,
 //   configData,
 //   isRegionView,
+//   selectedScale // 
 // ) => {
-
 //   if (startYear > endYear) {
 //     console.error("Start year must be less than or equal to end year.");
 //     return null;
 //   }
 
-//   const groupedData = {};
-//   let actualValueKey = valueKey;
+//   const isMultiScale = valueKey === "spi" || valueKey === "spei";
+//   //  อย่าสร้าง selectedScale ใหม่ตรงนี้
 
+//   const sumByArea = {};
+//   const countByArea = {};
+//   const geometryByArea = {};
 
-//   for (let year = startYear; year <= endYear; year++) {
-//     const yearData = dataByYear[year];
-//     const geojson = isRegionView ? yearData?.region : yearData?.province;
+//   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
+//     const geojson = isRegionView
+//       ? dataByYear[year]?.region
+//       : dataByYear[year]?.province;
 
-//     if (!geojson || !geojson.features) continue;
+//     if (!geojson?.features) continue;
 
 //     let filteredFeatures = geojson.features;
 
-    
 //     if (isRegionView) {
 //       if (region && region !== "Thailand_region") {
 //         filteredFeatures = filteredFeatures.filter(
-//           (feature) => feature.properties.region_name === region
+//           (f) => f.properties.region_name === region
 //         );
 //       }
 //     } else {
 //       if (province && province !== "Thailand") {
 //         filteredFeatures = filteredFeatures.filter(
-//           (feature) => feature.properties.province_name === province
+//           (f) => f.properties.province_name === province
 //         );
 //       }
 //     }
@@ -232,144 +227,59 @@ export const Heatmap = (
 //         ? feature.properties.region_name || feature.properties.name
 //         : feature.properties.province_name || feature.properties.name;
 
-//       const value = feature.properties.annual?.[actualValueKey] ?? feature.properties[actualValueKey];
 //       const geometry = feature.geometry;
 
-//       if (!groupedData[name]) {
-//         groupedData[name] = {
-//           geometry,
-//           total: 0,
-//           count: 0,
-//         };
+//       if (!geometryByArea[name]) {
+//         geometryByArea[name] = geometry;
 //       }
 
-//       if (typeof value === "number" && !isNaN(value)) {
-//         groupedData[name].total += value;
-//         groupedData[name].count++;
+//       if (isMultiScale) {
+//         const monthlyData = feature.properties.monthly?.[selectedScale];
+//         if (!monthlyData || !Array.isArray(monthlyData)) return;
+
+//         if (!sumByArea[name]) {
+//           sumByArea[name] = 0;
+//           countByArea[name] = 0;
+//         }
+
+//         monthlyData.forEach((val) => {
+//           if (typeof val === "number" && !isNaN(val)) {
+//             sumByArea[name] += val;
+//             countByArea[name]++;
+//           }
+//         });
+//       } else {
+//         const value =
+//           feature.properties.annual?.[valueKey] ?? feature.properties[valueKey];
+
+//         if (typeof value === "number" && !isNaN(value)) {
+//           if (!sumByArea[name]) {
+//             sumByArea[name] = 0;
+//             countByArea[name] = 0;
+//           }
+
+//           sumByArea[name] += value;
+//           countByArea[name]++;
+//         }
 //       }
 //     });
 //   }
 
 //   const averagedGeoJSON = {
 //     type: "FeatureCollection",
-//     features: Object.entries(groupedData).map(([name, data]) => ({
+//     features: Object.entries(sumByArea).map(([name, total]) => ({
 //       type: "Feature",
-//       geometry: data.geometry,
+//       geometry: geometryByArea[name],
 //       properties: {
 //         name,
-//         [actualValueKey]: data.count > 0 ? data.total / data.count : null,
+//         [isMultiScale ? selectedScale : valueKey]:
+//           countByArea[name] > 0 ? total / countByArea[name] : null,
 //         level: isRegionView ? "region" : "province",
 //       },
 //     })),
 //   };
 
 //   console.log("Heatmap data returned:", averagedGeoJSON);
-
-//   return averagedGeoJSON;
-// };
-
-
-
-
-// export const Heatmap = (
-//   dataByYear,
-//   startYear,
-//   endYear,
-//   region,
-//   province,
-//   valueKey,
-//   configData,
-//   isRegionView,
-//   scale
-// ) => {
-//   console.log("Received scale in Heatmap:", scale);
-
-//   if (startYear > endYear) {
-//     console.error("Start year must be less than or equal to end year.");
-//     return null;
-//   }
-
-//   const groupedData = {};
-
-//   for (let year = startYear; year <= endYear; year++) {
-//     const yearData = dataByYear[year];
-//     const geojson = isRegionView ? yearData?.region : yearData?.province;
-
-//     if (!geojson || !geojson.features) continue;
-
-//     let filteredFeatures = geojson.features;
-
-//     // ใช้ logic แบบเดียวกับ TrendMap
-//     if (isRegionView) {
-//       if (region && region !== "Thailand_region") {
-//         filteredFeatures = filteredFeatures.filter(
-//           (feature) => feature.properties.region_name === region
-//         );
-//       }
-//     } else {
-//       if (province && province !== "Thailand") {
-//         filteredFeatures = filteredFeatures.filter(
-//           (feature) => feature.properties.province_name === province
-//         );
-//       }
-//     }
-
-//     filteredFeatures.forEach((feature) => {
-//       const name = isRegionView
-//         ? feature.properties.region_name || feature.properties.name
-//         : feature.properties.province_name || feature.properties.name;
-
-//       let actualValueKey = valueKey;
-//       if ((valueKey === "spi" || valueKey === "spei") && scale) {
-//         actualValueKey = `${valueKey}${scale}`;
-//       }
-      
-//   //   const value = isRegionView
-//   // ? feature.properties.annual?.[actualValueKey] ?? feature.properties[actualValueKey]
-//   // : feature.properties.annual?.[actualValueKey] ?? feature.properties[actualValueKey];
-
-//       const value = isRegionView
-//     ? feature.properties.annual?.[valueKey] ?? feature.properties[valueKey]
-//     : feature.properties.annual?.[valueKey] ?? feature.properties[valueKey];
-
-//       // const value = isRegionView
-//       //   ? feature.properties.annual?.[valueKey] || feature.properties[valueKey]
-//       //   : feature.properties.annual?.[valueKey] || feature.properties[valueKey];
-
-//       const geometry = feature.geometry;
-
-//       if (!groupedData[name]) {
-//         groupedData[name] = {
-//           geometry,
-//           total: 0,
-//           count: 0,
-//         };
-//       }
-
-//       if (typeof value === "number" && !isNaN(value)) {
-//         groupedData[name].total += value;
-//         groupedData[name].count++;
-//       }
-//     });
-//   }
-
-//   const averagedGeoJSON = {
-//     type: "FeatureCollection",
-//     features: Object.entries(groupedData).map(([name, data]) => ({
-//       type: "Feature",
-//       geometry: data.geometry,
-//       properties: {
-//         name,
-//         // [actualValueKey]: data.count > 0 ? data.total / data.count : null,
-//         [valueKey]: data.count > 0 ? data.total / data.count : null,
-//         level: isRegionView ? "region" : "province",
-//       },
-//     })),
-//   };
-
-//   console.log("Heatmap data returned:", averagedGeoJSON);
-  
-
 //   return averagedGeoJSON;
 // };
 

@@ -54,19 +54,34 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
   const monthlyCounts = Array(12 * (endYear - startYear + 1)).fill(0); 
 
   
-  const filterRegion_Province = (features, region, province = null) => {
-  if (province && province !== 'Thailand') {
-    // เลือกจาก province dropdown โดยตรง
-    return features.filter((feature) => feature.properties.province_name === province);
-  }
+  const filterRegion_Province = (features, region, province, viewType) => {
+  const fileConfig = configData.datasets[selectedDataset].file_name_pattern[viewType];
+  const areaProperty = fileConfig?.area_property;
 
-  if (region && region !== 'Thailand_region') {
-    // กรองข้อมูลโดยใช้ region_name จาก properties ของแต่ละ feature
-    return features.filter((feature) => feature.properties.region_name === region);
+   if (!areaProperty) return features;
+
+  const targetValue = viewType === 'province' ? province : region;
+
+  if (targetValue && targetValue !== 'Thailand' && targetValue !== 'Thailand_region') {
+    return features.filter((feature) => feature.properties[areaProperty] === targetValue);
   }
 
   return features;
 };
+
+//   const filterRegion_Province = (features, region, province = null) => {
+//   if (province && province !== 'Thailand') {
+//     // เลือกจาก province dropdown โดยตรง
+//     return features.filter((feature) => feature.properties.province_name === province);
+//   }
+
+//   if (region && region !== 'Thailand_region') {
+//     // กรองข้อมูลโดยใช้ region_name จาก properties ของแต่ละ feature
+//     return features.filter((feature) => feature.properties.region_name === region);
+//   }
+
+//   return features;
+// };
 
 
   
@@ -78,22 +93,28 @@ export const calculatemean = (dataByYear, startYear, endYear, region, province, 
 
   for (let year = startYear; year <= endYear; year++) {
     let geojson = null;
+    let viewType = "";
+    
 
-    // console.log(`Year: ${year}, Data for year:`, dataByYear[year]);
+if (province === "Thailand" || region === "Thailand_region") {
+    viewType = "country";
+  } else if (region && region !== "Thailand_region") {
+    viewType = "region";
+  } else if (province && province !== "Thailand") {
+    viewType = "province";
+  }
 
+// const isThailand =
+//   province === "Thailand" || region === "Thailand_region";
 
-// ไม่ว่าจะอยู่ใน view ไหน ถ้าเลือก Thailand ให้ใช้ country
-const isThailand =
-  province === "Thailand" || region === "Thailand_region";
-
-if (isThailand) {
-  geojson = dataByYear[year]?.country;
-} else if (region && region !== "Thailand_region") {
-  geojson = dataByYear[year]?.region;
-} else if (province && province !== "Thailand") {
-  geojson = dataByYear[year]?.province;
-}
-
+// if (isThailand) {
+//   geojson = dataByYear[year]?.country;
+// } else if (region && region !== "Thailand_region") {
+//   geojson = dataByYear[year]?.region;
+// } else if (province && province !== "Thailand") {
+//   geojson = dataByYear[year]?.province;
+// }
+geojson = dataByYear[year]?.[viewType];
 
 
 
@@ -111,8 +132,9 @@ if (geojson.features) {
   console.warn(`Invalid geojson structure for year ${year}:`, geojson);
   continue;
 }
+    const filteredFeatures = filterRegion_Province(features, region, province, viewType);
 
-    const filteredFeatures = filterRegion_Province(features, region, province);
+    // const filteredFeatures = filterRegion_Province(features, region, province);
 
 
       filteredFeatures.forEach((feature) => {
@@ -120,17 +142,37 @@ if (geojson.features) {
 
 
 
+        const fileConfig = configData.datasets[selectedDataset]?.file_name_pattern?.[viewType];
+        const yearlyKey = fileConfig.yearly;
+        const monthlyKey = fileConfig.monthly;
+
+        // const yearlyKey = fileConfig?.yearly || "annual";
+        // const monthlyKey = fileConfig?.monthly || "monthly";
         // ดึง annual value สำหรับ Time Series
-         let annualValue = null;
-        if (feature.properties.annual && feature.properties.annual[selectedIndex] !== undefined) {
-          annualValue = feature.properties.annual[selectedIndex];
+        let annualValue = null;
+        if (
+          feature.properties[yearlyKey] &&
+          feature.properties[yearlyKey][selectedIndex] !== undefined
+        ) {
+          annualValue = feature.properties[yearlyKey][selectedIndex];
         }
+        //  let annualValue = null;
+        // if (feature.properties.annual && feature.properties.annual[selectedIndex] !== undefined) {
+        //   annualValue = feature.properties.annual[selectedIndex];
+        // }
 
         // ดึง monthly array สำหรับ Seasonal Cycle
         let monthlyValues = null;
-      if (feature.properties.monthly && Array.isArray(feature.properties.monthly[selectedIndex])) {
-        monthlyValues = feature.properties.monthly[selectedIndex];
-      }
+        if (
+          feature.properties[monthlyKey] &&
+          Array.isArray(feature.properties[monthlyKey][selectedIndex])
+        ) {
+          monthlyValues = feature.properties[monthlyKey][selectedIndex];
+        }
+      //   let monthlyValues = null;
+      // if (feature.properties.monthly && Array.isArray(feature.properties.monthly[selectedIndex])) {
+      //   monthlyValues = feature.properties.monthly[selectedIndex];
+      // }
 
       if (annualValue !== null) {
         const yearlySum = annualValue; 
