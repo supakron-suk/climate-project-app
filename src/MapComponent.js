@@ -33,6 +33,17 @@ const coolwarmColor_reverse = [
   [-0.5, "#053061"],
 ];
 
+const getAreaProperty = (configData, selectedDataset, isRegionView) => {
+  const viewType = isRegionView ? "region" : "province";
+  return configData.datasets?.[selectedDataset]?.file_name_pattern?.[viewType]?.area_property ;
+};
+
+
+function getUnit(configData, selectedDataset, selectedValue) {
+  const variableOptions = configData.datasets[selectedDataset]?.variable_options || [];
+  const found = variableOptions.find(opt => opt.value === selectedValue);
+  return found?.unit || "";  
+}
 
 
 const interpolateColor = (value, min, max, scale) => {
@@ -208,35 +219,25 @@ const style = (
   selectedToneColor,
   isReversed,
   isRegionView,
-  selectedScale
+  selectedScale,
+  configData,
+  selectedDataset
 ) => {
   const isMultiScale = selectedValue === "spi" || selectedValue === "spei";
+  const areaProperty = getAreaProperty(configData, selectedDataset, isRegionView);
 
-  
   const actualValueKey =
-  isMultiScale && selectedScale
-    ? selectedScale 
-    : selectedValue;
+    isMultiScale && selectedScale ? selectedScale : selectedValue;
 
   const dataValue =
     viewMode === "TrendMap"
       ? feature.properties.slope_value
       : feature.properties[actualValueKey];
 
-  // console.log(`[STYLE DEBUG] ${feature.properties.name} ->`, {
-  //   viewMode,
-  //   selectedValue,
-  //   actualValueKey,
-  //   dataValue,
-  //   selectedScale
-  // });
-
-  const isProvinceFeature = feature.properties.level === "province";
-  const isRegionFeature = feature.properties.level === "region";
-
+  const areaName = feature.properties?.[areaProperty] || feature.properties?.name;
   const shouldShow = isRegionView
-    ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion || feature.properties.name === selectedRegion)
-    : (selectedProvince === "Thailand" || feature.properties.province_name === selectedProvince || feature.properties.name === selectedProvince);
+    ? selectedRegion === "Thailand_region" || areaName === selectedRegion
+    : selectedProvince === "Thailand" || areaName === selectedProvince;
 
   return {
     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
@@ -248,6 +249,54 @@ const style = (
   };
 };
 
+
+// const style = (
+//   feature,
+//   selectedRegion,
+//   selectedProvince,
+//   viewMode,
+//   min,
+//   max,
+//   selectedValue,
+//   selectedToneColor,
+//   isReversed,
+//   isRegionView,
+//   selectedScale,
+//   configData,
+//   selectedDataset
+// ) => {
+//   const isMultiScale = selectedValue === "spi" || selectedValue === "spei";
+
+  
+//   const actualValueKey =
+//   isMultiScale && selectedScale
+//     ? selectedScale 
+//     : selectedValue;
+
+//   const dataValue =
+//     viewMode === "TrendMap"
+//       ? feature.properties.slope_value
+//       : feature.properties[actualValueKey];
+
+
+//   const isProvinceFeature = feature.properties.level === "province";
+//   const isRegionFeature = feature.properties.level === "region";
+
+//   const shouldShow = isRegionView
+//     ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion || feature.properties.name === selectedRegion)
+//     : (selectedProvince === "Thailand" || feature.properties.province_name === selectedProvince || feature.properties.name === selectedProvince);
+
+//   return {
+//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
+//     weight: 0.3,
+//     opacity: 1,
+//     color: "black",
+//     dashArray: "0",
+//     fillOpacity: shouldShow ? 0.9 : 0,
+//   };
+// };
+
+
 const onEachFeature = (
   feature,
   layer,
@@ -255,16 +304,14 @@ const onEachFeature = (
   value,
   isRegionView,
   selectedScale,
-  numberOfYears
+  numberOfYears,
+  configData,
+  selectedDataset
 ) => {
   const props = feature.properties;
+  const areaProperty = getAreaProperty(configData, selectedDataset, isRegionView);
 
-  const name = isRegionView
-    ? props.region_name || props.name
-    : props.province_name || props.name;
-
-  const region = props.region_name || "N/A";
-  const province = props.province_name || "N/A";
+  const name = props?.[areaProperty] || props?.name;
 
   const isMultiScale = value === "spi" || value === "spei";
   const actualValueKey = isMultiScale && selectedScale ? selectedScale : value;
@@ -274,30 +321,20 @@ const onEachFeature = (
       ? props.slope_value
       : props.annual?.[actualValueKey] ?? props[actualValueKey];
 
-  // ปัดทศนิยมตามประเภทข้อมูล
   const formattedValue =
     rawValue !== null && rawValue !== undefined
       ? Number(rawValue).toFixed(2)
       : "N/A";
 
-  // หาหน่วยของข้อมูล
-  const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(value)
-    ? "°C"
-    : "mm";
-
+  const unit = getUnit(configData, selectedDataset, value);
+  // const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(value) ? "°C" : "mm";
   const yearsText = numberOfYears ? `/ ${numberOfYears} year` : "";
-
   const label = viewMode === "TrendMap" ? "Slope" : "Value";
 
   const fullValue =
     formattedValue !== "N/A"
       ? `<strong>${label}:</strong> ${formattedValue}${unit}${yearsText}`
       : `<strong>${label}:</strong> N/A`;
-
-  // console.log(
-  //   `[looking value] ${name} (${region}/${province}) | ${label} →`,
-  //   rawValue
-  // );
 
   layer.bindPopup(`
     <strong>${name}</strong><br/>
@@ -307,7 +344,8 @@ const onEachFeature = (
 
 
 
-const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears }) => {
+const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears, configData, 
+  selectedDataset, selectedRegion, labelProvince, labelRegion  }) => {
   const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
 
   if (!temp_color || !Array.isArray(temp_color)) {
@@ -358,8 +396,19 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
   }
 
   const numBlocks = temp_color.length;
-  const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
-  const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
+  const unit = getUnit(configData, selectedDataset, selectedValue);
+
+  const areaName =
+  selectedRegion === "Thailand_region"
+    ? "Thailand"
+    : labelProvince
+    ? labelProvince.replace(/_/g, " ")
+    : labelRegion
+    ? labelRegion.replace(/_/g, " ")
+    : "";
+  // const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+  const title = `Actual Map | Area: ${areaName} | Unit: ${unit}`;
+  // const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
 
   return (
     <div className="color-bar-container heatmap">
@@ -399,87 +448,9 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
 };
 
 
-// const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears }) => {
-//   const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
 
-//   if (!temp_color || !Array.isArray(temp_color)) {
-//     console.warn("Invalid colorScale in HeatmapBar", { temp_color });
-//     return null;
-//   }
-
-//   // ฟังก์ชันจัดรูปแบบตัวเลขให้เป็นเลขกลมๆ หรือ 0.5
-//   const roundLabel = (value) => {
-//     if (["spi", "spei"].includes(selectedValue)) {
-//       return value.toFixed(2); // สำหรับ SPI หรือ SPEI ให้แสดงเลขที่มีทศนิยม 2 ตำแหน่ง
-//     }
-//     if (["pre", "rx1day"].includes(selectedValue)) {
-//       return Math.round(value); // สำหรับปริมาณน้ำฝนแสดงเลขเต็ม
-//     }
-//     return Math.round(value); // สำหรับอุณหภูมิให้แสดงเป็น .0 หรือ .5
-//   };
-
-//   // log min และ max ก่อน
-//   // console.log("Min:", min, "Max:", max);
-
-//   // คำนวณ labels โดยใช้ min, max และขั้น step ที่คำนวณจาก (max - min) / 11
-//   const step = (max - min) / 11;
-//   // console.log("Step:", step); 
-//   // คำนวณ labels โดยการเพิ่ม step จาก min เพื่อให้อยู่ในช่วงของ min - max
-//   const labels = Array.from({ length: 12 }, (_, i) => {
-//     const value = min + step * i;  // คำนวณค่าแต่ละขั้นจาก min และ step
-//     const roundedValue = roundLabel(value); // ใช้ roundLabel เพื่อจัดรูปแบบค่าทศนิยม
-//     return roundedValue;     
-//   });
-
-//   // log labels array
-//   // console.log("Labels (Rounded Values):", labels);
-
-//   const numBlocks = temp_color.length;
-
-//   // กำหนดหน่วยตาม selectedValue
-//   const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
-//   const title = `Actual Value (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
-
-//   return (
-//     <div className="color-bar-container heatmap">
-//       <div className="color-bar-title">
-//         {title}
-//       </div>
-//       <div className="gradient-bar">
-//         {temp_color.map(([_, color], index) => (
-//           <div
-//             key={index}
-//             className="color-segment"
-//             style={{
-//               backgroundColor: color,
-//               width: `${100 / numBlocks}%`,
-//               height: "20px",
-//             }}
-//           />
-//         ))}
-//       </div>
-//       <div className="labels">
-//         {labels.map((label, index) => (
-//           <span
-//             key={index}
-//             style={{
-//               position: "absolute",
-//               left: `${(index / (labels.length - 1)) * 100}%`,
-//               transform: "translateX(-50%)",
-//               fontSize: "11px",
-//             }}
-//           >
-//             {label}
-//           </span>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-
-
-const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears, isReversed }) => {
+const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.111, numberOfYears, isReversed, configData, selectedDataset, 
+  selectedRegion, labelProvince, labelRegion }) => {
   const { coolwarm } = getColorScale(selectedValue, "TrendMap", undefined, isReversed);
 
   if (!coolwarm || !Array.isArray(coolwarm)) {
@@ -508,9 +479,17 @@ const TrendmapBar = ({ selectedValue, min, max, steps = 11, spacingFactor = 1.11
     const basePosition = (i / (steps - 1)) * 100;
     return basePosition * spacingFactor;
   });
-
-  const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
-  const trendTitle = `Trend Values (${unit}${numberOfYears ? ` / ${numberOfYears} year` : ""})`;
+  const unit = getUnit(configData, selectedDataset, selectedValue);
+  const areaName =
+  selectedRegion === "Thailand_region"
+    ? "Thailand"
+    : labelProvince
+    ? labelProvince.replace(/_/g, " ")
+    : labelRegion
+    ? labelRegion.replace(/_/g, " ")
+    : "";
+  // const unit = ["temperature", "tmin", "tmax", "txx", "tnn"].includes(selectedValue) ? "°C" : "mm";
+  const trendTitle = `Trend Map | Area: ${areaName} | Unit: ${unit}`;
 
   return (
     <div className="color-bar-container trendmap">
@@ -580,22 +559,21 @@ const MapComponent = ({
   trendMax,
   labelRegion,
   labelProvince,
-  selectedYearStart,
-  selectedYearEnd,
+  labelYearStart,
+  labelYearEnd,
   selectedToneColor,
   setSelectedToneColor,
   toneColors,
   isReversed,  
   numberOfYears,
   isRegionView,
-  selectedScale
+  selectedScale,
+  configData,
+  selectedDataset,
 }) => {
   // console.log("scale of spi", selectedScale)
 
   const { min: calculatedMin, max: calculatedMax } = calculateMinMax(fullGeoData, viewMode, value, selectedScale);
-  // console.log("Legend MinMax:", calculatedMin, calculatedMax);
-  console.log("Received geoData", geoData);
-  // Use the values of legendMin and legendMax from Actual and Trend
   const isValid = (v) => typeof v === "number" && !isNaN(v) && v !== 0 && v !== 1;
 
   const defaultMin = viewMode === "TrendMap"
@@ -621,13 +599,18 @@ const MapComponent = ({
 
   return (
     <div className="map-box">
-      <label className="area-head-map">
+       <label className="map-header">
+      {labelYearStart && labelYearEnd 
+        ? `Map View (${labelYearStart} - ${labelYearEnd})` 
+        : "Map View"}
+    </label>
+      {/* <label className="area-head-map">
         {selectedRegion === "Thailand_region"
           ? "Thailand"
           : labelProvince
           ? labelProvince.replace(/_/g, " ")
           : labelRegion.replace(/_/g, " ")}
-      </label>
+      </label> */}
 
       <div className="map-container">
         <MapContainer center={[13.7563, 100.5018]} zoom={5} style={{ height: "450px", width: "600px" }}>
@@ -648,8 +631,9 @@ const MapComponent = ({
               <GeoJSON
                 data={displayedGeoData}
                 style={(feature) => style(feature, selectedRegion, selectedProvince, 
-                  viewMode, defaultMin, defaultMax, value, selectedToneColor, isReversed, isRegionView, selectedScale )}  // Pass isReversed here
-                onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value, isRegionView, selectedScale, numberOfYears )}
+                  viewMode, defaultMin, defaultMax, value, selectedToneColor, isReversed, isRegionView, selectedScale, configData,
+    selectedDataset )}  
+                onEachFeature={(feature, layer) => onEachFeature(feature, layer, viewMode, value, isRegionView, selectedScale, numberOfYears, configData, selectedDataset)}
               />
             </LayersControl.Overlay>
           </LayersControl>
@@ -658,9 +642,13 @@ const MapComponent = ({
 
       {/* Use the appropriate color bar */}
       {viewMode === "Heatmap" ? (
-        <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax} selectedToneColor={selectedToneColor} isReversed={isReversed} numberOfYears={numberOfYears}/>  // Pass isReversed here
+        <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax} selectedToneColor={selectedToneColor} isReversed={isReversed}
+         numberOfYears={numberOfYears} configData={configData} selectedDataset={selectedDataset} selectedRegion={selectedRegion} labelProvince={labelProvince}
+  labelRegion={labelRegion}/>  
       ) : (
-        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} numberOfYears={numberOfYears} isReversed={isReversed}/>  
+        <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} numberOfYears={numberOfYears} isReversed={isReversed} 
+        configData={configData} selectedDataset={selectedDataset}  selectedRegion={selectedRegion} labelProvince={labelProvince} abelRegion={labelRegion}
+/>  
       )}
     </div>
   );

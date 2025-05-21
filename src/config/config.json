@@ -45,10 +45,14 @@
         , "description": "Monthly and annual average minimum temperatures"},
 
         { "label": "SPI", "value": "spi", "unit": "mm", "group": "Indices Data", "type": "monthly", 
-        "multi_scale": ["spi3", "spi6", "spi9", "spi12", "spi24", "spi36", "spi48", "spi60", "oni"] , "description":"Standardised Precipitation Index<br>Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."},
+        "multi_scale": ["spi3", "spi6", "spi9", "spi12", "spi24", "spi36", "spi48", "spi60"] ,
+        "oni_scale": "oni",
+         "description":"Standardised Precipitation Index<br>Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."},
 
         { "label": "SPEI", "value": "spei", "unit": "mm" , "group": "Indices Data", "type": "monthly", 
-        "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60", "oni"] , "description":"Standardised Precipitation Evapotranspiration Index<br>Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified using precipitation and evaporation."},
+        "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60"] ,
+        "oni_scale": "oni",
+         "description":"Standardised Precipitation Evapotranspiration Index<br>Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified using precipitation and evaporation."},
         
         { "label": "CDD",                   "value": "cdd",       "unit": "mm", "type": "yearly",  "group": "Indices Data", "description":"Maximum length of dry spell: maximum number of consecutive days with daily rainfall rate < 1mm"},
         { "label": "CDDCOLD18",             "value": "cddcold18", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Cooling degree days Annual sum of difference between daily mean temperature with 18. A measure of the energy demand needed to cool a building."},
@@ -107,11 +111,27 @@
       "year_start": 1901,
       "year_end": 2023,
       "file_name_pattern": {
-       "country": "country_data_{year}.json",
-        "region": "region_data_{year}.json",
-        "province": "province_data_{year}.json"
-        
-      },
+  "country": {
+    "filename": "country_data_{year}.json",
+    "properties": ["annual", "monthly"],
+    "yearly": "annual",
+    "monthly": "monthly"
+  },
+  "region": {
+    "filename": "region_data_{year}.json",
+    "area_property": "region_name",
+    "properties": ["annual", "monthly"],
+    "yearly": "annual",
+    "monthly": "monthly"
+  },
+  "province": {
+    "filename": "province_data_{year}.json",
+    "area_property": "province_name",
+    "properties": ["annual", "monthly"],
+    "yearly": "annual",
+    "monthly": "monthly"
+  }
+},
       "variable_options": [
         { "label": "Precipitation",   "value": "pre",  "unit": "mm", "type": "monthly", "group": "Raw Data", "description": "Mean monthly or annual rainfall" },
         { "label": "Temperature Max", "value": "tmax", "unit": "°C", "type": "monthly", "group": "Raw Data", "description": "Monthly and annual average maximum temperatures" },
@@ -122,7 +142,7 @@
       "unit": "mm", 
       "type": "monthly",
       "group": "Indices Data",
-      "multi_scale": ["spi3", "spi6", "spi9", "spi12", "spi24", "spi36", "spi48", "spi60"],
+      "multi_scale": ["spi3", "spi6", "spi12", "spi24"],
       "description": "Standardised Precipitation Index Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."
     },
     {
@@ -131,7 +151,7 @@
       "unit": "mm", 
       "type": "monthly",
       "group": "Indices Data", 
-      "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60"],
+      "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24"],
       "description": "Standardised Precipitation Evapotranspiration Index Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified using precipitation and evaporation. See Vicente-Serrano et al. (2010) for details."
     }
       ]

@@ -15,111 +15,65 @@ export const spi_process = (
   const variableOption = datasetConfig.variable_options.find(
     (opt) => opt.value === selectedValue
   );
-
-  if (!variableOption || !variableOption.multi_scale) {
-    console.warn("No multi_scale config for", selectedValue);
-    return [];
-  }
+  if (!variableOption?.multi_scale) return [];
 
   const allScales = variableOption.multi_scale;
-  const scalesToUse = (selectedScales && selectedScales.length > 0)
-    ? selectedScales
-    : [allScales[0]];
-
+  const oniKey = variableOption?.oni_scale; 
+  const scalesToUse = selectedScales?.length > 0 ? selectedScales : [allScales[0]];
   const spiData = [];
 
   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-    let geojson = null;
+    const areaType = updatedProvince !== "Thailand" ? "province"
+                    : updatedRegion !== "Thailand_region" ? "region"
+                    : "country";
+    const geojson = dataByYear[year]?.[areaType];
+    if (!geojson?.features) continue;
 
-    if (updatedRegion === "Thailand_region" && updatedProvince === "Thailand") {
-      geojson = dataByYear[year]?.country;
-    } else if (updatedProvince && updatedProvince !== "Thailand") {
-      geojson = dataByYear[year]?.province;
-    } else {
-      geojson = dataByYear[year]?.region;
-    }
+    const areaProperty = datasetConfig.file_name_pattern?.[areaType]?.area_property;
+    const monthlyKey = datasetConfig.file_name_pattern?.[areaType]?.monthly;
+    const features = Array.isArray(geojson.features) ? geojson.features : [geojson.features];
 
-    if (!geojson || !geojson.features) {
-      console.warn(`No valid geojson for year ${year}`);
-      continue;
-    }
-
-    const features = Array.isArray(geojson.features)
-      ? geojson.features
-      : [geojson.features];
-
-    let filtered = [];
-
-    if (updatedProvince && updatedProvince !== "Thailand") {
-      filtered = features.filter(f => f.properties.province_name === updatedProvince);
-    } else if (updatedRegion && updatedRegion !== "Thailand_region") {
-      filtered = features.filter(f => f.properties.region_name === updatedRegion);
-    } else {
-      filtered = features;
-    }
+    const filtered = features.filter(f => {
+      const areaName = f.properties?.[areaProperty];
+      return (
+        updatedProvince === "Thailand" && updatedRegion === "Thailand_region" ||
+        (areaType === "province" && areaName === updatedProvince) ||
+        (areaType === "region" && areaName === updatedRegion)
+      );
+    });
 
     filtered.forEach((feature) => {
       const props = feature.properties;
-      const featYear = year;
-
       scalesToUse.forEach((scale) => {
-        if (scale === 'oni') return; 
-
-        const values = props.monthly?.[scale];
-
+        if (scale === oniKey) return; 
+        const values = props?.[monthlyKey]?.[scale];
         if (Array.isArray(values)) {
           values.forEach((value, idx) => {
-            spiData.push({
-              year: featYear,
-              month: idx + 1,
-              scale,
-              value,
-            });
+            spiData.push({ year, month: idx + 1, scale, value });
           });
-        } else {
-          console.warn(`${scale} missing for ${updatedProvince || updatedRegion}, year ${year}`);
         }
       });
     });
   }
 
-  // เสริม: อ่าน ONI หากถูกเลือก
-if (scalesToUse.includes('oni')) {
-  for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-    const oceanic = dataByYear[year]?.oceanic;
+  
+  if (scalesToUse.includes(oniKey)) {
+    for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
+      const oceanic = dataByYear[year]?.oceanic;
+      if (!oceanic?.features?.length) continue;
 
-    if (!oceanic || !oceanic.features || oceanic.features.length === 0) {
-      console.warn(`[] No oceanic data for year ${year}`);
-      continue;
-    }
-
-    const values = oceanic.features[0]?.properties?.monthly?.oni;
-
-    // console.log(`📘 ONI data for year ${year}:`, values); 
-
-    if (Array.isArray(values)) {
-      values.forEach((value, idx) => {
-        // console.log(`➡️ year: ${year}, month: ${idx + 1}, oni: ${value}`); 
-
-        spiData.push({
-          year,
-          month: idx + 1,
-          scale: "oni",
-          value,
+      const oceanicMonthlyKey = datasetConfig.file_name_pattern?.oceanic?.monthly;
+      const values = oceanic.features[0]?.properties?.[oceanicMonthlyKey]?.[oniKey];
+      if (Array.isArray(values)) {
+        values.forEach((value, idx) => {
+          spiData.push({ year, month: idx + 1, scale: oniKey, value }); 
         });
-      });
-    } else {
-      console.warn(`⚠️ Missing ONI data for year ${year}`);
+      }
     }
   }
-}
-
 
   return spiData;
 };
-
-
-
 
 
 export const gaussianFilterWithPadding = (data, kernelSize, paddingType = 'reflect') => {
@@ -250,64 +204,63 @@ export const getSpiAndSpeiData = (
   selectedScales
 ) => {
   const datasetConfig = configData.datasets[selectedDataset];
+  if (!datasetConfig) return [];
 
   const valuesArray = Array.isArray(selectedValues) ? selectedValues : [selectedValues];
   const scalesArray = selectedScales
     ? (Array.isArray(selectedScales) ? selectedScales : [selectedScales])
     : [];
 
-  const scaleNumbers = scalesArray.length > 0
-    ? scalesArray.map(s => s.match(/\d+/)?.[0]).filter(Boolean)
-    : [];
+  // ดึงเฉพาะเลขจาก scale เช่น 'spi3' => '3'
+  const scaleNumbers = scalesArray.map(s => s.match(/\d+/)?.[0]).filter(Boolean);
 
+  // คำนวณชื่อ scale ที่ต้องใช้ เช่น ['spi3', 'spei3'] หรือใช้ default จาก config
   const scalesToUse = scaleNumbers.length > 0
     ? scaleNumbers.flatMap(num => valuesArray.map(prefix => `${prefix}${num}`))
     : datasetConfig.variable_options
-        .filter(opt => valuesArray.includes(opt.value))
+        .filter(opt => valuesArray.includes(opt.value) && Array.isArray(opt.multi_scale))
         .flatMap(opt => opt.multi_scale);
 
-  // console.log(`Final scales to use (SPI + SPEI):`, scalesToUse);
-
   const spiSpeiData = [];
-  const areaScaleMap = {}; // { areaName: { scaleKey: [all values] } }
+  const areaScaleMap = {}; // เก็บข้อมูลตามพื้นที่
 
   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-    let geojson = null;
+    // หาประเภทพื้นที่
+    const isNational = updatedRegion === "Thailand_region" && updatedProvince === "Thailand";
+    const areaType = updatedProvince !== "Thailand" ? "province"
+                     : updatedRegion !== "Thailand_region" ? "region"
+                     : "country";
 
-    if (updatedRegion === "Thailand_region" && updatedProvince === "Thailand") {
-      geojson = dataByYear[year]?.country;
-    } else if (updatedProvince && updatedProvince !== "Thailand") {
-      geojson = dataByYear[year]?.province;
-    } else {
-      geojson = dataByYear[year]?.region;
-    }
+    const geojson = dataByYear[year]?.[areaType];
+    if (!geojson?.features) continue;
 
-    if (!geojson || !geojson.features) continue;
+    const features = Array.isArray(geojson.features) ? geojson.features : [geojson.features];
+    const areaProperty = datasetConfig.file_name_pattern?.[areaType]?.area_property;
+    const monthlyKey = datasetConfig.file_name_pattern?.[areaType]?.monthly;
 
-    const features = Array.isArray(geojson.features)
-      ? geojson.features
-      : [geojson.features];
-
-    const filtered = (updatedProvince && updatedProvince !== "Thailand")
-      ? features.filter(f => f.properties.province_name === updatedProvince)
-      : (updatedRegion && updatedRegion !== "Thailand_region")
-      ? features.filter(f => f.properties.region_name === updatedRegion)
-      : features;
+    const filtered = features.filter(f => {
+      const areaName = f.properties?.[areaProperty];
+      return (
+        isNational ||
+        (areaType === "province" && areaName === updatedProvince) ||
+        (areaType === "region" && areaName === updatedRegion)
+      );
+    });
 
     filtered.forEach(feature => {
       const props = feature.properties;
-      const areaName = props.province_name || props.region_name || "Thailand";
+      const areaName = props?.[areaProperty];
 
       if (!areaScaleMap[areaName]) areaScaleMap[areaName] = {};
 
       scalesToUse.forEach(scale => {
-        const values = props.monthly?.[scale];
+        const values = props?.[monthlyKey]?.[scale];
         if (Array.isArray(values)) {
           if (!areaScaleMap[areaName][scale]) {
             areaScaleMap[areaName][scale] = [];
           }
 
-          areaScaleMap[areaName][scale].push(...values); // รวมข้ามปี
+          areaScaleMap[areaName][scale].push(...values);
 
           values.forEach((value, idx) => {
             spiSpeiData.push({
@@ -322,18 +275,16 @@ export const getSpiAndSpeiData = (
     });
   }
 
-  // 🔽 Log รวมแบบจัดกลุ่มหลังวนครบทุกปี
+  // 🔽 Debug log สำหรับดูข้อมูลที่รวมไว้
   Object.entries(areaScaleMap).forEach(([areaName, scaleObj]) => {
-    console.log(`\nArea: ${areaName}`);
+    console.log(`\n📍 Area: ${areaName}`);
     const uniqueScaleNums = [...new Set(
       Object.keys(scaleObj).map(s => s.match(/\d+/)?.[0]).filter(Boolean)
     )];
-
     uniqueScaleNums.forEach(scaleNum => {
-      console.log(`Scale: ${scaleNum}`);
       valuesArray.forEach(prefix => {
-        const scaleKey = `${prefix}${scaleNum}`;
-        console.log(`${scaleKey}:`, scaleObj[scaleKey] ?? "N/A");
+        const key = `${prefix}${scaleNum}`;
+        // console.log(`${key}:`, scaleObj[key] ?? "N/A");
       });
     });
   });
@@ -341,7 +292,8 @@ export const getSpiAndSpeiData = (
   return spiSpeiData;
 };
 
-export const r_squared = (spiData, speiData) => {
+
+export const r_squared = (spiData, speiData, oniKey) => {
   const result = {};
   const spiByScale = {};
   const speiByScale = {};
@@ -359,16 +311,12 @@ export const r_squared = (spiData, speiData) => {
   });
 
   for (const scale in spiByScale) {
-    if (scale === 'oni') continue;
-
+    if (typeof oniKey === 'string' && scale === oniKey.replace(/(spi|spei)/g, '')) continue;
+    // if (scale === oniKey.replace(/(spi|spei)/g, '')) continue; 
     const x = spiByScale[scale];
     const y = speiByScale[scale];
 
-    // console.log("spei scale y", y);
-    // console.log("spi scale x", x);
-
     if (!Array.isArray(x) || !Array.isArray(y)) {
-      console.warn(`Missing data for scale ${scale}:`, { x, y });
       result[scale] = null;
       continue;
     }
@@ -379,30 +327,22 @@ export const r_squared = (spiData, speiData) => {
       continue;
     }
 
-    const xTrim = x.slice(0, timeLength);
-    const yTrim = y.slice(0, timeLength);
-
-    // console.log(`Scale: ${scale}`);
-    // console.log(`SPI values [${scale}]:`, xTrim);
-    // console.log(`SPEI values [${scale}]:`, yTrim);
-
-    const xMean = xTrim.reduce((sum, val) => sum + val, 0) / timeLength;
-    const yMean = yTrim.reduce((sum, val) => sum + val, 0) / timeLength;
+    const xMean = x.reduce((sum, val) => sum + val, 0) / timeLength;
+    const yMean = y.reduce((sum, val) => sum + val, 0) / timeLength;
 
     let sxy = 0, sxx = 0, sst = 0;
     for (let i = 0; i < timeLength; i++) {
-      sxy += (xTrim[i] - xMean) * (yTrim[i] - yMean);
-      sxx += (xTrim[i] - xMean) ** 2;
-      sst += (yTrim[i] - yMean) ** 2;
+      sxy += (x[i] - xMean) * (y[i] - yMean);
+      sxx += (x[i] - xMean) ** 2;
+      sst += (y[i] - yMean) ** 2;
     }
 
     const b = sxy / sxx;
     const a = yMean - b * xMean;
-
     let ssr = 0;
     for (let i = 0; i < timeLength; i++) {
-      const yPred = xTrim[i] * b + a;
-      ssr += (yTrim[i] - yPred) ** 2;
+      const yPred = x[i] * b + a;
+      ssr += (y[i] - yPred) ** 2;
     }
 
     result[scale] = 1 - ssr / sst;
@@ -410,6 +350,266 @@ export const r_squared = (spiData, speiData) => {
 
   return result;
 };
+
+//--------------------------------- oni rsquare zone-------------------------------//
+export function y_multi_value(selectedValue, spiResult) {
+  const scaleGroups = {};
+  spiResult.forEach(({ scale, value }) => {
+    if (!scaleGroups[scale]) scaleGroups[scale] = [];
+    scaleGroups[scale].push(value);
+  });
+
+  console.log("Summary of scale arrays:");
+  Object.entries(scaleGroups).forEach(([scale, values]) => {
+    console.log(`Variable: ${selectedValue}, Scale: ${scale}, Count: ${values.length}`);
+    console.log("    Values:", values);
+  });
+
+  return scaleGroups;
+}
+
+
+export function x_oni_value(variable, oniOnlyData) {
+  if (!variable?.oni_scale || oniOnlyData.length === 0) return [];
+
+  const oniArray = oniOnlyData.map(d => d.value);
+  console.log(`Full ONI Values (${variable.oni_scale}):`, oniArray);
+  return oniArray;
+}
+
+export function oni_r_square(xArray, yGroups) {
+  if (!xArray || xArray.length === 0) {
+    console.warn("No ONI (x) values provided");
+    return {};
+  }
+
+  const result = {};
+
+  Object.entries(yGroups).forEach(([scale, yArray]) => {
+    const timeLength = Math.min(xArray.length, yArray.length);
+    if (timeLength === 0) {
+      console.warn(`Scale "${scale}" skipped: empty array`);
+      return;
+    }
+
+    const x = xArray.slice(0, timeLength);
+    const y = yArray.slice(0, timeLength);
+
+    const xMean = x.reduce((sum, v) => sum + v, 0) / timeLength;
+    const yMean = y.reduce((sum, v) => sum + v, 0) / timeLength;
+
+    let sxy = 0, sxx = 0, sst = 0;
+    for (let i = 0; i < timeLength; i++) {
+      sxy += (x[i] - xMean) * (y[i] - yMean);
+      sxx += (x[i] - xMean) ** 2;
+      sst += (y[i] - yMean) ** 2;
+    }
+
+    const b = sxy / sxx;
+    const a = yMean - b * xMean;
+
+    let ssr = 0;
+    for (let i = 0; i < timeLength; i++) {
+      const yPred = x[i] * b + a;
+      ssr += (y[i] - yPred) ** 2;
+    }
+
+    const r2 = 1 - ssr / sst;
+
+    // 🔁 Normalize key: spi3 -> 3
+    const key = scale.replace(/[^\d]/g, ''); // extract number only
+    result[key] = r2;
+  });
+
+  return result;
+}
+
+// export function oni_r_square(xArray, yGroups) {
+//   const result = {};
+
+//   if (!xArray || xArray.length === 0) {
+//     console.warn("No ONI (x) values provided");
+//     return result;
+//   }
+
+//   Object.entries(yGroups).forEach(([scale, yArray]) => {
+//     const timeLength = Math.min(xArray.length, yArray.length);
+//     if (timeLength === 0) {
+//       console.warn(`Scale "${scale}" skipped: empty array`);
+//       result[scale] = null;
+//       return;
+//     }
+
+//     const x = xArray.slice(0, timeLength);
+//     const y = yArray.slice(0, timeLength);
+
+//     const xMean = x.reduce((sum, v) => sum + v, 0) / timeLength;
+//     const yMean = y.reduce((sum, v) => sum + v, 0) / timeLength;
+
+//     let sxy = 0, sxx = 0, sst = 0;
+//     for (let i = 0; i < timeLength; i++) {
+//       sxy += (x[i] - xMean) * (y[i] - yMean);
+//       sxx += (x[i] - xMean) ** 2;
+//       sst += (y[i] - yMean) ** 2;
+//     }
+
+//     const b = sxy / sxx;
+//     const a = yMean - b * xMean;
+
+//     let ssr = 0;
+//     for (let i = 0; i < timeLength; i++) {
+//       const yPred = x[i] * b + a;
+//       ssr += (y[i] - yPred) ** 2;
+//     }
+
+//     const r2 = 1 - ssr / sst;
+//     result[scale] = r2;
+//     console.log(`R² (ONI vs ${scale}):`, r2.toFixed(3));
+//   });
+
+//   return result;
+// }
+
+// export function oni_r_square(xArray, yGroups) {
+//   if (!xArray || xArray.length === 0) {
+//     console.warn("No ONI (x) values provided");
+//     return;
+//   }
+
+//   Object.entries(yGroups).forEach(([scale, yArray]) => {
+//     const timeLength = Math.min(xArray.length, yArray.length);
+//     if (timeLength === 0) {
+//       console.warn(`Scale "${scale}" skipped: empty array`);
+//       return;
+//     }
+
+//     const x = xArray.slice(0, timeLength);
+//     const y = yArray.slice(0, timeLength);
+
+//     const xMean = x.reduce((sum, v) => sum + v, 0) / timeLength;
+//     const yMean = y.reduce((sum, v) => sum + v, 0) / timeLength;
+
+//     let sxy = 0, sxx = 0, sst = 0;
+//     for (let i = 0; i < timeLength; i++) {
+//       sxy += (x[i] - xMean) * (y[i] - yMean);
+//       sxx += (x[i] - xMean) ** 2;
+//       sst += (y[i] - yMean) ** 2;
+//     }
+
+//     const b = sxy / sxx;
+//     const a = yMean - b * xMean;
+
+//     let ssr = 0;
+//     for (let i = 0; i < timeLength; i++) {
+//       const yPred = x[i] * b + a;
+//       ssr += (y[i] - yPred) ** 2;
+//     }
+
+//     const r2 = 1 - ssr / sst;
+//     console.log(`R² (ONI vs ${scale}):`, r2.toFixed(3));
+//   });
+// }
+
+
+
+//--------------------------------- oni rsquare zone-------------------------------//
+
+// export const oni_r_squared = (oniData, climateData) => {
+//   const oniByMonth = {};
+//   oniData.forEach(d => {
+//     const key = `${d.year}-${d.month}`;
+//     oniByMonth[key] = d.value;
+//   });
+
+//   const x = [], y = [];
+
+//   climateData.forEach(d => {
+//     const key = `${d.year}-${d.month}`;
+//     const oniVal = oniByMonth[key];
+//     if (oniVal !== undefined && typeof d.value === 'number') {
+//       x.push(oniVal);
+//       y.push(d.value);
+//     }
+//   });
+
+//   // 🔍 ตรวจสอบข้อมูลที่ดึงมา
+//   console.log("ONI (X):", x);
+//   console.log("SPI/SPEI (Y):", y);
+
+//   return { x, y }; 
+// };
+
+
+
+// export const r_squared = (spiData, speiData) => {
+//   const result = {};
+//   const spiByScale = {};
+//   const speiByScale = {};
+
+//   spiData.forEach(d => {
+//     const scaleKey = d.scale.replace('spi', '');
+//     if (!spiByScale[scaleKey]) spiByScale[scaleKey] = [];
+//     spiByScale[scaleKey].push(d.value);
+//   });
+
+//   speiData.forEach(d => {
+//     const scaleKey = d.scale.replace('spei', '');
+//     if (!speiByScale[scaleKey]) speiByScale[scaleKey] = [];
+//     speiByScale[scaleKey].push(d.value);
+//   });
+
+//   for (const scale in spiByScale) {
+//     if (scale === 'oni') continue;
+
+//     const x = spiByScale[scale];
+//     const y = speiByScale[scale];
+
+//     // console.log("spei scale y", y);
+//     // console.log("spi scale x", x);
+
+//     if (!Array.isArray(x) || !Array.isArray(y)) {
+//       console.warn(`Missing data for scale ${scale}:`, { x, y });
+//       result[scale] = null;
+//       continue;
+//     }
+
+//     const timeLength = Math.min(x.length, y.length);
+//     if (timeLength === 0) {
+//       result[scale] = null;
+//       continue;
+//     }
+
+//     const xTrim = x.slice(0, timeLength);
+//     const yTrim = y.slice(0, timeLength);
+
+//     // console.log(`Scale: ${scale}`);
+//     // console.log(`SPI values [${scale}]:`, xTrim);
+//     // console.log(`SPEI values [${scale}]:`, yTrim);
+
+//     const xMean = xTrim.reduce((sum, val) => sum + val, 0) / timeLength;
+//     const yMean = yTrim.reduce((sum, val) => sum + val, 0) / timeLength;
+
+//     let sxy = 0, sxx = 0, sst = 0;
+//     for (let i = 0; i < timeLength; i++) {
+//       sxy += (xTrim[i] - xMean) * (yTrim[i] - yMean);
+//       sxx += (xTrim[i] - xMean) ** 2;
+//       sst += (yTrim[i] - yMean) ** 2;
+//     }
+
+//     const b = sxy / sxx;
+//     const a = yMean - b * xMean;
+
+//     let ssr = 0;
+//     for (let i = 0; i < timeLength; i++) {
+//       const yPred = xTrim[i] * b + a;
+//       ssr += (yTrim[i] - yPred) ** 2;
+//     }
+
+//     result[scale] = 1 - ssr / sst;
+//   }
+
+//   return result;
+// };
 
 
 
