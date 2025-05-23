@@ -373,6 +373,8 @@
   align-items: center;
   justify-content: center; 
   margin-top: -100px;
+  position: relative;
+  top: 10px;
   height: 30px;
 }
 
@@ -388,7 +390,7 @@
   justify-content: center; 
   margin-top: 100px;
   position: absolute;
-  top: 180px;
+  top: 50px;
 }
 
 .dashboard-footer.sidebar-closed.show-spi {
@@ -403,7 +405,7 @@
   justify-content: center; 
   margin-top: 100px;
   position: absolute;
-  top: 180px;
+  top: 430px;
 }
 
 
@@ -433,7 +435,7 @@
   display: flex;
   align-items: center;
   justify-content: center; 
-  margin-top: 450px;
+  margin-top: 570px;
 }
 
 .dashboard-footer.sidebar-closed.hidden-seasonal {
@@ -445,7 +447,7 @@
   display: flex;
   align-items: center;
   justify-content: center; 
-  margin-top: 450px;
+  margin-top: 200px;
 }
 
 
@@ -563,11 +565,11 @@
   margin: -80px 0; 
   background: #fff;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1); 
-  margin-left: -560px;
+  margin-left: -70px;
   margin-top: 100px;
-  position: relative;
-  top: -17%;
-  right: -3%;
+  position: absolute;
+  top: -8%;
+  right: -20px;
   width: 55%;
   padding-bottom: 80px;
 } 
@@ -582,7 +584,7 @@
   margin-left: -650px;
   margin-top: 100px;
   position: relative;
-  top: -18%;
+  top: -25%;
   left: 1%;
   width: 50%;
   padding-bottom: 80px; 
@@ -942,7 +944,7 @@
 
 .right-map.sidebar-open.hidden-seasonal {
   position: relative; 
-  top: 13%;
+  top: 85%;
   left: 11%;
 }
 
@@ -1150,7 +1152,7 @@
 
 .map-buttons {
   position: relative; 
-  top: 100%;
+  top: 125%;
   left: 150px; 
   z-index: 1000; 
   display: flex;
@@ -1169,6 +1171,18 @@
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2); 
 }
 
+.map-buttons .active {
+  background-color: #4682b4;
+  color: rgb(255, 255, 255);
+  border: 1px solid #4682b4;
+}
+
+.map-buttons .inactive {
+  background-color: #9e9c9c;
+  color: #000000;
+  opacity: 0.5;
+}
+
 .map-buttons button:hover {
   background-color: #0056b3; 
 }
@@ -1177,22 +1191,13 @@
 /*--------------------------change color tone map---------------------------*/
 .tonecolor-wrapper {
   position: relative;  
-  right: -63%;
-  top: 807%;
+  right: -62%;
+  top: 797%;
   display: inline-block; 
   z-index: 999;
 }
 
-/* .tonecolor-wrapper {
-  position: absolute;
-  top: -50px;
-  right: -20%;
-  z-index: 999;
-} */
 
-
-
-/* กล่องหลักที่แสดงคำว่า Color */
 .change_tonecolor {
   background: #fff;
   color: #061fff;
@@ -1204,7 +1209,7 @@
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-/* Popup กล่องสี */
+
 .popup-tone {
   position: absolute;
   bottom: 100%;
@@ -1285,7 +1290,7 @@
   font-weight: bold;
   font-size: 17px;
   position: absolute;
-  right: 66%;
+  right: 33%;
   top: 2%;
  }
 

@@ -8,40 +8,37 @@
       "file_name_pattern": {
   "country": {
     "filename": "country_data_{year}.json",
-    "properties": ["annual", "monthly"],
     "yearly": "annual",
     "monthly": "monthly"
   },
   "region": {
     "filename": "region_data_{year}.json",
     "area_property": "region_name",
-    "properties": ["annual", "monthly"],
     "yearly": "annual",
     "monthly": "monthly"
   },
   "province": {
     "filename": "province_data_{year}.json",
     "area_property": "province_name",
-    "properties": ["annual", "monthly"],
     "yearly": "annual",
     "monthly": "monthly"
   },
   "oceanic": {
     "filename": "oceanic_data_{year}.json",
-    "properties": ["monthly"],
+
     "monthly": "monthly"
   }
 },
 
 
       "variable_options": [
-        { "label": "Precipitation", "value": "pre", "unit": "mm", "group": "Raw Data", "type": "monthly"
+        { "label": "Precipitation", "value": "pre", "unit": "mm", "type": "monthly"
         , "description": "Mean monthly or annual rainfall" },
 
-        { "label": "Temperature Max", "value": "tmax", "unit": "°C", "group": "Raw Data", "type": "monthly"
+        { "label": "Temperature Max", "value": "tmax", "unit": "°C", "type": "monthly"
         , "description": "Monthly and annual average maximum temperatures" },
 
-        { "label": "Temperature Min", "value": "tmin", "unit": "°C", "group": "Raw Data" , "type": "monthly"
+        { "label": "Temperature Min", "value": "tmin", "unit": "°C", "type": "monthly"
         , "description": "Monthly and annual average minimum temperatures"},
 
         { "label": "SPI", "value": "spi", "unit": "mm", "group": "Indices Data", "type": "monthly", 
@@ -63,7 +60,6 @@
         { "label": "GDDGROW10",             "value": "gddgrow10", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Growing degree days Annual sum of difference between daily mean temperature difference with 10. A measure of heat accumulation used to predict plant growth rates."},
         { "label": "GSL",                   "value": "gsl",       "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Growing season length Annual* count between the first span of at least 6 days with daily mean temperature >5 °C and the first span after July 1st (Jan 1st in SH) of 6 days with daily mean temperature <5 °C. (* Annual means Jan 1st to Dec 31st in the Northern Hemisphere (NH); July 1st to June 30th in the Southern Hemisphere (SH).)"},
         { "label": "HDDHEAT18",             "value": "hddheat18", "unit": "°C", "type": "yearly",  "group": "Indices Data", "description":"Heating degree days Annual sum of difference between 18 with daily mean temperature . A measure of the energy demand needed to heat a building."},
-        { "label": "ID",                    "value": "id",        "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of icing days Annual count of days daily maximum temperature < 0 °C."},
         { "label": "PRCPTOT", "value": "prcptot",   "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total precipitation on wet days<br>Let RR<sub>ij</sub> be the daily wet day (>= 1mm) precipitation amount on day i in period j, then:"},
         { "label": "R10MM",                 "value": "r10mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when the total liquid water equivalent of presumably all precipitation ≥ 10mm"},
         { "label": "R20MM",                 "value": "r20mm",     "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual count of days when the total liquid water equivalent of presumably all precipitation ≥ 20mm"},

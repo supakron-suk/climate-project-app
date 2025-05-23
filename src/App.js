@@ -141,7 +141,7 @@ const [selectedValue, setSelectedValue] = useState('temperature');
 const [variableDescription, setVariableDescription] = useState('');
 
 //----------------------------Select map----------------------------//
-const [viewMode, setViewMode] = useState("Heatmap"); // "Heatmap" หรือ "TrendMap"
+const [viewMode, setViewMode] = useState("Heatmap"); 
 //--------------------------------Select Index of Variable---------------------------//
 // const [selectedIndex, setSelectedIndex] = useState(null);
 
@@ -258,69 +258,6 @@ const getGradient = (colormapName, isReversed = false) => {
 
   return filtered;
 };
-
-//  const filterByArea = (dataByYear, region, province, startYear, endYear) => {
-//   const filtered = [];
-
-//   for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
-//     let features = [];
-
-//     if (province && province !== "Thailand") {
-//       const provinceData = dataByYear[year]?.province;
-//       if (provinceData?.features) {
-//         features = provinceData.features.filter(
-//           (f) => f.properties.province_name === province
-//         );
-//       }
-//     } else if (region && region !== "Thailand_region") {
-//       const regionData = dataByYear[year]?.region;
-//       if (regionData?.features) {
-//         features = regionData.features.filter(
-//           (f) => f.properties.region_name === region
-//         );
-//       }
-//     } else {
-//       const countryData = dataByYear[year]?.country;
-//       if (countryData?.features) {
-//         features = countryData.features;
-//       }
-//     }
-
-//     if (Array.isArray(features)) {
-//       filtered.push(...features);
-//     } else if (features) {
-//       filtered.push(features);
-//     }
-//   }
-
-//   return filtered;
-// };
-
-
-
-// const filteredProvinces = React.useMemo(() => {
-//   if (!selectedYearStart || !selectedYearEnd || selectedRegion === "Thailand") {
-//     return [];
-//   }
-
-//   const regionProvinces = configData.areas.area_thailand[selectedRegion] || [];
-//   const provincesSet = new Set();
-
-//   for (let year = parseInt(selectedYearStart); year <= parseInt(selectedYearEnd); year++) {
-//     const provinceData = dataByYear[year]?.province;
-
-//     if (provinceData && provinceData.features) {
-//       provinceData.features.forEach((feature) => {
-//         const provinceName = feature.properties.province_name;
-//         if (regionProvinces.includes(provinceName)) {
-//           provincesSet.add(provinceName);
-//         }
-//       });
-//     }
-//   }
-
-//   return Array.from(provincesSet);
-// }, [selectedYearStart, selectedYearEnd, selectedRegion, dataByYear]);
 
 const multiScaleVariables = configData.datasets[selectedDataset]?.variable_options
   .filter(opt => opt.multi_scale)
@@ -835,81 +772,6 @@ useEffect(() => {
 }, [oniXvalue, scaleYvalue]);
 
 
-// useEffect(() => {
-// const datasetKey = selectedDataset;
-// const dataset = configData?.datasets?.[datasetKey];
-
-// if (dataset && dataset.variable_options) {
-//   const variable = dataset.variable_options.find((v) => v.value === selectedValue);
-
-//   if (variable) {
-//     const hasMultiScale = Array.isArray(variable.multi_scale);
-//     const hasONI = !!variable.oni_scale;
-
-//     // จัดการ scale selector
-//     if (hasMultiScale || hasONI) {
-//       const combinedScales = [
-//         ...(hasMultiScale ? variable.multi_scale : []),
-//         ...(hasONI ? [variable.oni_scale] : [])
-//       ];
-
-//       setAvailableScales(combinedScales);
-//       setSelectedScale([combinedScales[0]]);
-
-//       if (hasONI) {
-//         console.log("Detected oni_scale:", variable.oni_scale);
-
-//         const oniOnlyData = spi_process(
-//           dataByYear,
-//           selectedYearStart,
-//           selectedYearEnd,
-//           selectedValue,
-//           isRegionView ? selectedRegion : "Thailand_region",
-//           !isRegionView ? selectedProvince : "Thailand",
-//           configData,
-//           selectedDataset,
-//           [variable.oni_scale]
-//         ).filter(d => d.scale === variable.oni_scale);
-
-//         const oniArray = oniOnlyData.map(d => d.value);
-//         console.log("Full ONI Values:", oniArray);
-//       }
-//     } else {
-//       setAvailableScales([]);
-//       setSelectedScale([]);
-//     }
-
-
-//     setVariableDescription(variable.description || '');
-//     setLabelVariable(variable.label || '');
-//   }
-
-// }
-
-
-//   if (dataset && dataset.variable_options) {
-//     const variable = dataset.variable_options.find((v) => v.value === selectedValue);
-//     if (variable?.multi_scale) {
-//       const combinedScales = [
-//         ...variable.multi_scale,
-//         ...(variable.oni_scale ? [variable.oni_scale] : [])
-//       ];
-
-//       setAvailableScales(combinedScales);
-//       setSelectedScale([combinedScales[0]]);
-
-      
-//       if (variable.oni_scale) {
-//         console.log("Detected oni_scale:", variable.oni_scale);
-//       }
-//     } else {
-//       setAvailableScales([]);
-//       setSelectedScale([]);
-//     }
-//   }
-// }, [selectedValue, selectedDataset, configData, isApplied]);
-
-
 
 useEffect(() => {
   if (isRegionView) {
@@ -1410,11 +1272,24 @@ useEffect(() => {
 
       {/* <h3 className="map-header">Map View</h3> */}
 
-  {/* Button select map */}
 <div className="map-buttons">
+  <button
+    className={viewMode === "Heatmap" ? "active" : "inactive"}
+    onClick={() => toggleViewMode("Heatmap")}
+  >
+    Actual Map
+  </button>
+  <button
+    className={viewMode === "TrendMap" ? "active" : "inactive"}
+    onClick={() => toggleViewMode("TrendMap")}
+  >
+    Trend Map
+  </button>
+</div>
+{/* <div className="map-buttons">
   <button onClick={() => toggleViewMode("Heatmap")}>Actual Map</button>
   <button onClick={() => toggleViewMode("TrendMap")}>Trend Map</button>
-</div>
+</div> */}
 
     <div className="tonecolor-wrapper">
   <div className="change_tonecolor">Color</div>

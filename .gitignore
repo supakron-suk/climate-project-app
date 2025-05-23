@@ -30,3 +30,9 @@ yarn-error.log*
 
 # Ignore all NetCDF files
 *.nc
+
+# Ignore all text files
+*.txt
+
+# Ignore all CSV files
+*.csv

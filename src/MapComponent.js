@@ -249,54 +249,6 @@ const style = (
   };
 };
 
-
-// const style = (
-//   feature,
-//   selectedRegion,
-//   selectedProvince,
-//   viewMode,
-//   min,
-//   max,
-//   selectedValue,
-//   selectedToneColor,
-//   isReversed,
-//   isRegionView,
-//   selectedScale,
-//   configData,
-//   selectedDataset
-// ) => {
-//   const isMultiScale = selectedValue === "spi" || selectedValue === "spei";
-
-  
-//   const actualValueKey =
-//   isMultiScale && selectedScale
-//     ? selectedScale 
-//     : selectedValue;
-
-//   const dataValue =
-//     viewMode === "TrendMap"
-//       ? feature.properties.slope_value
-//       : feature.properties[actualValueKey];
-
-
-//   const isProvinceFeature = feature.properties.level === "province";
-//   const isRegionFeature = feature.properties.level === "region";
-
-//   const shouldShow = isRegionView
-//     ? (selectedRegion === "Thailand_region" || feature.properties.region_name === selectedRegion || feature.properties.name === selectedRegion)
-//     : (selectedProvince === "Thailand" || feature.properties.province_name === selectedProvince || feature.properties.name === selectedProvince);
-
-//   return {
-//     fillColor: getColor(dataValue || 0, viewMode, min, max, selectedValue, selectedToneColor, isReversed),
-//     weight: 0.3,
-//     opacity: 1,
-//     color: "black",
-//     dashArray: "0",
-//     fillOpacity: shouldShow ? 0.9 : 0,
-//   };
-// };
-
-
 const onEachFeature = (
   feature,
   layer,
@@ -393,7 +345,9 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
     }
 
     labels = [...new Set(rawLabels)];
+    console.log("Actual  label range :", labels);
   }
+
 
   const numBlocks = temp_color.length;
   const unit = getUnit(configData, selectedDataset, selectedValue);
