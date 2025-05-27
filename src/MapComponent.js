@@ -297,7 +297,7 @@ const onEachFeature = (
 
 
 const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, numberOfYears, configData, 
-  selectedDataset, selectedRegion, labelProvince, labelRegion  }) => {
+  selectedDataset, selectedRegion, labelProvince, labelRegion, legendMax, legendMin  }) => {
   const { temp_color } = getColorScale(selectedValue, "Heatmap", selectedToneColor, isReversed);
 
   if (!temp_color || !Array.isArray(temp_color)) {
@@ -324,29 +324,123 @@ const HeatmapBar = ({ selectedValue, min, max, selectedToneColor, isReversed, nu
       const value = min + step * i;
       return roundLabel(value);
     });
-  } else {
-    const desiredLabelCount = 7;
-    const minInt = Math.floor(min);
-    const maxInt = Math.ceil(max);
-    const range = maxInt - minInt;
+  } 
+  else {
+  const desiredLabelCount = 7;
 
-    let step = 1;
-    if (range >= desiredLabelCount - 1) {
-      step = Math.ceil(range / (desiredLabelCount - 1));
-    }
+const niceStep = (rawStep) => {
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const normalized = rawStep / magnitude;
 
-    const rawLabels = [];
-    for (let value = minInt; value <= maxInt; value += step) {
-      rawLabels.push(roundLabel(value));
-    }
+  let niceNormalized;
+  if (normalized < 1.5) niceNormalized = 1;
+  else if (normalized < 3) niceNormalized = 2;
+  else if (normalized < 7) niceNormalized = 5;
+  else niceNormalized = 10;
 
-    if (rawLabels.length < 2) {
-      rawLabels.push(roundLabel(max));
-    }
+  const rawNice = niceNormalized * magnitude;
+  return Math.round(rawNice / 5) * 5 || 1;
+};
 
-    labels = [...new Set(rawLabels)];
-    console.log("Actual  label range :", labels);
-  }
+// 👇 ตรวจว่าไม่ได้กำหนด min/max เอง (กรณี auto-range)
+const isAutoRange = typeof min === 'number' && typeof max === 'number' && !legendMin && !legendMax;
+if (isAutoRange) {
+  const base = 10; // จะปัดให้ลงตัวที่เลข 10
+  min = Math.floor(min / base) * base;
+  max = Math.ceil(max / base) * base;
+  console.log("📏 Auto-rounded min/max:", min, max);
+}
+
+const range = max - min;
+const step = niceStep(range / (desiredLabelCount - 1));
+const rawLabels = [];
+
+let start = Math.ceil(min / step) * step;
+for (let value = start; value <= max; value += step) {
+  rawLabels.push(roundLabel(value));
+}
+if (min < start) rawLabels.unshift(roundLabel(min));
+if (rawLabels.length === 0 || rawLabels[rawLabels.length - 1] < max) {
+  rawLabels.push(roundLabel(max));
+}
+
+labels = [...new Set(rawLabels)];
+console.log("✅ Actual label range:", labels);
+
+}
+
+
+
+//   else {
+//     const desiredLabelCount = 7;
+// const range = max - min;
+
+// const niceStep = (rawStep) => {
+//   const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+//   const normalized = rawStep / magnitude;
+
+//   let niceNormalized;
+//   if (normalized < 1.5) niceNormalized = 1;
+//   else if (normalized < 3) niceNormalized = 2;
+//   else if (normalized < 7) niceNormalized = 5;
+//   else niceNormalized = 10;
+
+//   return niceNormalized * magnitude;
+// };
+
+// let step = niceStep(range / (desiredLabelCount - 1));
+
+// const rawLabels = [];
+
+// // ใส่ min ชัวร์
+// rawLabels.push(roundLabel(min));
+
+// // เริ่มจาก min + step และไล่จนก่อน max
+// let current = min + step;
+// while (current < max) {
+//   rawLabels.push(roundLabel(current));
+//   current += step;
+// }
+
+// // ใส่ max ชัวร์
+// rawLabels.push(roundLabel(max));
+
+// labels = [...new Set(rawLabels)];
+// console.log("Actual label range :", labels);
+
+// // const desiredLabelCount = 7;
+// // const minInt = Math.floor(min);
+// // const maxInt = Math.ceil(max);
+// // const range = maxInt - minInt;
+
+// // const niceStep = (rawStep) => {
+// //   const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+// //   const normalized = rawStep / magnitude;
+
+// //   let niceNormalized;
+// //   if (normalized < 1.5) niceNormalized = 1;
+// //   else if (normalized < 3) niceNormalized = 2;
+// //   else if (normalized < 7) niceNormalized = 5;
+// //   else niceNormalized = 10;
+
+// //   return niceNormalized * magnitude;
+// // };
+
+// // let step = niceStep(range / (desiredLabelCount - 1));
+
+// // const rawLabels = [];
+// // for (let value = Math.ceil(minInt / step) * step; value <= maxInt; value += step) {
+// //   rawLabels.push(roundLabel(value));
+// // }
+
+// // if (rawLabels.length < 2) {
+// //   rawLabels.push(roundLabel(max));
+// // }
+
+// // labels = [...new Set(rawLabels)];
+
+// //     console.log("Actual  label range :", labels);
+//   }
 
 
   const numBlocks = temp_color.length;
@@ -598,7 +692,7 @@ const MapComponent = ({
       {viewMode === "Heatmap" ? (
         <HeatmapBar selectedValue={value} min={defaultMin} max={defaultMax} selectedToneColor={selectedToneColor} isReversed={isReversed}
          numberOfYears={numberOfYears} configData={configData} selectedDataset={selectedDataset} selectedRegion={selectedRegion} labelProvince={labelProvince}
-  labelRegion={labelRegion}/>  
+  labelRegion={labelRegion} legendMax={legendMax} legendMin={legendMin} />  
       ) : (
         <TrendmapBar selectedValue={value} min={defaultMin} max={defaultMax} numberOfYears={numberOfYears} isReversed={isReversed} 
         configData={configData} selectedDataset={selectedDataset}  selectedRegion={selectedRegion} labelProvince={labelProvince} abelRegion={labelRegion}
