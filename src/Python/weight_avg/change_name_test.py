@@ -88,8 +88,8 @@ def rename_keys_in_feature(feature):
         props = feature['properties']
 
         # 🔁 เปลี่ยนชื่อ region_name ➝ areas_name
-        if 'province_name' in props:
-            props['p_name'] = props.pop('province_name')
+        if 'p_name' in props:
+            props['areas_name'] = props.pop('p_name')
 
         # 🔁 เปลี่ยนชื่อ annual ➝ yearly
         if 'annual' in props:

@@ -102,55 +102,6 @@
       ]
     },
 
-    "Test Dataset": {
-  "path": "/Geo-data/Test-Dataset/",
-  "info": "Testing Final Data",
-  "year_start": 1950,
-  "year_end": 1979,
-  "file_name_pattern": {
-    "country": {
-      "filename": "country_data_{year}.json",
-      "yearly": "yearly",
-      "monthly": "monthly"
-    },
-    "region": {
-      "filename": "region_data_{year}.json",
-      "area_property": "areas_name",
-      "yearly": "yearly",
-      "monthly": "monthly"
-    },
-    "province": {
-      "filename": "province_data_{year}.json",
-      "area_property": "p_name",
-      "yearly": "yearly",
-      "monthly": "monthly"
-    }
-  },
-  "variable_options": [
-    { "label": "Precipitation", "value": "pre", "unit": "mm", "type": "monthly", "group": "Raw Data", "description": "Mean monthly or annual rainfall" },
-    { "label": "Temperature Max", "value": "tmx", "unit": "°C", "type": "monthly", "group": "Raw Data", "description": "Monthly and annual average maximum temperatures" },
-    { "label": "Temperature Min", "value": "tmn", "unit": "°C", "type": "monthly", "group": "Raw Data", "description": "Monthly and annual average minimum temperatures" },
-    {
-      "label": "SPI",
-      "value": "spi",
-      "unit": "mm",
-      "type": "monthly",
-      "group": "Indices Data",
-      "multi_scale": ["spi3", "spi6", "spi12", "spi24", "spi36", "spi48", "spi60"],
-      "description": "Standardised Precipitation Index<br>Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."
-    },
-    {
-      "label": "SPEI",
-      "value": "spei",
-      "unit": "mm",
-      "type": "monthly",
-      "group": "Indices Data",
-      "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60"] ,
-      "description": "Standardised Precipitation Evapotranspiration Index..."
-    }
-  ]
-},
-
     "CRU dataset": {
       "path": "/Geo-data/Cru-Dataset/",
       "info":"Climatic Research Unit Data",
