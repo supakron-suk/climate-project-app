@@ -235,7 +235,7 @@ const getGradient = (colormapName, isReversed = false) => {
     }
 
     const fileConfig = configData.datasets[selectedDataset]?.file_name_pattern?.[viewType];
-    const areaProperty = fileConfig?.area_property;
+    const areaProperty = fileConfig?.area_property; 
 
     const geojson = dataByYear[year]?.[viewType];
 
@@ -436,7 +436,7 @@ useEffect(() => {
   if (isApplied && selectedYearStart && selectedYearEnd) {
 
     
-
+    console.log("dataByYear:", dataByYear);
 
    const updatedRegion = DataApply.isRegionView
   ? DataApply.selectedRegion
@@ -450,6 +450,9 @@ useEffect(() => {
     console.log("Region:", updatedRegion);
     console.log("Province:", updatedProvince);
     console.log("Value Key:", selectedValue);
+    
+
+
 
 
     const selectedYears = Object.keys(dataByYear)
@@ -470,16 +473,33 @@ useEffect(() => {
 
     setFilteredYearData(selectedYears);
 
-        const areaType = DataApply.isRegionView ? "region" : "province";
-    const areaProperty = configData.datasets[selectedDataset]?.file_name_pattern?.[areaType]?.area_property;
+    //     const areaType = DataApply.isRegionView ? "region" : "province";
+    // const areaProperty = configData.datasets[selectedDataset]?.file_name_pattern?.[areaType]?.area_property;
 
-    const provinces = new Set();
-    selectedYears.forEach(({ data }) =>
-      data.forEach((feature) => {
-        const areaName = feature.properties?.[areaProperty];
-        if (areaName) provinces.add(areaName);
-      })
-    );
+    // const provinces = new Set();
+    // selectedYears.forEach(({ data }) =>
+    //   data.forEach((feature) => {
+    //     const areaName = feature.properties?.[areaProperty];
+    //     if (areaName) provinces.add(areaName);
+    //   })
+    // );
+    const areaType = DataApply.isRegionView ? "region" : "province";
+const areaProperty = configData.datasets[selectedDataset]?.file_name_pattern?.[areaType]?.area_property;
+
+console.log("✅ AreaType:", areaType);
+console.log("✅ AreaProperty from config:", areaProperty);
+
+// ตรวจสอบว่าข้อมูลมี key นี้จริง
+selectedYears.forEach(({ year, data }) => {
+  console.log(`📅 Year: ${year}`);
+  data.forEach((feature, idx) => {
+    const keys = Object.keys(feature.properties || {});
+    const areaName = feature.properties?.[areaProperty];
+    console.log(`🔍 Feature[${idx}] keys:`, keys);
+    console.log(`➡️ areaName (${areaProperty}):`, areaName);
+  });
+});
+
 
 
 
@@ -532,7 +552,9 @@ spiResult.forEach(({ scale, value }) => {
         displayMapScale,
         updatedRegion,
         updatedProvince,
-        isRegionView
+        isRegionView,
+        configData,
+        selectedDataset,
       )
     : null;
 
@@ -606,6 +628,14 @@ spiResult.forEach(({ scale, value }) => {
         setGlobalTrendMax(max);
       }
 
+console.log("📍Calling Heatmap with:");
+console.log(" - Region:", updatedRegion);
+console.log(" - Province:", updatedProvince);
+console.log(" - Area Property:", areaProperty);
+console.log(" - Selected Value:", selectedValue);
+console.log(" - Selected databyyear:", dataByYear);
+console.log(" - Selected dataset:", selectedDataset);
+
 
     const averageData = Heatmap(
       dataByYear,
@@ -621,6 +651,9 @@ spiResult.forEach(({ scale, value }) => {
       displayMapScale,
       selectedDataset
     );
+
+    console.log("✅ averageData:", averageData);
+
     if (averageData) {
       setHeatmapData(averageData);
        setFullHeatmapData(averageData);

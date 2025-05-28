@@ -1,6 +1,6 @@
 // Trendmap.js
 
-// ไม่ต้อง import configData ถ้ามีใน app.js
+
 export const TrendMap = (
   dataByYear,
   startYear,
@@ -10,7 +10,7 @@ export const TrendMap = (
   valueKey,
   configData,
   isRegionView,
-  selectedDataset 
+  selectedDataset
 ) => {
   if (startYear > endYear) {
     console.error("Start year must be less than or equal to end year.");
@@ -19,7 +19,14 @@ export const TrendMap = (
 
   const viewType = isRegionView ? "region" : "province";
   const fileConfig = configData.datasets[selectedDataset]?.file_name_pattern?.[viewType];
-  const areaProperty = fileConfig?.area_property || "name";
+
+  if (!fileConfig) {
+    console.error("Missing fileConfig for selected dataset and view type.");
+    return null;
+  }
+
+  const areaProperty = fileConfig.area_property ;
+  const yearlyKey = fileConfig.yearly ; 
 
   const trends = [];
   const geometryMap = {};
@@ -45,8 +52,14 @@ export const TrendMap = (
 
     filteredFeatures.forEach((feature) => {
       const name = feature.properties?.[areaProperty] || feature.properties?.name;
-      const value =
-        feature.properties?.annual?.[valueKey] ?? feature.properties?.[valueKey];
+
+      
+      let value;
+      if (yearlyKey && feature.properties?.[yearlyKey]) {
+        value = feature.properties[yearlyKey]?.[valueKey];
+      } else {
+        value = feature.properties?.[valueKey];
+      }
 
       if (typeof value === "number" && !isNaN(value)) {
         trends.push({ year, name, value });
@@ -106,6 +119,112 @@ export const TrendMap = (
     numberOfYears: endYear - startYear,
   };
 };
+
+// export const TrendMap = (
+//   dataByYear,
+//   startYear,
+//   endYear,
+//   region,
+//   province,
+//   valueKey,
+//   configData,
+//   isRegionView,
+//   selectedDataset 
+// ) => {
+//   if (startYear > endYear) {
+//     console.error("Start year must be less than or equal to end year.");
+//     return null;
+//   }
+
+//   const viewType = isRegionView ? "region" : "province";
+//   const fileConfig = configData.datasets[selectedDataset]?.file_name_pattern?.[viewType];
+//   const areaProperty = fileConfig?.area_property || "name";
+
+//   const trends = [];
+//   const geometryMap = {};
+
+//   for (let year = startYear; year <= endYear; year++) {
+//     const yearData = dataByYear[year];
+//     const geojson = yearData?.[viewType];
+
+//     if (!geojson || !geojson.features) continue;
+
+//     let filteredFeatures = geojson.features;
+//     const selectedArea = isRegionView ? region : province;
+
+//     if (
+//       selectedArea &&
+//       selectedArea !== "Thailand" &&
+//       selectedArea !== "Thailand_region"
+//     ) {
+//       filteredFeatures = filteredFeatures.filter(
+//         (feature) => feature.properties?.[areaProperty] === selectedArea
+//       );
+//     }
+
+//     filteredFeatures.forEach((feature) => {
+//       const name = feature.properties?.[areaProperty] || feature.properties?.name;
+//       const value =
+//         feature.properties?.annual?.[valueKey] ?? feature.properties?.[valueKey];
+
+//       if (typeof value === "number" && !isNaN(value)) {
+//         trends.push({ year, name, value });
+//         if (!geometryMap[name]) {
+//           geometryMap[name] = feature.geometry;
+//         }
+//       }
+//     });
+//   }
+
+//   if (trends.length === 0) {
+//     console.warn("No trend data available.");
+//     return null;
+//   }
+
+//   const grouped = trends.reduce((acc, { year, name, value }) => {
+//     if (!acc[name]) acc[name] = [];
+//     acc[name].push({ year, value });
+//     return acc;
+//   }, {});
+
+//   const yearlyTrends = Object.entries(grouped).map(([area, values]) => {
+//     const yearlyData = {};
+//     values.forEach(({ year, value }) => {
+//       if (!yearlyData[year]) yearlyData[year] = { sum: 0, count: 0 };
+//       yearlyData[year].sum += value;
+//       yearlyData[year].count++;
+//     });
+
+//     const averages = Object.entries(yearlyData).map(([year, { sum, count }]) => ({
+//       year: parseInt(year),
+//       value: sum / count,
+//     }));
+
+//     return { area, yearlyAverages: averages };
+//   });
+
+//   const features = yearlyTrends.map(({ area, yearlyAverages }) => {
+//     const slope = calculateModifiedTheilSenSlope(yearlyAverages, "value");
+//     const roundedSlope = parseFloat(slope.toFixed(2));
+//     return {
+//       type: "Feature",
+//       geometry: geometryMap[area],
+//       properties: {
+//         name: area,
+//         slope_value: roundedSlope,
+//         level: isRegionView ? "region" : "province",
+//       },
+//     };
+//   });
+
+//   return {
+//     geojson: {
+//       type: "FeatureCollection",
+//       features,
+//     },
+//     numberOfYears: endYear - startYear,
+//   };
+// };
 
 // export const TrendMap = (
 //   dataByYear,
