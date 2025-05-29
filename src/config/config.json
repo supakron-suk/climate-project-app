@@ -110,21 +110,18 @@
       "file_name_pattern": {
   "country": {
     "filename": "country_data_{year}.json",
-    "properties": ["annual", "monthly"],
     "yearly": "annual",
     "monthly": "monthly"
   },
   "region": {
     "filename": "region_data_{year}.json",
     "area_property": "region_name",
-    "properties": ["annual", "monthly"],
     "yearly": "annual",
     "monthly": "monthly"
   },
   "province": {
     "filename": "province_data_{year}.json",
     "area_property": "province_name",
-    "properties": ["annual", "monthly"],
     "yearly": "annual",
     "monthly": "monthly"
   }
@@ -152,11 +149,64 @@
       "description": "Standardised Precipitation Evapotranspiration Index Measure of \"drought\" using the Standardised Precipitation Evapotranspiration Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified using precipitation and evaporation. See Vicente-Serrano et al. (2010) for details."
     }
       ]
+    },
+    "Test Dataset": {
+  "path": "/Geo-data/Test-Dataset/",
+  "info": "Testing Final Data",
+  "year_start": 1950,
+  "year_end": 1979,
+  "file_name_pattern": {
+    "country": {
+      "filename": "country_data_{year}.json",
+      "yearly": "yearly",
+      "monthly": "monthly"
+    },
+    "region": {
+      "filename": "region_data_{year}.json",
+      "area_property": "areas_name",
+      "yearly": "yearly",
+      "monthly": "monthly"
+    },
+    "province": {
+      "filename": "province_data_{year}.json",
+      "area_property": "areas_name",
+      "yearly": "yearly",
+      "monthly": "monthly"
     }
+  },
+  "variable_options": [
+    { "label": "Precipitation", "value": "pre", "unit": "mm", "type": "monthly", "group": "Raw Data", "description": "Mean monthly or annual rainfall" },
+    { "label": "Temperature Max", "value": "tmx", "unit": "°C", "type": "monthly", "group": "Raw Data", "description": "Monthly and annual average maximum temperatures" },
+    { "label": "Temperature Min", "value": "tmn", "unit": "°C", "type": "monthly", "group": "Raw Data", "description": "Monthly and annual average minimum temperatures" },
+    {
+      "label": "SPI",
+      "value": "spi",
+      "unit": "mm",
+      "type": "monthly",
+      "group": "Indices Data",
+      "multi_scale": ["spi3", "spi6", "spi12", "spi24", "spi36", "spi48", "spi60"],
+      "description": "Standardised Precipitation Index<br>Measure of \"drought\" using the Standardised Precipitation Index on time scales of 3, 6, 9, 12, 24, 36, 48 and 60 months. A drought measure specified as a precipitation deficit. See McKee et al. (1993) and the SPI User Guide (World Meteorological Organization 2012) for details."
+    },
+    {
+      "label": "SPEI",
+      "value": "spei",
+      "unit": "mm",
+      "type": "monthly",
+      "group": "Indices Data",
+      "multi_scale": ["spei3", "spei6", "spei9", "spei12", "spei24", "spei36", "spei48", "spei60"] ,
+      "description": "Standardised Precipitation Evapotranspiration Index..."
+    },
+    { "label": "TXX", "value": "txx", "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"TXx Maximum value of daily maximum temperature each month."},
+    { "label": "TNN", "value": "tnn", "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Minimum value of daily minimum temperature each month."},
+    { "label": "PRCPTOT", "value": "prcptot",   "unit": "mm", "type": "monthly", "group": "Indices Data", "description":"Annual total precipitation on wet days<br>Let RR<sub>ij</sub> be the daily wet day (>= 1mm) precipitation amount on day i in period j, then:"},
+    { "label": "DTR","value": "dtr","unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Daily temperature range between maximum temperature and minimum temperature."},
+    { "label": "TNX","value": "tnx","unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Maximum value of daily minimum temperature each month."},
+    { "label": "TR","value": "tr","unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Number of tropical nights Annual count of days daily minimum temperature > 20 °C."},
+    { "label": "TXM","value": "txm",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"The mean daily maximum temperature."},
+        { "label": "TXN","value": "txn",       "unit": "°C", "type": "monthly", "group": "Indices Data", "description":"Minimum value of daily maximum temperature each month."}
+  ]
+}
     
-
-
-
 
   },
   "dropdown_options": [
