@@ -21,3 +21,18 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Ignore all JSON files
+*.json
+
+# Allow specific JSON file
+!src/config/config.json
+
+# Ignore all NetCDF files
+*.nc
+
+# Ignore all text files
+*.txt
+
+# Ignore all CSV files
+*.csv
