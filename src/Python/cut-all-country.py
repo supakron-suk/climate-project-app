@@ -22,7 +22,9 @@ gdf = gpd.read_file("src/shapefile/gadm41_THA_0.shp")
 
 # สร้าง mask จาก shapefile
 # ใช้ geometry ที่เก็บขอบเขตของประเทศไทย
-thailand_mask = gdf.geometry.unary_union
+# ขยายพื้นที่ของ mask โดยใช้ buffer() เพื่อรวมพื้นที่ขอบของประเทศไทย
+buffer_distance = 0.1  # ระยะห่างในการขยายขอบประเทศ (ปรับได้ตามต้องการ)
+thailand_mask = gdf.geometry.unary_union.buffer(buffer_distance)
 
 # สร้าง figure และ subplots สำหรับแต่ละปี
 fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(18, 12), subplot_kw={'projection': ccrs.PlateCarree()})
@@ -71,8 +73,8 @@ for i, year in enumerate(range(2000, 2006)):
     gl.right_labels = False
 
 # เพิ่มแถบสี (สีเดียวกันสำหรับทุกปี)
-#cbar = fig.colorbar(mp, ax=axs, orientation='vertical', fraction=0.05, pad=0.1)
-#cbar.set_label('Temperature (°C)')
+cbar = fig.colorbar(mp, ax=axs, orientation='vertical', fraction=0.05, pad=0.1)
+cbar.set_label('Temperature (°C)')
 
 # จัดการ layout ให้อ่านง่าย
 plt.tight_layout()
