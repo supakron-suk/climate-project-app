@@ -1,0 +1,9 @@
+node_modules
+.git
+*.log
+*.csv
+*.nc
+*.txt
+# public/Geo-data/
+coverage
+# src/Geo-data/
