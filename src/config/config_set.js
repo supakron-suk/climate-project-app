@@ -22,7 +22,7 @@ const loadDatasetFiles = async (datasetName) => {
         ? patternObj.replace('{year}', year)
         : patternObj.filename.replace('{year}', year);
 
-      // ✅ รวม BASE_URL กับ path เพื่อให้ fetch จาก dataset-service
+      // รวม BASE_URL กับ path เพื่อให้ fetch จาก dataset-service
       const filePath = `${BASE_URL}${path}${year}/${fileName}`;
       console.log(`Loading ${type} file:`, filePath);
 

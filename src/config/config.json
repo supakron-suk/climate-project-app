@@ -3,7 +3,7 @@
     "ERA dataset": {
       "path": "/Geo-data/Era-Dataset/",
       "info":"ECMWF Reanalysis v5 Data",
-      "year_start": 1960,
+      "year_start": 2000,
       "year_end": 2022,
       "file_name_pattern": {
   "country": {
