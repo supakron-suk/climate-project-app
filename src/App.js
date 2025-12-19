@@ -13,7 +13,7 @@ import { Line } from 'react-chartjs-2';
 import { Bar } from 'react-chartjs-2';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import './App.css';
-import MapComponent from './MapComponent'; // นำเข้า MapComponent
+import MapComponent from './MapComponent'; 
 import { dummyTimeSeriesData,
          dummySeasonalCycleData,
          calculatemean,
