@@ -197,6 +197,14 @@
   text-align: center;
 }
 
+.more-info-text{
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  position: relative;
+  right: -57%;
+}
+
 /* ปรับโครงสร้าง layout ให้ยืดหยุ่น */
 .timeseries-text {
   display: flex;

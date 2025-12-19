@@ -20,12 +20,13 @@ import { dummyTimeSeriesData,
        } from './JS/Graph';
 import {TrendMap} from './JS/TrendMap.js';
 import { Heatmap, spi_Heatmap} from './JS/Heatmap.js';
-import { new_dataset, sendFileToBackend } from "./JS/new_dataset.js";
 import colormap from 'colormap';
 import { spi_process, SPIChartData, r_squared, getSpiAndSpeiData, 
   y_multi_value, x_oni_value,  oni_r_square } from './JS/spi_set.js';
 
-
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MoreInfoHeader from "./Components/MoreInfoHeader";
+import MoreInfoPage from "./Components/MoreInfoPage";
 
 
 import { loadDatasetFiles } from './config/config_set';
@@ -852,9 +853,11 @@ useEffect(() => {
 //----------------------------------webpage UI AREA-------------------------------------------//
 
   return (
+  <Router>
   <div className="main-container">
     <div className="header-text">
       <h1 className="block-text">Multidimensional climate data visualization</h1>
+       <MoreInfoHeader />
     </div>
 
     
@@ -1847,8 +1850,11 @@ useEffect(() => {
 
 
   </div>
-  
   </div>
+   <Routes>
+        <Route path="/more-info" element={<MoreInfoPage />} />
+      </Routes>
+    </Router>
 );
 };
 export default App;
